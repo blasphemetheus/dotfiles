@@ -1,0 +1,69 @@
+# Mako Notification Config - Gold to Rose Theme
+
+# General
+sort=-time
+layer=overlay
+anchor=top-right
+default-timeout=5000
+ignore-timeout=0
+
+# Appearance
+font=JetBrains Mono 11
+background-color=#1e1c23ee
+text-color=#e8e0d6
+border-color=#e8a854
+border-size=3
+border-radius=15
+padding=15
+margin=10
+width=350
+height=150
+max-visible=5
+icons=1
+icon-path=/usr/share/icons/Papirus-Dark
+max-icon-size=48
+
+# Progress bar (for volume/brightness)
+progress-color=over #e875a1
+
+# Grouping
+group-by=app-name
+
+# Actions
+on-button-left=dismiss
+on-button-middle=none
+on-button-right=dismiss-all
+on-touch=dismiss
+
+# Urgency styles
+[urgency=low]
+border-color=#6b8cae
+default-timeout=3000
+
+[urgency=normal]
+border-color=#e8a854
+default-timeout=5000
+
+[urgency=critical]
+border-color=#e85a5a
+background-color=#1e1c23ee
+text-color=#e85a5a
+default-timeout=0
+
+# App-specific styling
+[app-name=Spotify]
+border-color=#a8c686
+
+[app-name=discord]
+border-color=#6b8cae
+
+[app-name=Firefox]
+border-color=#d4848c
+
+[summary~="^Volume.*"]
+border-color=#f5a623
+default-timeout=2000
+
+[summary~="^Brightness.*"]
+border-color=#f5a623
+default-timeout=2000

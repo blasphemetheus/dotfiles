@@ -1,0 +1,244 @@
+/* Gold to Rose Waybar Theme */
+/* Matching Hyprland window borders */
+
+* {
+    font-family: "JetBrains Mono", "Font Awesome 6 Free", Roboto, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+window#waybar {
+    background: transparent;
+    color: #e8e0d6;
+}
+
+/* Remove default styling */
+button {
+    border: none;
+    border-radius: 0;
+}
+
+/* Main bar container - floating look */
+.modules-left, .modules-center, .modules-right {
+    background: rgba(30, 28, 35, 0.85);
+    border-radius: 15px;
+    padding: 3px 10px;
+    margin: 5px;
+    border: 1px solid rgba(232, 168, 84, 0.3);
+}
+
+/* Workspace buttons */
+#workspaces {
+    background: transparent;
+    padding: 0;
+}
+
+#workspaces button {
+    color: #6b8cae;
+    padding: 0 8px;
+    margin: 3px 2px;
+    border-radius: 10px;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+#workspaces button:hover {
+    color: #e875a1;
+    background: rgba(232, 117, 161, 0.15);
+}
+
+#workspaces button.active {
+    color: #1e1c23;
+    background: linear-gradient(45deg, #f5a623, #e875a1);
+    border-radius: 10px;
+}
+
+#workspaces button.urgent {
+    color: #1e1c23;
+    background: #e85a5a;
+}
+
+/* Window title */
+#window {
+    color: #e8e0d6;
+    padding: 0 10px;
+}
+
+/* Clock - center piece */
+#clock {
+    color: #1e1c23;
+    background: linear-gradient(45deg, #e8a854, #d4848c);
+    padding: 0 15px;
+    margin: 3px 0;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+/* Module base styling */
+#battery,
+#cpu,
+#memory,
+#disk,
+#temperature,
+#backlight,
+#network,
+#pulseaudio,
+#tray,
+#custom-bluetooth {
+    padding: 0 12px;
+    margin: 3px 3px;
+    border-radius: 10px;
+    background: rgba(107, 140, 174, 0.2);
+    transition: all 0.3s ease;
+}
+
+/* Individual module colors */
+#cpu {
+    color: #e8a854;
+}
+#cpu:hover {
+    background: rgba(232, 168, 84, 0.25);
+}
+
+#memory {
+    color: #d4848c;
+}
+#memory:hover {
+    background: rgba(212, 132, 140, 0.25);
+}
+
+#disk {
+    color: #a8c6d4;
+}
+#disk:hover {
+    background: rgba(168, 198, 212, 0.25);
+}
+
+#temperature {
+    color: #f5a623;
+}
+#temperature.critical {
+    color: #e85a5a;
+    animation: pulse 1s ease infinite;
+}
+
+#battery {
+    color: #a8c686;
+}
+#battery.charging {
+    color: #a8c686;
+    animation: pulse 2s ease infinite;
+}
+#battery.warning {
+    color: #f5a623;
+}
+#battery.critical {
+    color: #e85a5a;
+    animation: pulse 0.5s ease infinite;
+}
+
+#network {
+    color: #6b8cae;
+}
+#network.disconnected {
+    color: #e85a5a;
+}
+
+#pulseaudio {
+    color: #e875a1;
+}
+#pulseaudio.muted {
+    color: #5a5a6a;
+}
+
+#backlight {
+    color: #f5a623;
+}
+
+#tray {
+    background: rgba(107, 140, 174, 0.2);
+    padding: 0 10px;
+    margin: 3px 3px;
+    border-radius: 10px;
+}
+
+#tray > * {
+    padding: 0 4px;
+}
+
+#tray > *:hover {
+    background: rgba(232, 168, 84, 0.3);
+    border-radius: 6px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background: rgba(232, 117, 161, 0.3);
+    border-radius: 6px;
+}
+
+#tray menu {
+    background: rgba(30, 28, 35, 0.95);
+    border: 1px solid #e8a854;
+    border-radius: 10px;
+}
+
+#tray menu menuitem {
+    padding: 5px 10px;
+}
+
+#tray menu menuitem:hover {
+    background: rgba(232, 168, 84, 0.2);
+}
+
+#custom-bluetooth {
+    color: #6b8cae;
+}
+
+/* Pulse animation */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Tooltip styling */
+tooltip {
+    background: rgba(30, 28, 35, 0.95);
+    border: 2px solid #e8a854;
+    border-radius: 10px;
+}
+
+tooltip label {
+    color: #e8e0d6;
+    padding: 5px;
+}
+
+/* Language and keyboard state */
+#language {
+    color: #e875a1;
+    padding: 0 8px;
+    margin: 3px 3px;
+    border-radius: 10px;
+    background: rgba(107, 140, 174, 0.2);
+}
+
+#keyboard-state {
+    padding: 0 8px;
+    margin: 3px 3px;
+    border-radius: 10px;
+    background: rgba(107, 140, 174, 0.2);
+}
+
+#keyboard-state label {
+    color: #6b8cae;
+    padding: 0 6px;
+}
+
+#keyboard-state label.locked {
+    color: #e875a1;
+}

@@ -1,0 +1,132 @@
+/* Gold to Rose Theme for Rofi */
+/* Matching Hyprland window borders */
+
+* {
+    /* Gold to Rose colors */
+    bg: #1e1c23ee;
+    bg-alt: #2a2630;
+    fg: #e8e0d6;
+    fg-alt: #6b8cae;
+
+    accent: #e8a854;
+    accent-alt: #e875a1;
+    urgent: #e85a5a;
+
+    background-color: transparent;
+    text-color: @fg;
+
+    margin: 0;
+    padding: 0;
+    spacing: 0;
+}
+
+window {
+    location: center;
+    width: 600px;
+    background-color: @bg;
+    border: 3px solid;
+    border-color: @accent;
+    border-radius: 20px;
+}
+
+mainbox {
+    padding: 20px;
+    spacing: 20px;
+}
+
+inputbar {
+    padding: 15px;
+    spacing: 15px;
+    background-color: @bg-alt;
+    border-radius: 15px;
+    border: 1px solid;
+    border-color: #6b8cae44;
+    children: [ prompt, entry ];
+}
+
+prompt {
+    text-color: @accent;
+}
+
+entry {
+    placeholder: "Search...";
+    placeholder-color: @fg-alt;
+}
+
+message {
+    border-radius: 10px;
+    background-color: @bg-alt;
+    padding: 10px;
+}
+
+textbox {
+    padding: 10px;
+}
+
+listview {
+    lines: 8;
+    columns: 1;
+    fixed-height: true;
+    spacing: 5px;
+}
+
+element {
+    padding: 12px 15px;
+    border-radius: 12px;
+    spacing: 15px;
+}
+
+element normal normal {
+    background-color: transparent;
+}
+
+element normal urgent {
+    text-color: @urgent;
+}
+
+element normal active {
+    text-color: @accent;
+}
+
+element selected normal {
+    background-color: @accent;
+    text-color: @bg;
+}
+
+element selected urgent {
+    background-color: @urgent;
+    text-color: @bg;
+}
+
+element selected active {
+    background-color: @accent-alt;
+    text-color: @bg;
+}
+
+element-icon {
+    size: 28px;
+}
+
+element-text {
+    vertical-align: 0.5;
+    text-color: inherit;
+}
+
+/* Mode switcher at bottom */
+mode-switcher {
+    padding: 10px;
+    spacing: 10px;
+    background-color: @bg-alt;
+    border-radius: 15px;
+}
+
+button {
+    padding: 10px;
+    border-radius: 10px;
+    text-color: @fg-alt;
+}
+
+button selected {
+    background-color: @accent-alt;
+    text-color: @bg;
+}

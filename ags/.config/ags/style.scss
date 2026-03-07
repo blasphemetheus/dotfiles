@@ -1,0 +1,186 @@
+// AGS Dashboard Styles
+
+* {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 14px;
+}
+
+window.Dashboard {
+  background-color: rgba(30, 30, 46, 0.95);
+  color: #cdd6f4;
+  border-left: 2px solid #89b4fa;
+}
+
+.dashboard-content {
+  padding: 16px;
+}
+
+.dashboard-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #89b4fa;
+  margin-bottom: 16px;
+}
+
+.section {
+  background-color: rgba(49, 50, 68, 0.8);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #f5c2e7;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(245, 194, 231, 0.3);
+}
+
+.info-row {
+  padding: 4px 0;
+}
+
+.info-label {
+  color: #a6adc8;
+}
+
+.info-value {
+  color: #a6e3a1;
+  font-weight: bold;
+}
+
+.ports-list {
+  color: #fab387;
+  font-family: monospace;
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  min-height: 20px;
+}
+
+// Weather
+.weather-main {
+  font-size: 18px;
+  font-weight: bold;
+  color: #89dceb;
+  margin-bottom: 8px;
+}
+
+.forecast-item {
+  color: #bac2de;
+  font-size: 12px;
+  padding: 2px 0;
+}
+
+// Stopwatch
+.stopwatch-display {
+  font-size: 36px;
+  font-weight: bold;
+  color: #f9e2af;
+  padding: 16px;
+}
+
+.stopwatch-buttons {
+  margin-top: 8px;
+}
+
+.stopwatch-btn {
+  background-color: #45475a;
+  color: #cdd6f4;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  margin: 4px;
+
+  &:hover {
+    background-color: #585b70;
+  }
+}
+
+// Toggles
+.toggles-row {
+  margin-top: 8px;
+}
+
+.toggle-btn {
+  background-color: #45475a;
+  color: #cdd6f4;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 4px;
+
+  &:hover {
+    background-color: #585b70;
+  }
+
+  &.active {
+    background-color: #a6e3a1;
+    color: #1e1e2e;
+  }
+
+  &.recording {
+    background-color: #f38ba8;
+    color: #1e1e2e;
+  }
+}
+
+// Utilities
+.utilities-row {
+  margin-top: 8px;
+}
+
+.utility-btn {
+  background-color: #45475a;
+  color: #cdd6f4;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 8px;
+  margin: 4px;
+
+  &:hover {
+    background-color: #89b4fa;
+    color: #1e1e2e;
+  }
+}
+
+// Word of the Day
+.word-content {
+  padding: 8px 0;
+}
+
+.word-lang {
+  font-weight: bold;
+  color: #cba6f7;
+  margin-top: 8px;
+}
+
+.word-entry {
+  color: #f5e0dc;
+  font-size: 16px;
+  padding: 4px 0 4px 12px;
+}
+
+// Discord
+.discord-note {
+  color: #6c7086;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+// Scrollbar
+scrollbar {
+  background-color: transparent;
+
+  slider {
+    background-color: rgba(137, 180, 250, 0.3);
+    border-radius: 10px;
+    min-width: 8px;
+
+    &:hover {
+      background-color: rgba(137, 180, 250, 0.5);
+    }
+  }
+}

@@ -1,0 +1,16 @@
+# Secrets
+secrets.fish
+*.secret
+.env
+
+# Editor backups
+*.bak
+*~
+*.swp
+
+# AGS generated
+ags/.config/ags/node_modules/
+ags/.config/ags/@girs/
+
+# OS
+.DS_Store
