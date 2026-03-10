@@ -64,7 +64,7 @@ sudo nixos-rebuild switch
 
 - [x] **Waybar glass** — Bar modules are translucent with blur behind, metallic border glow
 - [ ] **Rofi glass** — Launcher has frosted glass look with blur
-- [ ] **Mako glass** — Notifications are translucent with blur (needs `notify-send` — install libnotify)
+- [x] **Mako glass** — Notifications styled dark glass (blur only works on bottom layer, overlay needed for stacking)
 - [x] **Hyprland blur** — Blur is heavier (size 12, 4 passes), supports all layers
 - [x] **Layer blur** — Waybar, rofi, wofi, notifications all have blur-behind via layerrules
 - [ ] **Readability** — Text is still comfortable to read at new opacity levels (adjust if too transparent)
@@ -87,12 +87,12 @@ sudo nixos-rebuild switch
 ## New This Session (needs testing)
 
 - [x] **Hyprlock theme** — `Super+L` shows gold-to-rose lock screen with blur, time, date, password field
-- [ ] **Waybar GPU temp** — Shows RTX 5090 temp on right side of bar
-- [ ] **Waybar media** — Shows currently playing song, click to pause, scroll for next/prev
-- [ ] **Waybar window title** — Shows focused window title/directory in bar
-- [ ] **Waybar power button** — Power icon opens wlogout
-- [ ] **Mako DND** — `Super+Shift+D` to toggle Do Not Disturb (needs libnotify for notify-send)
-- [ ] **Emoji picker** — `Super+.` opens rofimoji (needs rebuild — rofimoji not installed yet)
+- [x] **Waybar GPU temp** — Shows RTX 5090 temp on right side of bar
+- [x] **Waybar media** — Shows currently playing song, click to pause, scroll for next/prev
+- [x] **Waybar window title** — Shows focused window title/directory in bar
+- [x] **Waybar power button** — Power icon opens wlogout
+- [x] **Mako DND** — `Super+Shift+D` toggles DND, bell icon in waybar
+- [x] **Emoji picker** — `Super+.` opens rofimoji, types emoji via wtype
 - [ ] **Bibata cursor** — Modern cursor theme (needs rebuild — bibata-cursors not installed yet)
 - [ ] **Wallpaper on login** — Random wallpaper from ~/Pictures/Wallpapers on each login
 - [ ] **Wallpaper controls** — `Super+W` picker, `Super+Shift+W` random (needs wallpapers in ~/Pictures/Wallpapers)

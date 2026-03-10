@@ -16,6 +16,7 @@
         "clock"
     ],
     "modules-right": [
+        "custom/dnd",
         "custom/gpu-temp",
         "custom/bluetooth",
         "tray",
@@ -71,6 +72,13 @@
         "format-icons": ["", "", ""],
         "tooltip": true,
         "tooltip-format": "CPU: {temperatureC}°C / {temperatureF}°F"
+    },
+    "custom/dnd": {
+        "exec": "makoctl mode 2>/dev/null | grep -q dnd && echo '󰂛' || echo '󰂚'",
+        "interval": 2,
+        "tooltip": true,
+        "tooltip-format": "Do Not Disturb",
+        "on-click": "~/.config/hypr/scripts/dnd-toggle.sh"
     },
     "custom/gpu-temp": {
         "exec": "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader 2>/dev/null | awk '{printf \"%s°C 󰢮\", $1}'",

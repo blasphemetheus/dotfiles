@@ -9,7 +9,7 @@ ignore-timeout=0
 
 # Appearance — liquid metal glass
 font=JetBrains Mono 11
-background-color=#1e1c2399
+background-color=#1e1c23ee
 text-color=#e8e0d6
 border-color=#e8a854
 border-size=2
