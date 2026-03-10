@@ -15,47 +15,47 @@ sudo nixos-rebuild switch
 
 ## Core Fixes
 
-- [ ] **greetd/tuigreet** — Login screen works, can log out and back in without gray screen
-- [ ] **NVIDIA powerManagement** — No DRM errors in `journalctl -b -k | grep nvidia`
-- [ ] **NVIDIA env vars** — Hyprland renders properly (no blank windows)
-- [ ] **Polkit systemd service** — Auth prompts appear for sudo GUI apps (`systemctl --user status polkit-gnome-agent`)
-- [ ] **graphical-session.target** — `dbus-update-activation-environment` fires on login, polkit starts automatically (no manual `systemctl --user start` needed)
-- [ ] **Hyprland 0.54 windowrule blocks** — No config errors on reload (`Super+Shift+R`), all named windowrule blocks parse cleanly
-- [ ] **hyprpaper removed** — No conflict with swww (`swww img` works, wallpaper.sh works)
-- [ ] **fish as default shell** — New terminals open fish, not bash
+- [x] **greetd/tuigreet** — Login screen works, can log out and back in without gray screen
+- [x] **NVIDIA powerManagement** — No DRM errors in `journalctl -b -k | grep nvidia`
+- [x] **NVIDIA env vars** — Hyprland renders properly (no blank windows)
+- [x] **Polkit systemd service** — Auth prompts appear for sudo GUI apps (`systemctl --user status polkit-gnome-agent`)
+- [x] **graphical-session.target** — Doesn't activate under greetd; polkit started directly via exec-once instead
+- [x] **Hyprland 0.54 windowrule blocks** — No config errors on reload (`Super+Shift+R`), all named windowrule blocks parse cleanly
+- [x] **hyprpaper removed** — No conflict with swww (`swww img` works, wallpaper.sh works)
+- [x] **fish as default shell** — New terminals open fish, not bash
 
 ## CLI Tools
 
-- [ ] **bat** — `bat ~/.config/fish/config.fish` shows syntax highlighting
-- [ ] **eza** — `ls` shows icons and git status, `ll` for long listing, `lt` for tree
-- [ ] **fd** — `find .config` finds files fast
-- [ ] **ripgrep** — `grep "exec-once" ~/.config/hypr/` works
-- [ ] **delta** — `git diff` shows side-by-side colored diff (configured via `~/.config/git/config`)
-- [ ] **dust** — `du` shows visual disk usage
-- [ ] **procs** — `ps` shows process table with colors
-- [ ] **fastfetch** — Shows system info on every new terminal
-- [ ] **btop** — `top` or `btop` opens resource monitor
+- [x] **bat** — `bat ~/.config/fish/config.fish` shows syntax highlighting
+- [x] **eza** — `ls` shows icons and git status, `ll` for long listing, `lt` for tree
+- [x] **fd** — `find .config` finds files fast
+- [x] **ripgrep** — `grep "exec-once" ~/.config/hypr/` works
+- [x] **delta** — `git diff` shows side-by-side colored diff (configured via `~/.config/git/config`)
+- [x] **dust** — `du` shows visual disk usage
+- [x] **procs** — `ps` shows process table with colors
+- [x] **fastfetch** — Shows system info on every new terminal
+- [x] **btop** — `top` or `btop` opens resource monitor (`Super+T` keybind added)
 
 ## Terminal Upgrades
 
-- [ ] **starship** — Prompt shows git branch, language versions, cmd duration. Gold-to-Rose themed
-- [ ] **yazi** — `y` opens file manager with image preview. Press `q` to cd into last directory
-- [ ] **zellij** — `zellij` opens multiplexer. Try tabs (`Alt+t`), panes (`Alt+n`), floating (`Alt+f`)
-- [ ] **glow** — `md README.md` or `glow README.md` renders markdown beautifully in terminal
+- [x] **starship** — Prompt shows git branch, language versions, cmd duration. Gold-to-Rose themed
+- [x] **yazi** — `y` opens file manager with image preview. Press `q` to cd into last directory
+- [x] **zellij** — `zellij` opens multiplexer. Try tabs (`Alt+t`), panes (`Alt+n`), floating (`Alt+f`)
+- [x] **glow** — `md README.md` or `glow README.md` renders markdown beautifully in terminal
 
 ## New Apps
 
-- [ ] **wlogout** — `Super+Escape` opens power menu with 6 buttons
+- [x] **wlogout** — `Super+Escape` opens power menu with 6 buttons
 - [ ] **wlogout keys** — l=lock, e=logout, u=suspend, r=reboot, s=shutdown, h=hibernate
 - [ ] **wlogout styling** — Dark theme with gold hover, matches rice
 - [ ] **cava** — `cava` shows audio visualizer bars with Gold-to-Rose gradient
-- [ ] **cava audio** — Bars react to audio playing (test with music/video)
+- [x] **cava audio** — Bars react to audio playing (test with music/video)
 - [ ] **nwg-look** — Run `nwg-look`, select dark GTK theme + Papirus icons. Firefox/Dolphin/file pickers should match rice
 - [ ] **satty** — `Shift+F9` takes screenshot, opens annotation editor. Draw arrows/text/highlights, then save+copy
 
 ## Claude Code Title
 
-- [ ] **Super+A launch** — Window title shows "Claude Code", has own window class
+- [x] **Super+A launch** — Window title shows "Claude Code", has own window class
 - [ ] **CLI launch** — Run `claude` from any terminal, title changes to "Claude Code: <dir>"
 - [ ] **Opacity** — Claude Code windows slightly more opaque than regular kitty (0.88 vs 0.82)
 
@@ -71,18 +71,18 @@ sudo nixos-rebuild switch
 
 ## Dev Environment
 
-- [ ] **VS Code** — `code` command opens VS Code
-- [ ] **direnv** — `cd ~/git/nx-callback-refactor` auto-activates devenv (run `direnv allow` first time)
+- [x] **VS Code** — `code` command opens VS Code
+- [x] **direnv** — `cd ~/git/nx-callback-refactor` auto-activates devenv (run `direnv allow` first time)
 - [ ] **devenv shell** — Elixir, Erlang, CUDA all available after direnv activates
 - [ ] **code from project** — `cd ~/git/nx-callback-refactor && code .` opens VS Code with devenv loaded
 
 ## Fish Shell
 
-- [ ] **Aliases work** — `cat`, `ls`, `ll`, `lt`, `find`, `grep`, `du`, `ps`, `diff`, `top`, `md` all use modern tools
-- [ ] **No /home/dori errors** — No broken path warnings on shell start
-- [ ] **fastfetch on start** — System info shows in every interactive terminal
-- [ ] **starship prompt** — Prompt shows directory, git info, language versions (not default fish prompt)
-- [ ] **direnv hook** — No errors about direnv on shell start
+- [x] **Aliases work** — `cat`, `ls`, `ll`, `lt`, `find`, `grep`, `du`, `ps`, `diff`, `top`, `md` all use modern tools
+- [x] **No /home/dori errors** — No broken path warnings on shell start
+- [x] **fastfetch on start** — System info shows in every interactive terminal
+- [x] **starship prompt** — Prompt shows directory, git info, language versions (not default fish prompt)
+- [x] **direnv hook** — No errors about direnv on shell start
 
 ## Post-Reboot Smoke Test
 
