@@ -79,10 +79,10 @@
         "tooltip-format": "RTX 5090 GPU Temperature"
     },
     "custom/media": {
-        "format": " {}",
-        "max-length": 35,
-        "exec": "playerctl metadata --format '{{artist}} — {{title}}' 2>/dev/null || echo ''",
-        "exec-if": "playerctl status 2>/dev/null | grep -q Playing",
+        "format": "{}",
+        "max-length": 40,
+        "exec": "STATUS=$(playerctl status 2>/dev/null); if [ \"$STATUS\" = \"Playing\" ]; then ICON=' '; elif [ \"$STATUS\" = \"Paused\" ]; then ICON=' '; else echo ''; exit; fi; META=$(playerctl metadata --format '{{artist}} — {{title}}' 2>/dev/null); [ -n \"$META\" ] && echo \"$ICON$META\" || echo ''",
+        "exec-if": "playerctl metadata 2>/dev/null | grep -q .",
         "interval": 3,
         "on-click": "playerctl play-pause",
         "on-scroll-up": "playerctl next",
