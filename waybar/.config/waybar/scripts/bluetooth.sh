@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Get Bluetooth controller status
 power_status=$(bluetoothctl show | grep "Powered" | awk '{print $2}')

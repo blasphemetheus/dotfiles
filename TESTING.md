@@ -48,7 +48,7 @@ sudo nixos-rebuild switch
 - [x] **wlogout** — `Super+Escape` opens power menu with 6 buttons
 - [x] **wlogout lock** — `l` key locks screen from wlogout
 - [ ] **wlogout other keys** — e=logout, u=suspend, r=reboot, s=shutdown, h=hibernate
-- [ ] **wlogout styling** — Dark theme with gold hover, matches rice
+- [x] **wlogout styling** — Gold-to-rose hover effects, unique color per button
 - [x] **cava** — `cava` shows audio visualizer bars with Gold-to-Rose gradient
 - [x] **cava audio** — Bars react to audio playing (test with music/video)
 - [x] **nwg-look** — Dark GTK theme + Papirus icons set
@@ -63,7 +63,7 @@ sudo nixos-rebuild switch
 ## Liquid Metal Visual Pass
 
 - [x] **Waybar glass** — Bar modules are translucent with blur behind, metallic border glow
-- [ ] **Rofi glass** — Launcher has frosted glass look with blur
+- [x] **Rofi glass** — Launcher has dark glass look with transparency (blur blocked by overlay layer)
 - [x] **Mako glass** — Notifications styled dark glass (blur only works on bottom layer, overlay needed for stacking)
 - [x] **Hyprland blur** — Blur is heavier (size 12, 4 passes), supports all layers
 - [x] **Layer blur** — Waybar, rofi, wofi, notifications all have blur-behind via layerrules

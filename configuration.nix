@@ -78,7 +78,7 @@
   services.greetd = {
     enable = true;
     settings.default_session = {
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --sessions ${pkgs.hyprland}/share/wayland-sessions";
+      command = "${pkgs.tuigreet}/bin/tuigreet --time --time-format '%I:%M %p  |  %A, %B %d' --remember --remember-session --user-menu --width 50 --greeting '✦ NixOS  ✦  Hyprland' --theme 'border=yellow;title=yellow;greet=magenta;time=white;prompt=yellow;input=white;action=magenta;button=yellow;container=black' --sessions ${pkgs.hyprland}/share/wayland-sessions";
       user = "greeter";
     };
   };
@@ -233,6 +233,7 @@
 
     # Emoji picker for rofi
     rofimoji
+    wtype      # Wayland keyboard input (for rofimoji typing)
 
     # Theme / icons / cursor
     papirus-icon-theme
