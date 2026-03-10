@@ -5,13 +5,12 @@ set -gx PATH $HOME/.local/bin $PATH
 test -f ~/.config/fish/secrets.fish && source ~/.config/fish/secrets.fish
 
 if status is-interactive
-    # Skip fastfetch in dropdown terminal (Super+`)
-    if test "$KITTY_WINDOW_ID" != "" -a "$TERM_PROGRAM" = "kitty"
-        set -l wclass (hyprctl activewindow -j 2>/dev/null | grep -o '"class":"[^"]*"' | cut -d'"' -f4)
-        if test "$wclass" != "dropdown"
-            fastfetch
-        end
-    else
+    # Kill the default fish greeting
+    set -g fish_greeting
+
+    # Only run fastfetch on the first terminal per session
+    if not test -f /tmp/.fastfetch-done-(id -u)
+        touch /tmp/.fastfetch-done-(id -u)
         fastfetch
     end
 end
