@@ -99,8 +99,24 @@ sudo nixos-rebuild switch
 - [ ] `Super+A` opens Claude Code with visible title
 - [ ] Log out via wlogout → greetd → log back in (no gray screen!)
 
+## New This Session (needs testing)
+
+- [ ] **Hyprlock theme** — `Super+L` shows gold-to-rose lock screen with blur, time, date, password field
+- [ ] **Waybar GPU temp** — Shows RTX 5090 temp next to CPU temp in bar
+- [ ] **Waybar media** — Shows currently playing song, click to pause, scroll for next/prev
+- [ ] **Waybar power button** — Power icon opens wlogout (replaces broken /home/dori menu)
+- [ ] **Mako DND** — Middle-click notification or `Super+Shift+D` to toggle Do Not Disturb
+- [ ] **Emoji picker** — `Super+.` opens rofimoji emoji picker
+- [ ] **Bibata cursor** — Modern cursor theme applied (needs `nixos-rebuild switch`)
+- [ ] **Wallpaper on login** — Random wallpaper from ~/Pictures/Wallpapers on each login
+- [ ] **Wallpaper controls** — `Super+W` picker, `Super+Shift+W` random (needs wallpapers in ~/Pictures/Wallpapers)
+- [ ] **Floating window glass** — Floating kitty windows are more transparent (0.7) than tiled (0.9)
+
 ## Not Yet Implemented (from ENHANCEMENTS.md)
 
+- [ ] Hyprland animation tuning — test and fine-tune bounce/elastic curves
+- [ ] GTK/Qt theming — run `nwg-look` to set dark theme + Papirus icons
+- [ ] greetd theme — tuigreet is plain text, could use a visual greeter
 - [ ] Hyprspace — workspace overview plugin
 - [ ] Hyprtrails — window trail effects plugin
 - [ ] Hyprexpo — workspace grid overview plugin

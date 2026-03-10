@@ -31,9 +31,16 @@ group-by=app-name
 
 # Actions
 on-button-left=dismiss
-on-button-middle=none
+on-button-middle=exec makoctl mode -t dnd
 on-button-right=dismiss-all
 on-touch=dismiss
+
+# Do Not Disturb mode — suppress everything except critical
+[mode=dnd]
+invisible=1
+
+[mode=dnd urgency=critical]
+invisible=0
 
 # Urgency styles
 [urgency=low]

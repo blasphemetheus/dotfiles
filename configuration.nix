@@ -230,12 +230,22 @@
     # GTK theme editor (make Firefox/Dolphin match the rice)
     nwg-look
 
-    # Theme / icons
+    # Emoji picker for rofi
+    rofimoji
+
+    # Theme / icons / cursor
     papirus-icon-theme
+    bibata-cursors
 
     # Polkit agent (needed for privilege escalation prompts)
     polkit_gnome
   ];
+
+  # Cursor theme
+  environment.sessionVariables = {
+    XCURSOR_THEME = "Bibata-Modern-Classic";
+    XCURSOR_SIZE = "24";
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
