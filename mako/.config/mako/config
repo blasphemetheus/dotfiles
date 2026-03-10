@@ -7,12 +7,12 @@ anchor=top-right
 default-timeout=5000
 ignore-timeout=0
 
-# Appearance
+# Appearance — liquid metal glass
 font=JetBrains Mono 11
-background-color=#1e1c23ee
+background-color=#1e1c2399
 text-color=#e8e0d6
 border-color=#e8a854
-border-size=3
+border-size=2
 border-radius=15
 padding=15
 margin=10
@@ -46,7 +46,7 @@ default-timeout=5000
 
 [urgency=critical]
 border-color=#e85a5a
-background-color=#1e1c23ee
+background-color=#1e1c23bb
 text-color=#e85a5a
 default-timeout=0
 

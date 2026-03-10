@@ -1,0 +1,68 @@
+# Starship prompt — Gold-to-Rose liquid metal theme
+
+format = """
+$directory\
+$git_branch\
+$git_status\
+$elixir\
+$nodejs\
+$rust\
+$nix_shell\
+$cmd_duration\
+$line_break\
+$character"""
+
+[character]
+success_symbol = "[❯](bold #e8a854)"
+error_symbol = "[❯](bold #e875a1)"
+
+[directory]
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold #f5a623"
+truncation_length = 3
+truncate_to_repo = true
+read_only = " 󰌾"
+read_only_style = "#d4848c"
+
+[git_branch]
+format = "[$symbol$branch(:$remote_branch)]($style) "
+symbol = " "
+style = "#d4848c"
+
+[git_status]
+format = '([$all_status$ahead_behind]($style) )'
+style = "#e875a1"
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+stashed = "\\$"
+modified = "!${count}"
+staged = "+${count}"
+deleted = "✘${count}"
+
+[elixir]
+format = '[$symbol($version)]($style) '
+symbol = " "
+style = "#b48ead"
+
+[nodejs]
+format = '[$symbol($version)]($style) '
+symbol = " "
+style = "#a3be8c"
+
+[rust]
+format = '[$symbol($version)]($style) '
+symbol = " "
+style = "#e8a854"
+
+[nix_shell]
+format = '[$symbol$state]($style) '
+symbol = " "
+style = "#6b8cae"
+
+[cmd_duration]
+format = "[$duration]($style) "
+style = "#6b8cae"
+min_time = 2_000

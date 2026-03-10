@@ -3,7 +3,7 @@
 
 * {
     /* Gold to Rose colors */
-    bg: #1e1c23ee;
+    bg: #1e1c23aa;
     bg-alt: #2a2630;
     fg: #e8e0d6;
     fg-alt: #6b8cae;
@@ -24,7 +24,7 @@ window {
     location: center;
     width: 600px;
     background-color: @bg;
-    border: 3px solid;
+    border: 2px solid;
     border-color: @accent;
     border-radius: 20px;
 }

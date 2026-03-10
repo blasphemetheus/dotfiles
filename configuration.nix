@@ -122,11 +122,13 @@
   users.users.blewf = {
     isNormalUser = true;
     description = "Bradley Lewis Fargo";
+    shell = pkgs.fish;
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
     #  thunderbird
     ];
   };
+  programs.fish.enable = true;
 
   # Install firefox.
   programs.firefox.enable = true;
@@ -149,7 +151,7 @@
     wget
     git
     firefox
-    htop
+    btop
     elixir
     erlang
     inotify-tools
@@ -162,7 +164,6 @@
 
     # Hyprland ecosystem
     waybar
-    hyprpaper
     swww
     hyprlock
     hypridle
@@ -186,6 +187,7 @@
     # Screenshot / recording
     grim
     slurp
+    satty      # screenshot annotation tool
     wf-recorder
 
     # System utilities
@@ -202,6 +204,31 @@
     neovim
     helix
     lazygit
+    vscode
+    direnv
+
+    # Modern CLI tools (Rust replacements)
+    bat        # cat with syntax highlighting
+    eza        # ls with icons and git status
+    fd         # find replacement
+    ripgrep    # grep replacement
+    delta      # git diff viewer
+    dust       # du replacement (disk usage)
+    procs      # ps replacement
+    fastfetch  # system info splash
+    starship   # cross-shell prompt
+    yazi       # TUI file manager with image preview
+    zellij     # terminal multiplexer
+    glow       # terminal markdown renderer
+
+    # Audio visualizer
+    cava
+
+    # Power menu
+    wlogout
+
+    # GTK theme editor (make Firefox/Dolphin match the rice)
+    nwg-look
 
     # Theme / icons
     papirus-icon-theme
@@ -228,6 +255,19 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
+
+  # Polkit authentication agent (for privilege escalation prompts in Hyprland)
+  systemd.user.services.polkit-gnome-agent = {
+    description = "Polkit GNOME Authentication Agent";
+    wantedBy = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+      Restart = "on-failure";
+      RestartSec = 1;
+    };
+  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

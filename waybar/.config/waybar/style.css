@@ -18,13 +18,15 @@ button {
     border-radius: 0;
 }
 
-/* Main bar container - floating look */
+/* Main bar container — liquid metal glass */
 .modules-left, .modules-center, .modules-right {
-    background: rgba(30, 28, 35, 0.85);
+    background: rgba(30, 28, 35, 0.55);
     border-radius: 15px;
     padding: 3px 10px;
     margin: 5px;
-    border: 1px solid rgba(232, 168, 84, 0.3);
+    border: 1px solid rgba(232, 168, 84, 0.35);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* Workspace buttons */

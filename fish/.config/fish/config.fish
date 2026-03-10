@@ -5,14 +5,44 @@ set -gx PATH $HOME/.local/bin $PATH
 test -f ~/.config/fish/secrets.fish && source ~/.config/fish/secrets.fish
 
 if status is-interactive
-    # Commands to run in interactive sessions can go here
+    fastfetch
 end
+
+# Starship prompt
+starship init fish | source
+
+# Direnv (auto-activate devenv on cd)
+direnv hook fish | source
+
+# Zoxide (smart cd)
 zoxide init fish | source
-alias start-vocalinux='/home/dori/vocalinux/start-vocalinux.sh'
-export PATH="$HOME/.local/bin:$PATH"
 
-# Amp CLI
-export PATH="/home/dori/.amp/bin:$PATH"
+# Yazi wrapper — cd into directory on exit (press q)
+function y
+    set tmp (mktemp -t "yazi-cwd.XXXXXX")
+    yazi $argv --cwd-file="$tmp"
+    if set cwd (command cat -- "$tmp"); and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
+        cd -- "$cwd"
+    end
+    command rm -f -- "$tmp"
+end
 
-# opencode
-fish_add_path /home/dori/.opencode/bin
+# Modern CLI aliases
+alias cat='bat --paging=never'
+alias ls='eza --icons --group-directories-first'
+alias ll='eza --icons --group-directories-first -la'
+alias lt='eza --icons --tree --level=2'
+alias find='fd'
+alias grep='rg'
+alias du='dust'
+alias ps='procs'
+alias diff='delta'
+alias top='btop'
+alias md='glow'
+
+# Claude Code wrapper — sets terminal title so it's identifiable in Hyprland
+function claude
+    printf '\033]0;Claude Code: %s\007' (basename (pwd))
+    command claude $argv
+    printf '\033]0;%s\007' (fish_prompt_hostname)": "(prompt_pwd)
+end
