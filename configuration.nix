@@ -17,6 +17,9 @@
   # limit stored generations (optional, 2 GB)
   boot.loader.systemd-boot.configurationLimit = 10;
 
+  # Resume device for hibernate
+  boot.resumeDevice = "/dev/nvme0n1p6";
+
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_6_12;
 
@@ -197,6 +200,8 @@
     playerctl
     pavucontrol
     blueman
+    wob            # Volume/brightness overlay bar
+    hyprshade      # Blue light filter
 
     # File manager
     kdePackages.dolphin
