@@ -33,7 +33,7 @@ sudo nixos-rebuild switch
 - [x] **delta** — `git diff` shows side-by-side colored diff (configured via `~/.config/git/config`)
 - [x] **dust** — `du` shows visual disk usage
 - [x] **procs** — `ps` shows process table with colors
-- [x] **fastfetch** — Shows system info on every new terminal
+- [x] **fastfetch** — Shows system info on first terminal per session
 - [x] **btop** — `top` or `btop` opens resource monitor (`Super+T` keybind added)
 
 ## Terminal Upgrades
@@ -46,12 +46,13 @@ sudo nixos-rebuild switch
 ## New Apps
 
 - [x] **wlogout** — `Super+Escape` opens power menu with 6 buttons
-- [ ] **wlogout keys** — l=lock, e=logout, u=suspend, r=reboot, s=shutdown, h=hibernate
+- [x] **wlogout lock** — `l` key locks screen from wlogout
+- [ ] **wlogout other keys** — e=logout, u=suspend, r=reboot, s=shutdown, h=hibernate
 - [ ] **wlogout styling** — Dark theme with gold hover, matches rice
-- [ ] **cava** — `cava` shows audio visualizer bars with Gold-to-Rose gradient
+- [x] **cava** — `cava` shows audio visualizer bars with Gold-to-Rose gradient
 - [x] **cava audio** — Bars react to audio playing (test with music/video)
-- [ ] **nwg-look** — Run `nwg-look`, select dark GTK theme + Papirus icons. Firefox/Dolphin/file pickers should match rice
-- [ ] **satty** — `Shift+F9` takes screenshot, opens annotation editor. Draw arrows/text/highlights, then save+copy
+- [x] **nwg-look** — Dark GTK theme + Papirus icons set
+- [x] **satty** — `Shift+F9` takes screenshot, opens annotation editor
 
 ## Claude Code Title
 
@@ -61,12 +62,11 @@ sudo nixos-rebuild switch
 
 ## Liquid Metal Visual Pass
 
-- [ ] **Kitty transparency** — Terminals are 0.82 opacity, blur visible behind text
-- [ ] **Waybar glass** — Bar modules are translucent with blur behind, metallic border glow
+- [x] **Waybar glass** — Bar modules are translucent with blur behind, metallic border glow
 - [ ] **Rofi glass** — Launcher has frosted glass look with blur
-- [ ] **Mako glass** — Notifications are translucent with blur (test with `notify-send "Test" "Glass notification"`)
-- [ ] **Hyprland blur** — Blur is heavier (size 12, 4 passes), supports all layers
-- [ ] **Layer blur** — Waybar, rofi, wofi, notifications all have blur-behind via layerrules
+- [ ] **Mako glass** — Notifications are translucent with blur (needs `notify-send` — install libnotify)
+- [x] **Hyprland blur** — Blur is heavier (size 12, 4 passes), supports all layers
+- [x] **Layer blur** — Waybar, rofi, wofi, notifications all have blur-behind via layerrules
 - [ ] **Readability** — Text is still comfortable to read at new opacity levels (adjust if too transparent)
 
 ## Dev Environment
@@ -80,43 +80,36 @@ sudo nixos-rebuild switch
 
 - [x] **Aliases work** — `cat`, `ls`, `ll`, `lt`, `find`, `grep`, `du`, `ps`, `diff`, `top`, `md` all use modern tools
 - [x] **No /home/dori errors** — No broken path warnings on shell start
-- [x] **fastfetch on start** — System info shows in every interactive terminal
+- [x] **fastfetch on start** — System info shows on first terminal per session
 - [x] **starship prompt** — Prompt shows directory, git info, language versions (not default fish prompt)
 - [x] **direnv hook** — No errors about direnv on shell start
 
-## Post-Reboot Smoke Test
-
-- [ ] Reboot completes, greetd login screen appears
-- [ ] Log in, Hyprland starts without gray screen
-- [ ] Open terminal — fish launches with fastfetch + starship prompt
-- [ ] Blur/glass visible behind waybar and terminal windows
-- [ ] Text is readable at current transparency (not too washed out)
-- [ ] `Super+Escape` opens wlogout power menu
-- [ ] `y` opens yazi file manager
-- [ ] `zellij` opens terminal multiplexer
-- [ ] `cd ~/git/nx-callback-refactor` — direnv activates devenv
-- [ ] `code .` opens VS Code
-- [ ] `Super+A` opens Claude Code with visible title
-- [ ] Log out via wlogout → greetd → log back in (no gray screen!)
-
 ## New This Session (needs testing)
 
-- [ ] **Hyprlock theme** — `Super+L` shows gold-to-rose lock screen with blur, time, date, password field
-- [ ] **Waybar GPU temp** — Shows RTX 5090 temp next to CPU temp in bar
+- [x] **Hyprlock theme** — `Super+L` shows gold-to-rose lock screen with blur, time, date, password field
+- [ ] **Waybar GPU temp** — Shows RTX 5090 temp on right side of bar
 - [ ] **Waybar media** — Shows currently playing song, click to pause, scroll for next/prev
-- [ ] **Waybar power button** — Power icon opens wlogout (replaces broken /home/dori menu)
-- [ ] **Mako DND** — Middle-click notification or `Super+Shift+D` to toggle Do Not Disturb
-- [ ] **Emoji picker** — `Super+.` opens rofimoji emoji picker
-- [ ] **Bibata cursor** — Modern cursor theme applied (needs `nixos-rebuild switch`)
+- [ ] **Waybar window title** — Shows focused window title/directory in bar
+- [ ] **Waybar power button** — Power icon opens wlogout
+- [ ] **Mako DND** — `Super+Shift+D` to toggle Do Not Disturb (needs libnotify for notify-send)
+- [ ] **Emoji picker** — `Super+.` opens rofimoji (needs rebuild — rofimoji not installed yet)
+- [ ] **Bibata cursor** — Modern cursor theme (needs rebuild — bibata-cursors not installed yet)
 - [ ] **Wallpaper on login** — Random wallpaper from ~/Pictures/Wallpapers on each login
 - [ ] **Wallpaper controls** — `Super+W` picker, `Super+Shift+W` random (needs wallpapers in ~/Pictures/Wallpapers)
-- [ ] **Floating window glass** — Floating kitty windows are more transparent (0.7) than tiled (0.9)
+- [x] **Floating window glass** — Floating kitty windows more transparent than tiled
+- [x] **Dropdown terminal** — `Super+`` toggles quake-style dropdown pinned to top
+
+## Needs `sudo cp ~/dotfiles/configuration.nix /etc/nixos/configuration.nix && sudo nixos-rebuild switch`
+
+- libnotify (notify-send)
+- rofimoji (emoji picker)
+- bibata-cursors (cursor theme)
 
 ## Not Yet Implemented (from ENHANCEMENTS.md)
 
 - [ ] Hyprland animation tuning — test and fine-tune bounce/elastic curves
-- [ ] GTK/Qt theming — run `nwg-look` to set dark theme + Papirus icons
 - [ ] greetd theme — tuigreet is plain text, could use a visual greeter
+- [ ] hyprbars — window title bars (version mismatch with Hyprland 0.54, needs flake)
 - [ ] Hyprspace — workspace overview plugin
 - [ ] Hyprtrails — window trail effects plugin
 - [ ] Hyprexpo — workspace grid overview plugin
@@ -124,7 +117,6 @@ sudo nixos-rebuild switch
 - [ ] hypr-dynamic-cursors — cursor physics
 - [ ] mpvpaper — video wallpapers
 - [ ] Hyprshade config — blue-light-filter scheduling
-- [ ] hyprbars — window title bars
 - [ ] wob — volume/brightness overlay bar
 - [ ] Walker — modern launcher
 - [ ] wl-kbptr — keyboard mouse control

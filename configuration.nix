@@ -191,6 +191,7 @@
     wf-recorder
 
     # System utilities
+    libnotify  # notify-send
     networkmanagerapplet
     brightnessctl
     playerctl
