@@ -9,13 +9,13 @@
         "memory",
         "disk",
         "temperature",
-        "custom/gpu-temp",
         "custom/media"
     ],
     "modules-center": [
         "clock"
     ],
     "modules-right": [
+        "custom/gpu-temp",
         "custom/bluetooth",
         "tray",
         "pulseaudio",

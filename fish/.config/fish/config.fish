@@ -5,7 +5,15 @@ set -gx PATH $HOME/.local/bin $PATH
 test -f ~/.config/fish/secrets.fish && source ~/.config/fish/secrets.fish
 
 if status is-interactive
-    fastfetch
+    # Skip fastfetch in dropdown terminal (Super+`)
+    if test "$KITTY_WINDOW_ID" != "" -a "$TERM_PROGRAM" = "kitty"
+        set -l wclass (hyprctl activewindow -j 2>/dev/null | grep -o '"class":"[^"]*"' | cut -d'"' -f4)
+        if test "$wclass" != "dropdown"
+            fastfetch
+        end
+    else
+        fastfetch
+    end
 end
 
 # Starship prompt
