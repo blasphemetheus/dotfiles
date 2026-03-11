@@ -16,6 +16,7 @@
         "clock"
     ],
     "modules-right": [
+        "custom/claude",
         "custom/dnd",
         "custom/gpu-temp",
         "custom/bluetooth",
@@ -50,18 +51,18 @@
         "format-alt": "{:%A, %B %d %Y}"
     },
     "cpu": {
-        "format": "{usage}% ",
+        "format": " {usage}%",
         "tooltip": true,
         "tooltip-format": "CPU Usage: {usage}%\nLoad: {load}"
     },
     "memory": {
-        "format": "{}% ",
+        "format": " {}%",
         "tooltip": true,
         "tooltip-format": "RAM: {used:0.1f}GB / {total:0.1f}GB\nSwap: {swapUsed:0.1f}GB / {swapTotal:0.1f}GB"
     },
     "disk": {
         "path": "/",
-        "format": "{percentage_used}% 󰋊",
+        "format": "󰋊 {percentage_used}%",
         "tooltip": true,
         "tooltip-format": "Disk: {used} / {total} ({percentage_used}%)\nFree: {free}"
     },
@@ -137,11 +138,11 @@
         "on-click-right": "kitty -e nmtui"
     },
     "pulseaudio": {
-        "format": "{volume}% {icon} {format_source}",
-        "format-bluetooth": "{volume}% {icon} {format_source}",
-        "format-bluetooth-muted": " {icon} {format_source}",
-        "format-muted": " {format_source}",
-        "format-source": "{volume}% ",
+        "format": "{icon} {volume}%",
+        "format-bluetooth": " {volume}%",
+        "format-bluetooth-muted": " MUTE",
+        "format-muted": " MUTE",
+        "format-source": "  {volume}%",
         "format-source-muted": "",
         "format-icons": {
             "headphone": "",
@@ -155,6 +156,12 @@
         "on-click": "pavucontrol",
         "tooltip": true,
         "tooltip-format": "{desc}\nVolume: {volume}%"
+    },
+    "custom/claude": {
+        "exec": "~/.config/waybar/scripts/claude-info.sh",
+        "return-type": "json",
+        "restart-interval": 5,
+        "tooltip": true
     },
     "custom/power": {
         "format": "⏻",

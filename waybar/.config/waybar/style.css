@@ -201,6 +201,19 @@ button {
     color: #6b8cae;
 }
 
+/* Claude Code indicator */
+#custom-claude {
+    color: #e8a854;
+    padding: 0 12px;
+    margin: 3px 3px;
+    border-radius: 10px;
+    background: rgba(232, 168, 84, 0.15);
+}
+
+#custom-claude:hover {
+    background: rgba(232, 168, 84, 0.3);
+}
+
 /* Pulse animation */
 @keyframes pulse {
     0% { opacity: 1; }
