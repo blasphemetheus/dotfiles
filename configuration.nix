@@ -71,6 +71,15 @@
     xwayland.enable = true;
   };
 
+  # Allow dynamically linked binaries (Bazel hermetic toolchains, etc.)
+  programs.nix-ld.enable = true;
+
+  # Bazel toolchain wrappers use #!/bin/bash shebangs
+  system.activationScripts.binbash = ''
+    mkdir -p /bin
+    ln -sf ${pkgs.bash}/bin/bash /bin/bash
+  '';
+
   # Enable flakes and the new nix command
   nix.settings.experimental-features = ["nix-command" "flakes" ];
 
@@ -117,6 +126,9 @@
   # Bluetooth
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
+
+  # Power profiles (performance/balanced/power-saver)
+  services.power-profiles-daemon.enable = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
@@ -167,20 +179,26 @@
 
     # Hyprland ecosystem
     waybar
+    ironbar        # Rust Wayland bar (alongside waybar)
     swww
     hyprlock
     hypridle
     hyprpicker
     xdg-desktop-portal-hyprland
+    pyprland       # Scratchpads, magnify, and more
 
     # Launcher and notifications
     rofi
     wofi
+    anyrun         # Rust Wayland-native launcher
     mako
 
     # Terminal
     kitty
+    ghostty        # Zig GPU-accelerated terminal
+    wezterm        # Rust GPU-accelerated terminal + multiplexer
     fish
+    nushell        # Structured data shell
     zoxide
 
     # Clipboard
@@ -194,6 +212,9 @@
     wf-recorder
 
     # System utilities
+    jq         # JSON processor (used by session save/restore)
+    socat      # Socket relay (used by per-workspace wallpaper listener)
+    power-profiles-daemon  # CPU power profile switching
     libnotify  # notify-send
     networkmanagerapplet
     brightnessctl
@@ -212,8 +233,10 @@
     lazygit
     vscode
     direnv
+    gh             # GitHub CLI
+    zed-editor     # Rust GPU-accelerated editor
 
-    # Modern CLI tools (Rust replacements)
+    # Modern CLI tools (Rust/Go replacements)
     bat        # cat with syntax highlighting
     eza        # ls with icons and git status
     fd         # find replacement
@@ -221,6 +244,21 @@
     delta      # git diff viewer
     dust       # du replacement (disk usage)
     procs      # ps replacement
+    sd         # sed replacement
+    tokei      # code line counter (cloc replacement)
+    just       # task runner (make replacement)
+    tealdeer   # tldr pages (simplified man pages)
+    xh         # HTTP client (curl/httpie replacement)
+    bandwhich  # network bandwidth monitor
+    hyperfine  # benchmarking tool
+    ouch       # compression (tar/zip/7z auto-detect)
+    doggo      # DNS lookup (dig replacement)
+    duf        # disk usage overview (df replacement)
+    broot      # tree explorer with fuzzy search
+    navi       # interactive CLI cheatsheet
+    choose     # cut/awk replacement
+    serpl      # TUI search and replace across files
+    felix-fm   # Rust TUI file manager
     fastfetch  # system info splash
     starship   # cross-shell prompt
     yazi       # TUI file manager with image preview
@@ -239,6 +277,9 @@
     # Emoji picker for rofi
     rofimoji
     wtype      # Wayland keyboard input (for rofimoji typing)
+    wl-kbptr   # Keyboard-driven mouse control
+    walker     # Wayland app launcher
+    hyprpanel  # All-in-one panel (alongside waybar)
 
     # Theme / icons / cursor
     papirus-icon-theme
@@ -283,6 +324,24 @@
       ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
       Restart = "on-failure";
       RestartSec = 1;
+    };
+  };
+
+  # Auto-upgrade claude-code daily
+  systemd.user.services.claude-code-upgrade = {
+    description = "Upgrade claude-code-nix Nix profile";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.nix}/bin/nix profile upgrade claude-code-nix";
+    };
+  };
+
+  systemd.user.timers.claude-code-upgrade = {
+    description = "Daily claude-code upgrade";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;  # run missed triggers after sleep/shutdown
     };
   };
 

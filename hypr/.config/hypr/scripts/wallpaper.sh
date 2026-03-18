@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Wallpaper changer script for swww
 # Usage: wallpaper.sh [next|prev|random|set /path/to/image]
 

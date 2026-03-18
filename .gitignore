@@ -12,5 +12,13 @@ secrets.fish
 ags/.config/ags/node_modules/
 ags/.config/ags/@girs/
 
+# Nix / devenv
+.devenv/
+.direnv/
+result
+
+# Claude Code project settings
+.claude/
+
 # OS
 .DS_Store

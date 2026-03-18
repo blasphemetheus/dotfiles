@@ -94,7 +94,7 @@ sudo nixos-rebuild switch
 - [x] **Mako DND** — `Super+Shift+D` toggles DND, bell icon in waybar
 - [x] **Emoji picker** — `Super+.` opens rofimoji, types emoji via wtype
 - [ ] **Bibata cursor** — Modern cursor theme (needs rebuild — bibata-cursors not installed yet)
-- [ ] **Wallpaper on login** — Random wallpaper from ~/Pictures/Wallpapers on each login
+- [x] **Wallpaper on login** — Random wallpaper from ~/Pictures/Wallpapers on each login (exec-once, shebang fixed)
 - [ ] **Wallpaper controls** — `Super+W` picker, `Super+Shift+W` random (needs wallpapers in ~/Pictures/Wallpapers)
 - [x] **Floating window glass** — Floating kitty windows more transparent than tiled
 - [x] **Dropdown terminal** — `Super+`` toggles quake-style dropdown pinned to top
@@ -110,15 +110,74 @@ sudo nixos-rebuild switch
 - [ ] Hyprland animation tuning — test and fine-tune bounce/elastic curves
 - [ ] greetd theme — tuigreet is plain text, could use a visual greeter
 - [ ] hyprbars — window title bars (version mismatch with Hyprland 0.54, needs flake)
-- [ ] Hyprspace — workspace overview plugin
-- [ ] Hyprtrails — window trail effects plugin
-- [ ] Hyprexpo — workspace grid overview plugin
-- [ ] Pyprland — scratchpad daemon
-- [ ] hypr-dynamic-cursors — cursor physics
+- [ ] Hyprspace — BLOCKED: plugin 0.53 doesn't build on Hyprland 0.54, wait for nixpkgs update
+- [ ] Hyprtrails — BLOCKED: plugin 0.53 doesn't build on Hyprland 0.54, wait for nixpkgs update
+- [ ] Hyprexpo — BLOCKED: plugin 0.53 doesn't build on Hyprland 0.54, wait for nixpkgs update
+- [ ] Pyprland — scratchpads: Super+` term, Super+X volume, Super+Shift+X cava, Super+= zoom
+- [ ] hypr-dynamic-cursors — cursor rotation + shake-to-find (plugin via nixpkgs)
 - [ ] mpvpaper — video wallpapers
-- [ ] Hyprshade config — blue-light-filter scheduling
+- [ ] Hyprshade config — blue-light-filter auto-scheduled 7pm–6am (hyprshade.toml + exec-once)
 - [ ] wob — volume/brightness overlay bar
-- [ ] Walker — modern launcher
-- [ ] wl-kbptr — keyboard mouse control
-- [ ] HyprPanel — all-in-one panel
+- [ ] Walker — modern launcher on Super+D (rofi stays on Super+R)
+- [ ] wl-kbptr — keyboard mouse control (Super+;)
+- [ ] HyprPanel — all-in-one panel (installed, commented out in exec-once, uncomment to try)
 - [ ] Hyprwinwrap — app-as-wallpaper
+
+## New Tools (needs rebuild + testing)
+
+### Terminals & Shells
+- [ ] **ghostty** — launch `ghostty`, compare feel vs kitty
+- [ ] **wezterm** — launch `wezterm`, try built-in multiplexer (Ctrl+Shift+T tabs)
+- [ ] **nushell** — launch `nu`, try `ls | where size > 1mb`, `sys host`, `ps | where cpu > 5`
+
+### Editors
+- [ ] **zed** — `zed .` in a project, check LSP, try AI assistant (Ctrl+Enter)
+
+### Launchers & Bars
+- [ ] **anyrun** — launch `anyrun`, compare vs rofi/walker
+- [ ] **ironbar** — launch `ironbar`, compare vs waybar
+
+### Hyprland Plugins (need rebuild first)
+- [ ] **hypr-dynamic-cursors** — shake mouse fast to enlarge cursor, drag windows to see rotation
+- [ ] ~~**hyprtrails**~~ — BLOCKED on 0.54
+- [ ] ~~**hyprexpo**~~ — BLOCKED on 0.54
+- [ ] ~~**hyprspace**~~ — BLOCKED on 0.54
+
+### Pyprland Scratchpads
+- [ ] **dropdown term** — `Super+\`` slides kitty from top
+- [ ] **volume** — `Super+X` slides pavucontrol from right
+- [ ] **cava** — `Super+Shift+X` slides cava from bottom
+- [ ] **zoom** — `Super+=` magnifier
+
+### CLI Tools
+- [ ] **sd** — `echo 'hello world' | sd 'world' 'nix'`
+- [ ] **tokei** — `tokei` in dotfiles repo
+- [ ] **just** — create a `justfile`, run `just`
+- [ ] **tldr** — `tldr tar` (run `tldr --update` first)
+- [ ] **xh** — `xh httpbin.org/get`
+- [ ] **bandwhich** — `sudo bandwhich` (needs root for packet inspection)
+- [ ] **hyperfine** — `hyperfine 'ls' 'eza'`
+- [ ] **ouch** — `ouch decompress some-archive.tar.gz`
+- [ ] **doggo** — `doggo example.com`
+- [ ] **duf** — `duf` for disk overview
+- [ ] **broot** — `broot` for fuzzy tree explorer (press `/` to search)
+- [ ] **navi** — `navi` for interactive cheatsheets
+- [ ] **choose** — `echo 'one two three' | choose 1`
+- [ ] **serpl** — `serpl` in a project dir for TUI search/replace
+- [ ] **felix** — `fx` for Rust file manager
+- [ ] **bob** — `bob install stable` for neovim version management
+
+### New Features (needs rebuild + Hyprland reload)
+- [ ] **Window grouping** — `Super+G` on two tiled windows to group them into tabs. `Super+Tab` to cycle tabs. `Super+Ctrl+G` to ungroup
+- [ ] **Yazi scratchpad** — `Super+Y` slides yazi file browser from right (60%x80%, 0.9 opacity)
+- [ ] **Per-workspace wallpapers** — Create `~/Pictures/Wallpapers/ws-1/`, `ws-2/` etc. with images, switch workspaces to see wallpaper change
+- [ ] **Window swallowing** — From kitty, run `mpv somefile` or `firefox` — kitty should hide, reappear when app closes
+- [ ] **Power profiles** — `Super+F6` cycles performance/balanced/power-saver, `Super+Shift+F6` for rofi picker
+- [ ] **Session save/restore** — `Super+Ctrl+S` to save, `Super+Ctrl+R` to restore (rofi pickers)
+- [ ] **Copilot key** — Press Copilot/Assistant key to launch Claude Code
+
+### Other
+- [ ] **walker** — `Super+D` launches walker
+- [ ] **wl-kbptr** — `Super+;` keyboard mouse grid
+- [ ] **hyprshade** — check blue-light-filter activates after 7pm
+- [ ] **claude-code-upgrade timer** — `systemctl --user status claude-code-upgrade.timer`

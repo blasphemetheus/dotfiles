@@ -1,0 +1,26 @@
+[pyprland]
+plugins = ["scratchpads", "magnify"]
+
+[scratchpads.term]
+animation = "fromTop"
+command = "kitty --class kitty-dropterm"
+class = "kitty-dropterm"
+size = "75% 60%"
+
+[scratchpads.volume]
+animation = "fromRight"
+command = "pavucontrol"
+class = "org.pulseaudio.pavucontrol"
+size = "40% 90%"
+
+[scratchpads.music]
+animation = "fromBottom"
+command = "kitty --class kitty-cava cava"
+class = "kitty-cava"
+size = "90% 30%"
+
+[scratchpads.files]
+animation = "fromRight"
+command = "kitty --class kitty-yazi yazi"
+class = "kitty-yazi"
+size = "60% 80%"
