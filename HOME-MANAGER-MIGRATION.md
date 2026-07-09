@@ -80,17 +80,17 @@ These are trickier — scripts directories + runtime-mutable files.
 ### Phase 4: Convert to `programs.*`
 These benefit from Home Manager's native module integration.
 
-- [ ] `programs.git` — delta integration, global ignores
-- [ ] `programs.fish` — shellAliases, interactiveShellInit, functions
-- [ ] `programs.starship` — enableFishIntegration, settings from TOML
-- [ ] `programs.direnv` — enableFishIntegration (removes manual hook)
-- [ ] `programs.zoxide` — enableFishIntegration (removes manual hook)
+- [x] `programs.git` — delta integration, global ignores
+- [x] `programs.fish` — shellAliases, interactiveShellInit, functions
+- [x] `programs.starship` — enableFishIntegration, settings from TOML
+- [x] `programs.direnv` — enableFishIntegration (removes manual hook)
+- [x] `programs.zoxide` — enableFishIntegration (removes manual hook)
 
 ### Phase 5: Remaining Configs
 
-- [ ] nvim (xdg.configFile, NOT programs.neovim — would conflict with lazy.nvim)
-- [ ] ags (xdg.configFile)
-- [ ] git global gitignore
+- [x] nvim (mkOutOfStoreSymlink — lazy.nvim manages plugins under ~/.local/share)
+- [x] ags (mkOutOfStoreSymlink — keeps gitignored node_modules/@girs reachable)
+- [x] git global gitignore (via `programs.git.ignores`)
 
 ### Phase 6: Cleanup
 
@@ -142,3 +142,19 @@ _Updated as we go through each phase._
   hyprland.conf edit still live-reloads.
 - Still stow-linked, remaining: fish (Phase 4 → `programs.fish`), nvim (Phase 5).
 - Aside: packaged rwing (Melee replay viewer) in pkgs/rwing.nix + configuration.nix.
+
+### Session 3 (2026-07-09)
+- Phase 3 activated (hypr/waybar/kitty out-of-store symlinks; verified live).
+- Phase 4 done: `programs.{git,starship,direnv,zoxide,fish}`. starship settings via
+  `builtins.fromTOML` on the existing toml (no manual translation). git identity
+  left in ~/.gitconfig (sandbox mounts it). Generated config.fish + all functions
+  pass `fish --no-execute`.
+- Phase 5 done: nvim + ags via mkOutOfStoreSymlink.
+- **Everything now HM-managed — stow is only holding the pre-switch symlinks.**
+  Activate (build validated):
+  ```
+  cd ~/dotfiles && stow -D fish git starship nvim ags
+  sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka
+  ```
+- Next: **Phase 6 cleanup** — after a good switch, `stow -D */`, drop `stow` from
+  systemPackages, update README. (All 15 packages are migrated.)

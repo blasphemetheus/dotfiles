@@ -93,4 +93,82 @@ in
   };
 
   programs.zoxide.enable = true;
+
+  programs.fish = {
+    enable = true;
+
+    shellAliases = {
+      cat = "bat --paging=never";
+      ls = "eza --icons --group-directories-first";
+      ll = "eza --icons --group-directories-first -la";
+      lt = "eza --icons --tree --level=2";
+      find = "fd";
+      grep = "rg";
+      du = "dust";
+      ps = "procs";
+      diff = "delta";
+      top = "btop";
+      md = "glow";
+      slippi = "${config.home.homeDirectory}/.nix-profile/bin/Slippi_Online-x86_64.AppImage";
+    };
+
+    shellAbbrs.nrs = "sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka";
+
+    # Login / non-interactive init. PATH (~/.local/bin) comes from home.sessionPath;
+    # starship/direnv/zoxide hooks come from their programs.* modules above.
+    shellInit = ''
+      set -gx DOLPHIN_DIR "$HOME/.local/share/slippi/netplay"
+      test -f ~/.config/fish/secrets.fish && source ~/.config/fish/secrets.fish
+    '';
+
+    interactiveShellInit = ''
+      set -g fish_greeting
+      # fastfetch once per login session
+      if not test -f /tmp/.fastfetch-done-(id -u)
+          touch /tmp/.fastfetch-done-(id -u)
+          fastfetch
+      end
+    '';
+
+    functions = {
+      # yazi wrapper — cd into the directory yazi exits in (press q)
+      y = ''
+        set tmp (mktemp -t "yazi-cwd.XXXXXX")
+        yazi $argv --cwd-file="$tmp"
+        if set cwd (command cat -- "$tmp"); and [ -n "$cwd" ]; and [ "$cwd" != "$PWD" ]
+            cd -- "$cwd"
+        end
+        command rm -f -- "$tmp"
+      '';
+
+      # Claude Code wrapper — sets the terminal title so it's identifiable in Hyprland
+      claude = ''
+        printf '\033]0;Claude Code: %s\007' (basename (pwd))
+        command claude $argv
+        printf '\033]0;%s\007' (hostname)": "(prompt_pwd)
+      '';
+
+      # Run Claude Code in a Docker sandbox
+      sandbox = ''
+        docker run -it \
+            --cap-add NET_ADMIN --cap-add NET_RAW \
+            -v ~/.claude:/home/claude/.claude \
+            -v ~/.claude.json:/home/claude/.claude.json \
+            -v ~/.gitconfig:/home/claude/.gitconfig:ro \
+            -v ~/git/edifice:/workspace/edifice \
+            -v ~/git/exphil:/workspace/exphil \
+            -v ~/git/shine:/workspace/shine \
+            -v ~/git/nx:/workspace/nx \
+            -v ~/dotfiles:/workspace/dotfiles \
+            -v ~/git/.devcontainer/output:/out \
+            -v /tmp/claude-sandbox:/tmp \
+            claude-sandbox $argv
+      '';
+
+      # Attach to the running sandbox container
+      sandbox-join = ''
+        docker exec -it (docker ps -q --filter ancestor=claude-sandbox) fish
+      '';
+    };
+  };
 }
