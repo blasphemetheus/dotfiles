@@ -62,13 +62,13 @@ Create `flake.nix` and `home.nix`, verify the system builds.
 ### Phase 2: Migrate Simple Configs
 Unstow each package, add to `home.nix` as `xdg.configFile`, rebuild, verify.
 
-- [ ] cava
-- [ ] wob
-- [ ] helix
-- [ ] lazygit
-- [ ] wlogout (layout + style.css)
-- [ ] rofi (config.rasi + catppuccin.rasi)
-- [ ] mako
+- [x] cava
+- [x] wob
+- [x] helix
+- [x] lazygit
+- [x] wlogout (layout + style.css)
+- [x] rofi (config.rasi + catppuccin.rasi)
+- [x] mako
 
 ### Phase 3: Migrate Configs with Scripts
 These are trickier — scripts directories + runtime-mutable files.
@@ -127,3 +127,18 @@ _Updated as we go through each phase._
 - Created migration plan
 - Decided on flakes + HM as NixOS module + mkOutOfStoreSymlink strategy
 - Next: Phase 1 — create flake.nix + home.nix
+
+### Session 2 (2026-07-09)
+- Phase 2 complete: cava/wob/helix/lazygit/wlogout/rofi/mako all HM-managed
+  (`source`), verified as real dirs with store symlinks inside.
+- Phase 3 **staged** in home.nix: hypr, waybar, kitty via
+  `config.lib.file.mkOutOfStoreSymlink` (whole-dir, live-edit). Build validated;
+  NOT yet activated. To activate:
+  ```
+  cd ~/dotfiles && stow -D hypr waybar kitty   # drop the old stow symlinks first
+  sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka
+  ```
+  Then confirm `readlink ~/.config/hypr` points into ~/dotfiles and a
+  hyprland.conf edit still live-reloads.
+- Still stow-linked, remaining: fish (Phase 4 → `programs.fish`), nvim (Phase 5).
+- Aside: packaged rwing (Melee replay viewer) in pkgs/rwing.nix + configuration.nix.
