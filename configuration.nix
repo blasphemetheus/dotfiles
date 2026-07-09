@@ -287,6 +287,12 @@
 
     # Polkit agent (needed for privilege escalation prompts)
     polkit_gnome
+
+    # rwing — Super Smash Bros. Melee replay viewer (Patreon, closed-source binary).
+    # Packaged from the prebuilt Linux binary; see pkgs/rwing.nix. The binary itself is
+    # non-redistributable and NOT in git — add it once with:
+    #   nix-store --add-fixed sha256 rwing-linux-a2.3
+    (callPackage ./pkgs/rwing.nix { })
   ];
 
   # Cursor theme
