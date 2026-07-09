@@ -59,5 +59,38 @@ in
     "hypr".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/hypr/.config/hypr";
     "waybar".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/waybar/.config/waybar";
     "kitty".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/kitty/.config/kitty";
+
+    # ── Phase 5: remaining app configs (symlinked, not programs.* modules) ──
+    # nvim: lazy.nvim manages plugins under ~/.local/share, config stays live.
+    # ags: whole-dir symlink so the gitignored node_modules/@girs stay reachable.
+    "nvim".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/nvim/.config/nvim";
+    "ags".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/ags/.config/ags";
   };
+
+  # ── Phase 4: native programs.* modules (shell integration hooks) ─────
+  home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
+
+  programs.git = {
+    enable = true;
+    delta = {
+      enable = true;
+      options = { navigate = true; side-by-side = true; line-numbers = true; };
+    };
+    extraConfig.merge.conflictstyle = "zdiff3";
+    ignores = [ "**/.claude/settings.local.json" ];
+    # identity stays in ~/.gitconfig (mounted into the sandbox) — not managed here.
+  };
+
+  programs.starship = {
+    enable = true;
+    enableFishIntegration = true;
+    settings = builtins.fromTOML (builtins.readFile ./starship/.config/starship.toml);
+  };
+
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
+
+  programs.zoxide.enable = true;
 }
