@@ -47,6 +47,9 @@ alias diff='delta'
 alias top='btop'
 alias md='glow'
 
+# Rebuild NixOS from the flake (always use --flake so Home Manager is applied)
+abbr -a nrs 'sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka'
+
 # Slippi Dolphin (installed via nix profile: github:lytedev/slippi-nix#slippi-netplay)
 alias slippi="$HOME/.nix-profile/bin/Slippi_Online-x86_64.AppImage"
 # Folder containing the Dolphin executable — pass to ExPhil play scripts as --dolphin $DOLPHIN_DIR
