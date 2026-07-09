@@ -72,13 +72,16 @@ in
 
   programs.git = {
     enable = true;
-    delta = {
-      enable = true;
-      options = { navigate = true; side-by-side = true; line-numbers = true; };
-    };
-    extraConfig.merge.conflictstyle = "zdiff3";
+    settings.merge.conflictstyle = "zdiff3";
     ignores = [ "**/.claude/settings.local.json" ];
     # identity stays in ~/.gitconfig (mounted into the sandbox) — not managed here.
+  };
+
+  # delta is its own module now (was programs.git.delta)
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+    options = { navigate = true; side-by-side = true; line-numbers = true; };
   };
 
   programs.starship = {
