@@ -20,9 +20,20 @@
   # Resume device for hibernate
   boot.resumeDevice = "/dev/nvme0n1p6";
 
+  # Fix MT7925 WiFi PCIe link training (card not enumerating without this)
+  boot.kernelParams = [ "pcie_aspm=off" ];
+
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_6_12;
 
+  networking.networkmanager.dns = "none";
+  networking.nameservers = [
+    "1.1.1.1"
+    "1.0.0.1"
+    "2606:4700:4700::1111"
+    "2606:4700:4700::1001"
+  ];
+  
   networking.hostName = "nixos_slanka"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
