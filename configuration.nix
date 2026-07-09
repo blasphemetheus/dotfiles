@@ -62,6 +62,14 @@
   };
   hardware.graphics.enable = true;
 
+  # Workaround for DIFR soft lockup (nvDIFRPrefetchSurfaces stuck kthread)
+  # observed 2026-04-27 on Blackwell + 595.45.04-beta open modules.
+  # DIFR has no direct toggle; disabling RTD3 broadens the GPU's stay-awake
+  # window. Effectiveness uncertain — being monitored via difr-monitor.sh.
+  boot.extraModprobeConfig = ''
+    options nvidia NVreg_DynamicPowerManagement=0x00
+  '';
+
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
