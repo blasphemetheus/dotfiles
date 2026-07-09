@@ -47,9 +47,39 @@ alias diff='delta'
 alias top='btop'
 alias md='glow'
 
+# Slippi Dolphin (installed via nix profile: github:lytedev/slippi-nix#slippi-netplay)
+alias slippi="$HOME/.nix-profile/bin/Slippi_Online-x86_64.AppImage"
+# Folder containing the Dolphin executable — pass to ExPhil play scripts as --dolphin $DOLPHIN_DIR
+# (symlink dir: libmelee requires "netplay" in the path, hardcoded Slippi Launcher convention)
+set -gx DOLPHIN_DIR "$HOME/.local/share/slippi/netplay"
+
 # Claude Code wrapper — sets terminal title so it's identifiable in Hyprland
 function claude
     printf '\033]0;Claude Code: %s\007' (basename (pwd))
     command claude $argv
-    printf '\033]0;%s\007' (fish_prompt_hostname)": "(prompt_pwd)
+    printf '\033]0;%s\007' (hostname)": "(prompt_pwd)
 end
+
+# Claude Code sandbox
+function sandbox
+    docker run -it \
+        --cap-add NET_ADMIN --cap-add NET_RAW \
+        -v ~/.claude:/home/claude/.claude \
+        -v ~/.claude.json:/home/claude/.claude.json \
+        -v ~/.gitconfig:/home/claude/.gitconfig:ro \
+        -v ~/git/edifice:/workspace/edifice \
+        -v ~/git/exphil:/workspace/exphil \
+        -v ~/git/shine:/workspace/shine \
+        -v ~/git/nx:/workspace/nx \
+        -v ~/dotfiles:/workspace/dotfiles \
+        -v ~/git/.devcontainer/output:/out \
+        -v /tmp/claude-sandbox:/tmp \
+        claude-sandbox $argv
+end
+
+# Attach to running sandbox
+function sandbox-join
+    docker exec -it (docker ps -q --filter ancestor=claude-sandbox) fish
+end
+
+fish_add_path ~/.local/bin

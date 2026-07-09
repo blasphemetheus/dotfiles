@@ -99,6 +99,9 @@
     ln -sf ${pkgs.bash}/bin/bash /bin/bash
   '';
 
+  # Docker
+  virtualisation.docker.enable = true;
+
   # Enable flakes and the new nix command
   nix.settings.experimental-features = ["nix-command" "flakes" ];
 
@@ -157,7 +160,7 @@
     isNormalUser = true;
     description = "Bradley Lewis Fargo";
     shell = pkgs.fish;
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" ];
     packages = with pkgs; [
     #  thunderbird
     ];
@@ -233,6 +236,7 @@
     # System utilities
     jq         # JSON processor (used by session save/restore)
     socat      # Socket relay (used by per-workspace wallpaper listener)
+    bubblewrap # OS-level sandboxing (used by Claude Code)
     power-profiles-daemon  # CPU power profile switching
     libnotify  # notify-send
     networkmanagerapplet
