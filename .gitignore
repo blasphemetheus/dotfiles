@@ -12,6 +12,9 @@ secrets.fish
 ags/.config/ags/node_modules/
 ags/.config/ags/@girs/
 
+# Fish auto-generated universal variables (volatile machine state)
+fish/.config/fish/fish_variables
+
 # Nix / devenv
 .devenv/
 .direnv/

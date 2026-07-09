@@ -1,8 +1,5 @@
 { config, pkgs, lib, ... }:
 
-let
-  dotfiles = "/home/blewf/dotfiles";
-in
 {
   home.username = "blewf";
   home.homeDirectory = "/home/blewf";
