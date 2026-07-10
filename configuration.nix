@@ -90,6 +90,31 @@
     xwayland.enable = true;
   };
 
+  # ── Alternative compositors, selectable at the greetd session picker ──
+  # Purely additive: Hyprland stays the default. Log out and pick one to try it.
+  #   niri  — scrollable tiling (infinite horizontal strip), Rust
+  #   river — dynamic tiling, Zig, i3-ish tags
+  #   dwl   — suckless dwm for Wayland (minimal; no session file upstream)
+  programs.niri.enable = true;
+  programs.river.enable = true;
+
+  # dwl ships no wayland-session entry, so provide one. providedSessions is
+  # required by the sessionPackages assertion.
+  services.displayManager.sessionPackages = [
+    (pkgs.writeTextFile {
+      name = "dwl-session";
+      destination = "/share/wayland-sessions/dwl.desktop";
+      text = ''
+        [Desktop Entry]
+        Name=dwl
+        Comment=dwm for Wayland
+        Exec=dwl
+        Type=Application
+      '';
+      passthru.providedSessions = [ "dwl" ];
+    })
+  ];
+
   # Allow dynamically linked binaries (Bazel hermetic toolchains, etc.)
   programs.nix-ld.enable = true;
 
@@ -132,7 +157,7 @@
   services.greetd = {
     enable = true;
     settings.default_session = {
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --time-format '%I:%M %p  |  %A, %B %d' --remember --remember-session --user-menu --width 50 --greeting '✦ NixOS  ✦  Hyprland' --theme 'border=yellow;title=yellow;greet=magenta;time=white;prompt=yellow;input=white;action=magenta;button=yellow;container=black' --sessions ${pkgs.hyprland}/share/wayland-sessions";
+      command = "${pkgs.tuigreet}/bin/tuigreet --time --time-format '%I:%M %p  |  %A, %B %d' --remember --remember-session --user-menu --width 50 --greeting '✦ NixOS  ✦  Hyprland' --theme 'border=yellow;title=yellow;greet=magenta;time=white;prompt=yellow;input=white;action=magenta;button=yellow;container=black' --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions";
       user = "greeter";
     };
   };
@@ -224,6 +249,8 @@
         
     # (stow removed — Home Manager owns all dotfiles as of the Phase 6 migration.
     #  If you ever need it: nix shell nixpkgs#stow)
+
+    dwl        # Wayland compositor (session entry defined above)
 
     # Hyprland ecosystem
     waybar
