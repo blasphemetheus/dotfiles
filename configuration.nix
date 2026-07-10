@@ -133,6 +133,14 @@
   # trust devenv's binary cache and allow blewf to manage caches
   nix.settings.trusted-users = [ "root" "blewf" ];
 
+  # `nixos-rebuild build-vm` boots this config in QEMU. These settings apply
+  # ONLY to that VM variant — the defaults (1 core / 1 GB) are unusably slow.
+  virtualisation.vmVariant.virtualisation = {
+    memorySize = 8192;
+    cores = 8;
+    diskSize = 16384;
+  };
+
   # ── Store hygiene ────────────────────────────────────────────────────
   # / and /nix share one ext4 partition, so an ungroomed store eats $HOME.
   # GC weekly; keep 30d of generations so rollback still works.

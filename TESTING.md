@@ -10,6 +10,42 @@ sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka
 # Then reload Hyprland: Super+Shift+R
 ```
 
+## Test in a VM before you switch
+
+The safe way to try a risky change (new compositor, display manager, boot, dbus,
+kernel, service) is to boot **this exact config** in a throwaway QEMU VM first.
+No sudo, no risk to the running system.
+
+```fish
+# 1. Build a VM from the current config
+nixos-rebuild build-vm --flake ~/dotfiles#nixos_slanka
+
+# 2. Boot it (opens a QEMU window; log in as your normal user)
+./result/bin/run-nixos_slanka-vm
+
+# 3. Clean up — the VM's disk image and the GC root
+rm -f nixos.qcow2 result
+```
+
+`virtualisation.vmVariant` in `configuration.nix` gives the VM 8 GB / 8 cores /
+16 GB disk (the defaults are 1 core + 1 GB and are unusably slow).
+
+**What it's good for:** config evaluation, boot, systemd services, display-manager
+and session changes, testing a new compositor (niri/river/dwl) without logging out,
+package upgrades, `stateVersion` bumps.
+
+**What it can't test:** anything GPU-real. The VM has no RTX 5090 — it's virtio/software
+rendering, so Hyprland will be slow and NVIDIA/Vulkan/rwing behavior is meaningless there.
+The VM also uses a fresh empty disk, not your real `/home`.
+
+**Gotchas**
+- It writes `nixos.qcow2` in the current directory and **reuses it** across runs. Delete it
+  to get a clean boot.
+- `result` is a GC root — remove it, or `nix.gc` can't collect the old system.
+- Your user's password in the VM is whatever `configuration.nix` declares; if you use
+  `hashedPassword`, set a known one temporarily or log in as root.
+- Use `build-vm-with-bootloader` instead if the change touches systemd-boot/grub.
+
 ---
 
 ## Core Fixes

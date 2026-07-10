@@ -65,6 +65,18 @@ To bump to a new release, download the bare `rwing-linux-<ver>` file and run:
 nrs
 ```
 
+## Testing changes
+
+Before switching into a risky change, boot the config in a throwaway VM:
+
+```fish
+nixos-rebuild build-vm --flake ~/dotfiles#nixos_slanka
+./result/bin/run-nixos_slanka-vm
+rm -f nixos.qcow2 result
+```
+
+See [TESTING.md](TESTING.md) for what it can and can't verify (notably: no real GPU).
+
 ## Migration history
 
 The Stow → Home Manager migration is documented, phase by phase, in
