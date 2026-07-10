@@ -96,6 +96,42 @@ in
 
   programs.zoxide.enable = true;
 
+  # Shell history in SQLite, fuzzy-searchable. Owns Ctrl-R.
+  programs.atuin = {
+    enable = true;
+    enableFishIntegration = true;
+  };
+
+  # fzf WITHOUT fish keybindings — atuin owns Ctrl-R, and we don't want fzf
+  # stealing it. Still available as the `fzf` binary for other tools to call.
+  programs.fzf = {
+    enable = true;
+    enableFishIntegration = false;
+  };
+
+  # Terminal multiplexer. Fish integration off on purpose: it would auto-attach
+  # a session on every shell start.
+  programs.zellij = {
+    enable = true;
+    enableFishIntegration = false;
+  };
+
+  # Git-compatible VCS. Works inside existing git repos (`jj git init --colocate`).
+  programs.jujutsu = {
+    enable = true;
+    settings.user = {
+      name = "Bradley Lewis Fargo";
+      email = "blewfargs@gmail.com";
+    };
+  };
+
+  # Locate which package provides a command. Powers `comma` (`, cowsay hi`) and
+  # a working command-not-found. Build the index once: `nix-index` (~5-10 min).
+  programs.nix-index = {
+    enable = true;
+    enableFishIntegration = true;
+  };
+
   programs.fish = {
     enable = true;
 

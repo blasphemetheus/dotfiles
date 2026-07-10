@@ -108,6 +108,26 @@
   # trust devenv's binary cache and allow blewf to manage caches
   nix.settings.trusted-users = [ "root" "blewf" ];
 
+  # ── Store hygiene ────────────────────────────────────────────────────
+  # / and /nix share one ext4 partition, so an ungroomed store eats $HOME.
+  # GC weekly; keep 30d of generations so rollback still works.
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+  # Hardlink identical files in the store. auto-optimise-store dedups on every
+  # build; the weekly timer sweeps what already accumulated.
+  nix.settings.auto-optimise-store = true;
+  nix.optimise.automatic = true;
+
+  # nh — nicer rebuild UX (`nh os switch`, shows a diff of what changed).
+  # Its own `clean` is left off; nix.gc above already handles collection.
+  programs.nh = {
+    enable = true;
+    flake = "/home/blewf/dotfiles";
+  };
+
   # Display manager — greetd + tuigreet (GDM core-dumps with NVIDIA open modules)
   services.greetd = {
     enable = true;
@@ -238,6 +258,23 @@
     slurp
     satty      # screenshot annotation tool
     wf-recorder
+
+    # Disk / dedup (added after finding / at 93% full)
+    ncdu       # interactive disk usage browser
+    dua        # faster parallel `du` with a TUI (dua i)
+    fclones    # find + hardlink/remove duplicate files
+
+    # Nix tooling
+    comma      # `, cowsay hi` — run any program without installing it (needs nix-index db)
+    statix     # lint Nix for antipatterns
+    deadnix    # find unused Nix bindings
+    nixfmt-rfc-style  # official Nix formatter
+
+    # More CLI
+    yq          # jq for YAML/XML/TOML
+    bandwhich   # per-process network bandwidth TUI
+    hexyl       # hex viewer
+    difftastic  # structural (AST-aware) diff — `difft a.ex b.ex`
 
     # System utilities
     jq         # JSON processor (used by session save/restore)
