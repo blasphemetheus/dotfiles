@@ -96,7 +96,7 @@
   #   river — dynamic tiling, Zig, i3-ish tags
   #   dwl   — suckless dwm for Wayland (minimal; no session file upstream)
   programs.niri.enable = true;
-  programs.river.enable = true;
+  programs.river-classic.enable = true;
 
   # dwl ships no wayland-session entry, so provide one. providedSessions is
   # required by the sessionPackages assertion.
@@ -205,6 +205,14 @@
   # Power profiles (performance/balanced/power-saver)
   services.power-profiles-daemon.enable = true;
 
+  # Nintendo / Mayflash GameCube controller adapter (WUP-028, 057e:0337, Wii-U
+  # mode) for Slippi Dolphin. The device node otherwise comes up root-only and
+  # needs a manual chown after every replug/reboot; this grants access
+  # declaratively. uaccess ACLs it to the logged-in seat; MODE=0666 is the belt.
+  services.udev.extraRules = ''
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="0337", MODE="0666", TAG+="uaccess"
+  '';
+
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
@@ -303,7 +311,7 @@
     comma      # `, cowsay hi` — run any program without installing it (needs nix-index db)
     statix     # lint Nix for antipatterns
     deadnix    # find unused Nix bindings
-    nixfmt-rfc-style  # official Nix formatter
+    nixfmt     # official Nix formatter (was nixfmt-rfc-style)
 
     # More CLI
     yq          # jq for YAML/XML/TOML
@@ -312,6 +320,7 @@
     difftastic  # structural (AST-aware) diff — `difft a.ex b.ex`
 
     # System utilities
+    usbutils   # lsusb (debugging USB devices, e.g. the GC adapter)
     jq         # JSON processor (used by session save/restore)
     socat      # Socket relay (used by per-workspace wallpaper listener)
     bubblewrap # OS-level sandboxing (used by Claude Code)
