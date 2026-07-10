@@ -52,10 +52,9 @@ in
 
     # ── Phase 3: Active configs (edited + reloaded live) ─────────────────
     # Whole-dir out-of-store symlinks: ~/.config/<x> points straight at the repo,
-    # so edits apply on reload without a rebuild (same as the old stow links), and
-    # HM does NOT manage the runtime-mutable inner files (opacity toggle writes
-    # into hypr/, waybar style variants, etc). Unstow each (`stow -D <x>`) before
-    # the first switch or HM refuses the existing symlink.
+    # so edits apply on reload without a rebuild, and HM does NOT manage the
+    # runtime-mutable inner files (the opacity toggle writes into hypr/, waybar
+    # style variants, ags needs its gitignored node_modules).
     "hypr".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/hypr/.config/hypr";
     "waybar".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/waybar/.config/waybar";
     "kitty".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/kitty/.config/kitty";

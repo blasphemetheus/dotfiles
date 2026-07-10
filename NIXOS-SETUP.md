@@ -109,7 +109,6 @@ environment.systemPackages = with pkgs; [
   helix
   lazygit
   git
-  stow                    # For dotfile management
 
   # Theme / icons
   papirus-icon-theme      # Used by rofi and mako
@@ -122,18 +121,19 @@ environment.systemPackages = with pkgs; [
 ];
 ```
 
-## 3. Clone dotfiles and stow
+## 3. Clone dotfiles and build
 
-```bash
+Dotfiles are managed by Home Manager via the flake — there is nothing to symlink by hand.
+This single command builds the system *and* every user config:
+
+```fish
 git clone <your-repo-url> ~/dotfiles
-cd ~/dotfiles
-
-# Stow all configs
-stow hypr waybar mako kitty rofi fish nvim helix lazygit git ags
-
-# Or stow everything at once
-stow */
+sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka
 ```
+
+Note: `pkgs/rwing.nix` uses `requireFile` for a paywalled binary. If you don't have it, either
+register it once (`nix-store --add-fixed sha256 ~/Downloads/rwing-linux-a2.3`) or drop the
+`(callPackage ./pkgs/rwing.nix { })` line from `configuration.nix` before the first build.
 
 ## 4. NVIDIA environment variables
 
@@ -191,7 +191,8 @@ The fish config has Manjaro-specific PATH entries (`~/.amp/bin`, `~/.opencode/bi
 
 ## 6. AGS Dashboard
 
-After stowing, install AGS dependencies:
+After the first rebuild, install AGS dependencies (`~/.config/ags` symlinks into the repo, so
+`node_modules` lands in `~/dotfiles/ags/.config/ags/` where it's gitignored):
 
 ```bash
 cd ~/.config/ags
@@ -203,10 +204,9 @@ AGS should auto-start via the `exec-once` in hyprland.conf.
 
 ## 7. First boot checklist
 
-1. `sudo nixos-rebuild switch` after editing configuration.nix
+1. Clone dotfiles, then `sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka`
 2. Reboot and select Hyprland session from greetd
-3. Clone and stow dotfiles
-4. Add NVIDIA env vars to hyprland.conf
+3. Add NVIDIA env vars to hyprland.conf
 5. Run `hyprctl reload` or reboot
 6. Verify waybar appears, rofi launches (Super+R), kitty opens (Super+Q)
 7. Remove laptop-specific modules from waybar config

@@ -4,10 +4,9 @@ Track what's been implemented and whether it works after `nixos-rebuild switch`.
 
 ## How to apply
 
-```bash
-sudo cp ~/dotfiles/configuration.nix /etc/nixos/configuration.nix
-cd ~/dotfiles && stow wlogout cava git starship
-sudo nixos-rebuild switch
+```fish
+# Builds the system and all Home Manager dotfiles in one step (`nrs` is an abbr for this)
+sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka
 # Then reload Hyprland: Super+Shift+R
 ```
 

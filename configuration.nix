@@ -202,8 +202,8 @@
     openssl
     mosh
         
-    # Dotfile management
-    stow
+    # (stow removed — Home Manager owns all dotfiles as of the Phase 6 migration.
+    #  If you ever need it: nix shell nixpkgs#stow)
 
     # Hyprland ecosystem
     waybar

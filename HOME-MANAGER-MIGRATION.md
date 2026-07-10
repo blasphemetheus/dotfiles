@@ -94,10 +94,14 @@ These benefit from Home Manager's native module integration.
 
 ### Phase 6: Cleanup
 
-- [ ] Remove `stow` from system packages
-- [ ] Run `stow -D */` to remove all stow symlinks (HM owns them now)
-- [ ] Update README.md with new setup instructions
-- [ ] Flatten directory layout if desired (optional)
+- [x] Remove `stow` from system packages
+- [x] ~~Run `stow -D */`~~ — **not needed**: a deep scan of `~/.config` found zero remaining stow
+      symlinks (each phase unstowed as it migrated). Running it would also hit non-package dirs
+      (`pkgs/`, `scripts/`, `result/`).
+- [x] Update README.md with new setup instructions (also NIXOS-SETUP.md + TESTING.md)
+- [ ] ~~Flatten directory layout~~ — **deliberately skipped.** `home.nix` depends on the
+      `<app>/.config/<app>/` paths for both `source` copies and `mkOutOfStoreSymlink`; flattening is
+      churn with no functional gain.
 - [ ] Verify full reboot works cleanly
 
 ## Rollback Strategy
@@ -106,8 +110,10 @@ These benefit from Home Manager's native module integration.
 |-----------|-----|
 | Build fails | Fix the Nix error, or `git stash` and try again |
 | System boots but config broken | `sudo nixos-rebuild switch --rollback` |
-| Specific app config broken | `stow <package>` to restore stow symlink, remove from home.nix |
-| Everything broken | `git checkout main`, `stow */`, rebuild from `/etc/nixos/configuration.nix` |
+| Specific app config broken | `nix shell nixpkgs#stow -c stow <package>` to restore a symlink, remove from home.nix |
+| Everything broken | `sudo nixos-rebuild switch --rollback`, then `git checkout` a known-good commit |
+
+(Stow is no longer installed — hence the `nix shell` wrapper above.)
 
 ## Key Gotchas
 
@@ -158,3 +164,16 @@ _Updated as we go through each phase._
   ```
 - Next: **Phase 6 cleanup** — after a good switch, `stow -D */`, drop `stow` from
   systemPackages, update README. (All 15 packages are migrated.)
+
+### Session 4 (2026-07-09) — Phase 6, migration complete
+- Removed `stow` from `configuration.nix` systemPackages.
+- `stow -D */` was unnecessary: zero stow symlinks remained (verified by deep scan).
+- Rewrote README.md for the flake/HM workflow; de-stowed NIXOS-SETUP.md and TESTING.md
+  (the latter still described the pre-flake `sudo cp configuration.nix /etc/nixos` dance).
+- Fixed the Rollback table (stow is gone → `nix shell nixpkgs#stow -c stow <pkg>`).
+- Skipped the optional directory flattening — see the Phase 6 checklist for why.
+- Artifacts to remove by hand (verified stale, no user content): 9 `*.hm-backup` files under
+  `~/.config/cava/` (8 identical to repo; the 1 differing file is cava's stock upstream default,
+  superseded by the repo's curated Gold-to-Rose config) and the `result` symlink in the repo root
+  (a GC root left by `nixos-rebuild build`).
+- **Migration complete: all 15 configs Home Manager–managed, Stow retired.**
