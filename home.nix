@@ -3,6 +3,41 @@
 let
   # absolute path required by mkOutOfStoreSymlink (Phase 3 active configs)
   dotfiles = "/home/blewf/dotfiles";
+
+  # Weekly "is my setup healthy?" check — desktop notification via mako.
+  # Deterministic, no LLM: flake staleness, disk pressure, uncommitted dotfiles.
+  healthHints = pkgs.writeShellApplication {
+    name = "nixos-health-hints";
+    runtimeInputs = with pkgs; [ git libnotify coreutils ];
+    text = ''
+      hints=""
+      n=0
+
+      lock="${dotfiles}/flake.lock"
+      if [ -f "$lock" ]; then
+        age=$(( ( $(date +%s) - $(stat -c %Y "$lock") ) / 86400 ))
+        if [ "$age" -gt 30 ]; then
+          hints="$hints• flake.lock is $age days old — 'nix flake update' (release bumps need a reboot)"$'\n'
+          n=$((n + 1))
+        fi
+      fi
+
+      use=$(df --output=pcent / | tail -1 | tr -dc '0-9'); [ -n "$use" ] || use=0
+      if [ "$use" -ge 85 ]; then
+        hints="$hints• / is $use% full — 'nix-collect-garbage --delete-older-than 30d'; check ~/.cache/bazel"$'\n'
+        n=$((n + 1))
+      fi
+
+      if [ -n "$(git -C "${dotfiles}" status --porcelain 2>/dev/null)" ]; then
+        hints="$hints• ~/dotfiles has uncommitted changes"$'\n'
+        n=$((n + 1))
+      fi
+
+      if [ "$n" -gt 0 ]; then
+        notify-send -a nixos-health -u normal "🔧 Setup hints ($n)" "$hints"
+      fi
+    '';
+  };
 in
 {
   home.username = "blewf";
@@ -96,6 +131,23 @@ in
 
   programs.zoxide.enable = true;
 
+  # Weekly "setup health" desktop notification (script defined in `let` above).
+  systemd.user.services.nixos-health-hints = {
+    Unit.Description = "NixOS setup health hints (desktop notification)";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${healthHints}/bin/nixos-health-hints";
+    };
+  };
+  systemd.user.timers.nixos-health-hints = {
+    Unit.Description = "Weekly NixOS setup health hints";
+    Timer = {
+      OnCalendar = "Mon 10:00";
+      Persistent = true; # fire on next login if the machine was off Monday
+    };
+    Install.WantedBy = [ "timers.target" ];
+  };
+
   # Shell history in SQLite, fuzzy-searchable. Owns Ctrl-R.
   programs.atuin = {
     enable = true;
@@ -160,7 +212,6 @@ in
     '';
 
     interactiveShellInit = ''
-      set -g fish_greeting
       # fastfetch once per login session
       if not test -f /tmp/.fastfetch-done-(id -u)
           touch /tmp/.fastfetch-done-(id -u)
@@ -169,6 +220,27 @@ in
     '';
 
     functions = {
+      # Rotating "tool of the day" tip — reminds me to use the cool stuff I own.
+      # Deterministic by day-of-year so it changes daily but not per-shell.
+      fish_greeting = ''
+        set -l tips \
+            "jj — 'jj git init --colocate' in any repo; 'jj undo' reverses ANY operation" \
+            "zellij — terminal multiplexer with sane keybinds (tmux, but friendlier)" \
+            "atuin — Ctrl-R now fuzzy-searches your entire shell history" \
+            "comma — ', cowsay hi' runs any program without installing it" \
+            "dua — 'dua i' browses disk usage interactively (you run tight on space)" \
+            "nh — 'nh os switch' rebuilds and shows a diff of what changed" \
+            "difftastic — 'difft a b' does structural, syntax-aware diffs" \
+            "niri / river / dwl — log out and pick one at the greeter to try a new WM" \
+            "nix-locate — 'nix-locate bin/ffmpeg' finds which package ships a binary" \
+            "hexyl — 'hexyl <file>' is a colored hex viewer" \
+            "ncdu / dua — find what's eating the disk before it bites" \
+            "yazi — press 'y' to open the file manager; it cd's where you quit" \
+            "build-vm — 'nixos-rebuild build-vm --flake ~/dotfiles#nixos_slanka' tests risky changes safely"
+        set -l i (math (date +%j) % (count $tips) + 1)
+        set_color yellow; echo "  💡 "$tips[$i]; set_color normal
+      '';
+
       # yazi wrapper — cd into the directory yazi exits in (press q)
       y = ''
         set tmp (mktemp -t "yazi-cwd.XXXXXX")
