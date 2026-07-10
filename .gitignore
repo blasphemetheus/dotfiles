@@ -15,6 +15,9 @@ ags/.config/ags/@girs/
 # Fish auto-generated universal variables (volatile machine state)
 fish/.config/fish/fish_variables
 
+# Weekly LLM advisor output (regenerated; not source)
+SUGGESTIONS.md
+
 # Nix / devenv
 .devenv/
 .direnv/

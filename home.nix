@@ -38,6 +38,57 @@ let
       fi
     '';
   };
+
+  # Weekly LLM-tier advisor: the script gathers local state, then a headless
+  # `claude -p` reads the dotfiles + that state and writes SUGGESTIONS.md. Only
+  # Read/Write are granted (state is pre-gathered), so nothing shell-arbitrary
+  # runs unattended. Uses your own nix-profile claude (subscription/quota).
+  setupAdvisor = pkgs.writeShellApplication {
+    name = "nixos-setup-advisor";
+    runtimeInputs = with pkgs; [ git atuin libnotify coreutils procps findutils ];
+    text = ''
+      cd "${dotfiles}" || exit 0
+      claude="${config.home.homeDirectory}/.nix-profile/bin/claude"
+      [ -x "$claude" ] || { echo "no claude binary" >&2; exit 0; }
+
+      tmp=$(mktemp)
+      {
+        cat <<'PROMPT'
+      You are my NixOS setup advisor. Read home.nix, configuration.nix, flake.nix and
+      HOME-MANAGER-MIGRATION.md in the current directory, plus the system state below.
+      Then WRITE a file named SUGGESTIONS.md at the repo root containing:
+        - a SHORT prioritized list (max 6 bullets) of concrete improvements to my
+          setup, skipping anything already done in the recent commits;
+        - gentle nudges to use tools I installed but rarely run — infer "rarely run"
+          from the usage counts below (0 or very low = unused);
+        - a final line starting with "TLDR:" punchy enough for a desktop notification.
+      Be specific and concise. Do NOT run shell commands; everything is here or in files.
+
+      ## System state
+      PROMPT
+        echo "Date: $(date '+%Y-%m-%d %H:%M')"
+        echo "Disk /: $(df -h / | tail -1)"
+        echo "System generations: $(find /nix/var/nix/profiles -maxdepth 1 -name 'system-*-link' | wc -l)"
+        echo "flake.lock age (days): $(( ( $(date +%s) - $(stat -c %Y flake.lock) ) / 86400 ))"
+        echo "Compositor: $(pgrep -x Hyprland >/dev/null && echo Hyprland || echo non-Hyprland)"
+        echo "Recent commits:"; git log --oneline -12
+        echo "Tool usage counts (atuin history, whole db):"
+        for t in jj zellij atuin comma nix-locate niri river difft dua ncdu nh hexyl bandwhich fclones; do
+          printf '  %s: %s\n' "$t" "$(atuin history list --cmd-only 2>/dev/null | grep -cw "$t" || echo 0)"
+        done
+      } > "$tmp"
+
+      timeout 420 "$claude" -p --allowedTools "Read Edit Write Glob Grep" \
+        --permission-mode acceptEdits < "$tmp" > /tmp/nixos-setup-advisor.log 2>&1 || true
+      rm -f "$tmp"
+
+      if [ -f SUGGESTIONS.md ]; then
+        tldr=$(grep -m1 '^TLDR:' SUGGESTIONS.md | sed 's/^TLDR:[[:space:]]*//')
+        [ -n "$tldr" ] || tldr="New setup suggestions ready"
+        notify-send -a nixos-advisor -u normal "🤖 Weekly setup suggestions" "$tldr"$'\n'"→ ~/dotfiles/SUGGESTIONS.md"
+      fi
+    '';
+  };
 in
 {
   home.username = "blewf";
@@ -144,6 +195,24 @@ in
     Timer = {
       OnCalendar = "Mon 10:00";
       Persistent = true; # fire on next login if the machine was off Monday
+    };
+    Install.WantedBy = [ "timers.target" ];
+  };
+
+  # Weekly LLM advisor (headless claude → SUGGESTIONS.md + notification).
+  systemd.user.services.nixos-setup-advisor = {
+    Unit.Description = "Weekly LLM setup advisor (writes SUGGESTIONS.md)";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${setupAdvisor}/bin/nixos-setup-advisor";
+      TimeoutStartSec = "10min";
+    };
+  };
+  systemd.user.timers.nixos-setup-advisor = {
+    Unit.Description = "Weekly LLM setup advisor";
+    Timer = {
+      OnCalendar = "Mon 10:30"; # 30 min after the deterministic health check
+      Persistent = true;
     };
     Install.WantedBy = [ "timers.target" ];
   };
