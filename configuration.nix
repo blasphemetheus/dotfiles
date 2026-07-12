@@ -17,6 +17,32 @@ let
       esac
     done
   '';
+
+  # dwl autostart + dwlb bar; run as dwl's `-s` child so it inherits
+  # WAYLAND_DISPLAY and drains the status stream (see dwl/startup.sh).
+  dwlStartup = pkgs.writeShellScript "dwl-startup" (builtins.readFile ./dwl/startup.sh);
+
+  # tuigreet launcher: ASCII banner + one random (real) quote per boot.
+  # Quotes live in greeter/quotes.txt — add lines there, rebuild to apply.
+  # greet-align stays left: tuigreet centers each greeting line separately,
+  # which would shear the ASCII art; the banner file carries its own indent.
+  greeterLaunch = pkgs.writeShellScript "tuigreet-launch" ''
+    banner="$(${pkgs.coreutils}/bin/cat ${./greeter/banner.txt})"
+    quote="$(${pkgs.gnugrep}/bin/grep -Ev '^[[:space:]]*(#|$)' ${./greeter/quotes.txt} \
+      | ${pkgs.coreutils}/bin/shuf -n 1 \
+      | ${pkgs.coreutils}/bin/fold -s -w 72)"
+    exec ${pkgs.tuigreet}/bin/tuigreet \
+      --time --time-format '%I:%M %p  |  %A, %B %d' \
+      --remember --remember-session --user-menu \
+      --width 80 --window-padding 1 --container-padding 2 --greet-align left \
+      --power-shutdown 'systemctl poweroff' \
+      --power-reboot 'systemctl reboot' \
+      --theme 'border=yellow;title=yellow;greet=magenta;time=white;prompt=yellow;input=white;action=magenta;button=yellow;container=black' \
+      --greeting "$banner
+
+$quote" \
+      --sessions ${greeterSessions}/share/wayland-sessions
+  '';
 in
 {
   imports =
@@ -168,7 +194,7 @@ in
         [Desktop Entry]
         Name=dwl
         Comment=dwm for Wayland
-        Exec=dwl
+        Exec=dwl -s ${dwlStartup}
         Type=Application
       '';
       passthru.providedSessions = [ "dwl" ];
@@ -225,7 +251,7 @@ in
   services.greetd = {
     enable = true;
     settings.default_session = {
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --time-format '%I:%M %p  |  %A, %B %d' --remember --remember-session --user-menu --width 50 --greeting '✦ NixOS  ✦  Hyprland' --theme 'border=yellow;title=yellow;greet=magenta;time=white;prompt=yellow;input=white;action=magenta;button=yellow;container=black' --sessions ${greeterSessions}/share/wayland-sessions";
+      command = "${greeterLaunch}";
       user = "greeter";
     };
   };
@@ -371,7 +397,11 @@ in
     # (stow removed — Home Manager owns all dotfiles as of the Phase 6 migration.
     #  If you ever need it: nix shell nixpkgs#stow)
 
-    dwl        # Wayland compositor (session entry defined above)
+    # dwl: suckless — config is compiled in. dwl/config.h = v0.7 config.def.h
+    # with Super as MODKEY, kitty/rofi, hyprland border colors + a few
+    # muscle-memory binds. Session entry defined above.
+    (dwl.override { configH = ./dwl/config.h; })
+    dwlb       # status bar for dwl (fed by `dwl -s`, see dwl/startup.sh)
 
     # Hyprland ecosystem
     waybar

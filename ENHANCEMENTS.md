@@ -468,3 +468,37 @@ Combine cmatrix (the Matrix digital rain effect) with hyprwinwrap to have Matrix
 ```bash
 kitty --class kitty-bg -o background_opacity=0.3 cmatrix -C green
 ```
+
+---
+
+## Planned Sessions (TODO)
+
+### Expand the greeter quotes file
+`greeter/quotes.txt` feeds the random login-screen quote (picked by the
+tuigreet launch script in `configuration.nix`). Dedicate a future session to
+growing it: more Terry Pratchett, Psalms, ancient works in translation,
+Ulysses, David Foster Wallace, and whatever else fits. **Real quotes only —
+verify each one before adding.** One quote per line, `Quote — Attribution`
+format; `#` comments and blank lines are ignored. Changes apply on the next
+`nh os switch` (the file is embedded at build time).
+
+### dwl: keybind parity + bar (minimal config.h DONE)
+`dwl/config.h` exists (v0.7 config.def.h base) and is compiled in via
+`pkgs.dwl.override { configH = ./dwl/config.h; }` in configuration.nix.
+Done: Super as MODKEY, kitty term, rofi launcher, hyprland border colors,
+parity binds Super+Q (terminal), Super+R (launcher), Super+C (kill),
+Super+Shift+Ctrl+M (quit). Stock dwl binds all still work (Super+Shift+Enter
+terminal, Super+j/k focus, Super+1-9 tags, Super+Shift+Q quit, Super+t/f/m
+layouts).
+Also done (second pass): session stack via `dwl -s dwl/startup.sh` — swww
+wallpaper (reuses hypr wallpaper.sh), mako, dwlb bar (gold/slate theme,
+clock via `dwlb -status`), plus volume/media keys (wpctl/playerctl), F9/Print
+screenshots mirroring Hyprland, Super+W random wallpaper.
+Future session: full keybind parity with hyprland.conf (conflicts to resolve:
+Super+F is fullscreen in Hyprland but float-layout in dwl; Super+M is exit in
+Hyprland but monocle in dwl — dwl fullscreen is currently Super+E). Tag
+*clicking* in dwlb needs dwl's ipc patch (display works without it).
+Note: nixpkgs dwl 0.7 now ships its own plain dwl.desktop in the package;
+the greeter uses our custom sessionPackages entry (Exec=dwl -s ...), so the
+`dwl ships no wayland-session entry` comment in configuration.nix is stale
+but harmless.

@@ -1,0 +1,83 @@
+# Greeter quotes — one per line, shown at random on the tuigreet login screen.
+# Format: Quote text — Attribution
+# Lines starting with # and blank lines are ignored.
+# REAL QUOTES ONLY — verify before adding. Applied on next `nh os switch`
+# (the file is embedded into the tuigreet launch script at build time).
+
+# ── Terry Pratchett ──
+It's still magic even if you know how it's done. — Terry Pratchett, A Hat Full of Sky
+Real stupidity beats artificial intelligence every time. — Terry Pratchett, Hogfather
+The trouble with having an open mind, of course, is that people will insist on coming along and trying to put things in it. — Terry Pratchett, Diggers
+Give a man a fire and he's warm for a day, but set fire to him and he's warm for the rest of his life. — Terry Pratchett, Jingo
+Coming back to where you started is not the same as never leaving. — Terry Pratchett, A Hat Full of Sky
+It is often said that before you die your life passes before your eyes. It is in fact true. It's called living. — Terry Pratchett, The Last Continent
+The truth may be out there, but the lies are inside your head. — Terry Pratchett, Hogfather
+Time is a drug. Too much of it kills you. — Terry Pratchett, Small Gods
+Human beings make life so interesting. Do you know, that in a universe so full of wonders, they have managed to invent boredom. — Terry Pratchett, Hogfather
+No one is actually dead until the ripples they cause in the world die away. — Terry Pratchett, Reaper Man
+Light thinks it travels faster than anything but it is wrong. No matter how fast light travels, it finds the darkness has always got there first, and is waiting for it. — Terry Pratchett, Reaper Man
+
+# ── Psalms (KJV) ──
+The heavens declare the glory of God; and the firmament sheweth his handywork. — Psalm 19:1
+Weeping may endure for a night, but joy cometh in the morning. — Psalm 30:5
+Be still, and know that I am God. — Psalm 46:10
+So teach us to number our days, that we may apply our hearts unto wisdom. — Psalm 90:12
+Thy word is a lamp unto my feet, and a light unto my path. — Psalm 119:105
+I will lift up mine eyes unto the hills, from whence cometh my help. — Psalm 121:1
+The LORD is my shepherd; I shall not want. — Psalm 23:1
+This is the day which the LORD hath made; we will rejoice and be glad in it. — Psalm 118:24
+As the hart panteth after the water brooks, so panteth my soul after thee, O God. — Psalm 42:1
+Deep calleth unto deep at the noise of thy waterspouts: all thy waves and thy billows are gone over me. — Psalm 42:7
+They that sow in tears shall reap in joy. — Psalm 126:5
+When I consider thy heavens, the work of thy fingers, the moon and the stars, which thou hast ordained; what is man, that thou art mindful of him? — Psalm 8:3-4
+
+# ── Ancient & old books (in translation) ──
+Gilgamesh, where are you hurrying to? You will never find that life for which you are looking. — The Epic of Gilgamesh (trans. N. K. Sandars)
+There is a time for many words, and there is also a time for sleep. — Homer, The Odyssey
+Even his griefs are a joy long after to one that remembers all that he wrought and endured. — Homer, The Odyssey
+Waste no more time arguing about what a good man should be. Be one. — Marcus Aurelius, Meditations
+Confine thyself to the present. — Marcus Aurelius, Meditations (trans. George Long)
+It is not that we have a short time to live, but that we waste a lot of it. — Seneca, On the Shortness of Life
+Men are disturbed not by things, but by the views which they take of them. — Epictetus, Enchiridion
+A journey of a thousand miles begins with a single step. — Lao Tzu, Tao Te Ching
+Knowing others is intelligence; knowing yourself is true wisdom. — Lao Tzu, Tao Te Ching
+When you know a thing, to hold that you know it; and when you do not know a thing, to allow that you do not know it — this is knowledge. — Confucius, Analects (trans. James Legge)
+Fate often spares an undoomed man when his courage is good. — Beowulf
+Midway upon the journey of our life I found myself within a forest dark, for the straightforward pathway had been lost. — Dante, Inferno (trans. Longfellow)
+Every man is the son of his own works. — Cervantes, Don Quixote
+There is no new thing under the sun. — Ecclesiastes 1:9
+Truly the light is sweet, and a pleasant thing it is for the eyes to behold the sun. — Ecclesiastes 11:7
+No man ever steps in the same river twice. — Heraclitus (fragment)
+He will win who knows when to fight and when not to fight. — Sun Tzu, The Art of War (trans. Lionel Giles)
+Thou hast made us for thyself, O Lord, and our heart is restless until it finds its rest in thee. — Augustine, Confessions
+The greatest thing in the world is to know how to belong to oneself. — Montaigne, Essays
+Even in our sleep, pain which cannot forget falls drop by drop upon the heart, until, in our own despair, against our will, comes wisdom through the awful grace of God. — Aeschylus, Agamemnon (trans. Edith Hamilton)
+Dripping water hollows out stone, not through force but through persistence. — Ovid, Epistulae ex Ponto
+The mind is its own place, and in itself can make a Heaven of Hell, a Hell of Heaven. — John Milton, Paradise Lost
+We know what we are, but know not what we may be. — Shakespeare, Hamlet
+To see a World in a Grain of Sand, and a Heaven in a Wild Flower, hold Infinity in the palm of your hand, and Eternity in an hour. — William Blake, Auguries of Innocence
+
+# ── James Joyce, Ulysses ──
+Think you're escaping and run into yourself. Longest way round is the shortest way home. — James Joyce, Ulysses
+Hold to the now, the here, through which all future plunges to the past. — James Joyce, Ulysses
+Every life is many days, day after day. We walk through ourselves, meeting robbers, ghosts, giants, old men, young men, wives, widows, brothers-in-love. But always meeting ourselves. — James Joyce, Ulysses
+Love loves to love love. — James Joyce, Ulysses
+A man of genius makes no mistakes. His errors are volitional and are the portals of discovery. — James Joyce, Ulysses
+History, Stephen said, is a nightmare from which I am trying to awake. — James Joyce, Ulysses
+
+# ── David Foster Wallace ──
+Everything I've ever let go of has claw marks on it. — David Foster Wallace, Infinite Jest
+The truth will set you free. But not until it is finished with you. — David Foster Wallace, Infinite Jest
+The really important kind of freedom involves attention, and awareness, and discipline, and effort, and being able truly to care about other people. — David Foster Wallace, This Is Water
+Everybody worships. The only choice we get is what to worship. — David Foster Wallace, This Is Water
+You will become way less concerned with what other people think of you when you realize how seldom they do. — David Foster Wallace, Infinite Jest
+The capital-T Truth is about life before death. — David Foster Wallace, This Is Water
+
+# ── More moderns & classics ──
+It is not down in any map; true places never are. — Herman Melville, Moby-Dick
+Above all, don't lie to yourself. The man who lies to himself and listens to his own lie comes to a point that he cannot distinguish the truth within him, or around him. — Dostoevsky, The Brothers Karamazov
+The strongest of all warriors are these two — Time and Patience. — Tolstoy, War and Peace
+The growing good of the world is partly dependent on unhistoric acts; and that things are not so ill with you and me as they might have been, is half owing to the number who lived faithfully a hidden life, and rest in unvisited tombs. — George Eliot, Middlemarch
+I am large, I contain multitudes. — Walt Whitman, Song of Myself
+I have always imagined that Paradise will be a kind of library. — Jorge Luis Borges
+Live the questions now. Perhaps you will then gradually, without noticing it, live along some distant day into the answer. — Rilke, Letters to a Young Poet
