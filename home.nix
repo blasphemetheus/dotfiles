@@ -230,6 +230,16 @@ in
 
   programs.zoxide.enable = true;
 
+  # ags 2.x resolves `astal/*` imports from node_modules (no npm install step
+  # on nix), so keep node_modules/astal pointed at the CURRENT astal-gjs store
+  # path. A hand-made link dangles whenever nixpkgs bumps ags/astal — this
+  # re-links on every rebuild. node_modules/ is gitignored.
+  home.activation.relinkAstalGjs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    mkdir -p "${dotfiles}/ags/.config/ags/node_modules"
+    run ln -sfn "${pkgs.astal.gjs}/share/astal/gjs" \
+      "${dotfiles}/ags/.config/ags/node_modules/astal"
+  '';
+
   # Weekly "setup health" desktop notification (script defined in `let` above).
   systemd.user.services.nixos-health-hints = {
     Unit.Description = "NixOS setup health hints (desktop notification)";
