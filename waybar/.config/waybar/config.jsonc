@@ -25,22 +25,14 @@
         "pulseaudio",
         "network",
         "backlight",
-        "keyboard-state",
         "battery",
         "custom/power"
     ],
     // Module definitions
-    "keyboard-state": {
-        "numlock": true,
-        "capslock": true,
-        "format": "{name} {icon}",
-        "format-icons": {
-            "locked": "",
-            "unlocked": ""
-        },
-        "tooltip": true,
-        "tooltip-format": "Caps Lock: {capslock}\nNum Lock: {numlock}"
-    },
+    // keyboard-state module REMOVED 2026-07-12: it reads /dev/input via
+    // libinput and segfaults waybar (SIGSEGV in libinput.so) when devices
+    // churn. It had been silently inert until input access arrived with the
+    // dictation setup (input group / setfacl), then started crashing the bar.
     "tray": {
         "icon-size": 18,
         "spacing": 8,

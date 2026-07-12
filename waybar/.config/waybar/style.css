@@ -253,18 +253,4 @@ tooltip label {
     background: rgba(107, 140, 174, 0.3);
 }
 
-#keyboard-state {
-    padding: 0 8px;
-    margin: 3px 3px;
-    border-radius: 10px;
-    background: rgba(107, 140, 174, 0.3);
-}
-
-#keyboard-state label {
-    color: #6b8cae;
-    padding: 0 6px;
-}
-
-#keyboard-state label.locked {
-    color: #e875a1;
-}
+/* keyboard-state styles removed with the module (libinput segfault) */
