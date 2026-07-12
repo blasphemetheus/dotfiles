@@ -69,6 +69,7 @@ Screenshots saved to: `~/Pictures/Screenshots/`
 | Super+R | App launcher (rofi) |
 | Super+L | Lock screen (hyprlock) |
 | Super+M | Exit Hyprland |
+| Super+Shift+H | Retrain HDMI link (curved ASUS says "no signal") |
 | Super+Shift+? | **Show this keybinds cheatsheet!** |
 
 ## Media Keys (Fn row)

@@ -4,6 +4,20 @@
 
 { config, pkgs, ... }:
 
+let
+  # Session list for the greeter: everything the display manager knows about
+  # except hyprland-uwsm.desktop — the hyprland package ships that entry
+  # unconditionally, and we always launch plain Hyprland.
+  greeterSessions = pkgs.runCommand "greeter-sessions" { } ''
+    mkdir -p $out/share/wayland-sessions
+    for f in ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions/*.desktop; do
+      case "$(basename "$f")" in
+        hyprland-uwsm.desktop) ;;
+        *) ln -s "$f" "$out/share/wayland-sessions/" ;;
+      esac
+    done
+  '';
+in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -19,6 +33,14 @@
 
   # Resume device for hibernate
   boot.resumeDevice = "/dev/nvme0n1p6";
+
+  # Keep kernel/udev chatter off tty1 so it doesn't paint over tuigreet.
+  # Errors (level <=3) still print; everything is always in the journal.
+  boot.consoleLogLevel = 3;
+  boot.kernelParams = [
+    "quiet"
+    "udev.log_priority=3"
+  ];
 
   # Extra data partition, created in the free gap after /boot. Holds large,
   # relocatable data (PHMUB, build caches, local model weights) so it doesn't
@@ -91,6 +113,33 @@
   boot.extraModprobeConfig = ''
     options nvidia NVreg_DynamicPowerManagement=0x00
   '';
+
+  # ── DP-1 EDID override — AOpen 16PM1Q portable monitor ──
+  # Its DP→mini-HDMI converter cable passes video but drops DDC/EDID, so the
+  # GPU sees an unknown 640x480 panel ("Nvidia 0x0000"). Feed the kernel the
+  # panel's real EDID (linuxhw/EDID Digital/AOpen/AOP0EAC, "16PM1Q J",
+  # 1920x1080@60 native) and force the connector on — the NVIDIA driver
+  # ignores drm.edid_firmware unless video=DP-1:e is also set.
+  # Side effect of :e — DP-1 counts as connected even with nothing plugged in.
+  hardware.display = {
+    edid.packages = [
+      (pkgs.runCommand "edid-aopen-16pm1q" { } ''
+        mkdir -p "$out/lib/firmware/edid"
+        base64 -d > "$out/lib/firmware/edid/aopen-16pm1q.bin" <<'EOF'
+        AP///////wAF8KwOAAAAABcjAQS1IxN4K9FllVpakykfUFQhCABxQIGAqcDRwLPA
+        lQCzAJUA2DaAoHA4LUAwIEUAWcIQAAAeAAAA/wAxNTIzMTAwQzk1VjAxAAAA/AAx
+        NlBNMVEgSgogICAgAAAA/QAwPGRkFAEKICAgICAgAfwCAy7yRZABAgMEIwl/B4MB
+        AADjBcAA4gDV5gYFAWJiKG0aAAACATDmAAAAAAAAAjqAGHE4LUBYLEUAWcIQAAAe
+        XR9WGFEALTBYLCUAWcIQAAAeAAAAAAAAAAAAAAAAWcIQAAAAAAAAAAAAAAAAAAAA
+        WcIQAAAAAAAAAAAAAAAADQ==
+        EOF
+      '')
+    ];
+    outputs."DP-1" = {
+      edid = "aopen-16pm1q.bin";
+      mode = "e";
+    };
+  };
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
@@ -176,9 +225,37 @@
   services.greetd = {
     enable = true;
     settings.default_session = {
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --time-format '%I:%M %p  |  %A, %B %d' --remember --remember-session --user-menu --width 50 --greeting '✦ NixOS  ✦  Hyprland' --theme 'border=yellow;title=yellow;greet=magenta;time=white;prompt=yellow;input=white;action=magenta;button=yellow;container=black' --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions";
+      command = "${pkgs.tuigreet}/bin/tuigreet --time --time-format '%I:%M %p  |  %A, %B %d' --remember --remember-session --user-menu --width 50 --greeting '✦ NixOS  ✦  Hyprland' --theme 'border=yellow;title=yellow;greet=magenta;time=white;prompt=yellow;input=white;action=magenta;button=yellow;container=black' --sessions ${greeterSessions}/share/wayland-sessions";
       user = "greeter";
     };
+  };
+
+  # Heal a wedged HDMI handshake before the greeter appears. Symptom (seen
+  # 2026-07-12): the ASUS VG27V reports "no signal" from power-on even though
+  # the GPU is driving it; a connector off→reprobe cycle (equivalent to the
+  # dpms off/on fix inside Hyprland) forces a fresh link train. No-op when the
+  # link is healthy apart from a brief blink, and skipped entirely if the
+  # connector never shows up.
+  systemd.services.hdmi-link-retrain = {
+    description = "Cycle HDMI connector to retrain a wedged link";
+    wantedBy = [ "graphical.target" ];
+    before = [ "greetd.service" ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      for i in $(seq 1 50); do
+        set -- /sys/class/drm/card*-HDMI-A-1/status
+        [ -e "$1" ] && break
+        sleep 0.2
+      done
+      for st in /sys/class/drm/card*-HDMI-A-1/status; do
+        [ -e "$st" ] || continue
+        if [ "$(cat "$st")" = "connected" ]; then
+          echo off > "$st"
+          sleep 1
+          echo detect > "$st"
+        fi
+      done
+    '';
   };
 
   # Keep GNOME as a fallback desktop environment
