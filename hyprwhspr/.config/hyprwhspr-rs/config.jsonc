@@ -1,0 +1,38 @@
+// hyprwhspr-rs dictation daemon — F12 toggle / Super+F12 push-to-talk (see hyprland.conf)
+// Docs: https://github.com/better-slop/hyprwhspr-rs
+{
+  "$schema": "https://raw.githubusercontent.com/better-slop/hyprwhspr-rs/main/config/schema.json",
+
+  // v0.3.23 has no CLI/socket control — the daemon's own evdev listener owns
+  // these keys (needs the `input` group, i.e. a relog after first install).
+  // Matching is subset-based, so hold must share NO keys with press
+  // (SUPER+F12 would also fire the F12 toggle).
+  "shortcuts": {
+    "press": "F12",       // tap: toggle dictation
+    "hold": "SUPER+SPACE" // hold: push-to-talk, release to transcribe
+  },
+
+  // Trim silence before whisper; also discards accidental blip recordings
+  // (e.g. Super+Shift+Space centerwindow is a superset of the hold combo)
+  // instead of hallucinating "Thank you."
+  "fast_vad": { "enabled": true },
+
+  // Start/stop chirps — instant feedback that the mic is hot, kept quiet
+  "audio_feedback": true,
+  "start_sound_volume": 0.2,
+  "stop_sound_volume": 0.2,
+
+  // Transcript always lands in the clipboard too, so nothing is lost if an
+  // app rejects the synthetic paste
+  "auto_copy_clipboard": true,
+
+  "transcription": {
+    "provider": "whisper_cpp",
+    "whisper_cpp": {
+      "model": "large-v3-turbo-q8_0",
+      "gpu_layers": 999,
+      "threads": 8,
+      "prompt": "Transcribe with proper punctuation, capitalization, and technical terminology."
+    }
+  }
+}

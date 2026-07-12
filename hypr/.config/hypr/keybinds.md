@@ -7,7 +7,8 @@
 | F9 | Screenshot area (select region) -> clipboard + ~/Pictures/Screenshots/ |
 | F10 | Clipboard history (wofi picker) |
 | F11 | Toggle fullscreen |
-| F12 | Toggle Vocalinux |
+| F12 | Toggle dictation (speak → text typed into focused window) |
+| Super+Space (hold) | Push-to-talk dictation (release to transcribe) |
 | Fn+Space | Keyboard backlight (hardware - 3 levels) |
 
 ## Screenshots & Recording
