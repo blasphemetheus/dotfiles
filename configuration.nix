@@ -28,8 +28,11 @@
     fsType = "ext4";
   };
 
-  # Fix MT7925 WiFi PCIe link training (card not enumerating without this)
-  boot.kernelParams = [ "pcie_aspm=off" ];
+  # pcie_aspm=off removed 2026-07-12: it was added while chasing WiFi
+  # enumeration failures blamed on an MT7925, but the card is a Qualcomm
+  # WCN7850 (ath12k) and the real fix was BIOS "Onboard Wi-Fi/BT Module
+  # Control -> Auto". If WiFi vanishes after a reboot, boot the previous
+  # generation from systemd-boot and re-add "pcie_aspm=off" here.
 
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_6_12;
@@ -220,6 +223,12 @@
   services.udev.extraRules = ''
     SUBSYSTEM=="usb", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="0337", MODE="0666", TAG+="uaccess"
   '';
+
+  # Overclock the GC adapter's USB polling from 125Hz to 1000Hz (standard
+  # Slippi input-lag fix, ~4-8ms average latency reduction). If inputs ever
+  # drop, load with rate=2 (500Hz) via boot.extraModprobeConfig.
+  boot.extraModulePackages = [ config.boot.kernelPackages.gcadapter-oc-kmod ];
+  boot.kernelModules = [ "gcadapter_oc" ];
 
   # Dictation daemon (systemd user service): F12 toggle / Super+F12 push-to-talk
   # in Hyprland. Whisper runs on the 5090 via Vulkan — the Vulkan build is on
