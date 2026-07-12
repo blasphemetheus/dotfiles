@@ -29,6 +29,19 @@
         "custom/power"
     ],
     // Module definitions
+    "hyprland/workspaces": {
+        // hyprsplit gives each monitor its own workspace set: monitor 1 owns
+        // ids 1-10, monitor 2 owns 11-20. Remap the second set's labels back
+        // to 1-10 so both bars read the same. (Bars already show only their
+        // own monitor's workspaces — all-outputs defaults to false.)
+        "format": "{icon}",
+        "format-icons": {
+            "1": "1", "2": "2", "3": "3", "4": "4", "5": "5",
+            "6": "6", "7": "7", "8": "8", "9": "9", "10": "10",
+            "11": "1", "12": "2", "13": "3", "14": "4", "15": "5",
+            "16": "6", "17": "7", "18": "8", "19": "9", "20": "10"
+        }
+    },
     // keyboard-state module REMOVED 2026-07-12: it reads /dev/input via
     // libinput and segfaults waybar (SIGSEGV in libinput.so) when devices
     // churn. It had been silently inert until input access arrived with the

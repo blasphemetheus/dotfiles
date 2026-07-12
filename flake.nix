@@ -35,6 +35,21 @@
             nixpkgs.overlays = [
               (final: prev: {
                 ags-v3 = ags.packages.${prev.stdenv.hostPlatform.system}.default;
+
+                # nixpkgs still ships hyprsplit 0.53.1, which doesn't compile
+                # against hyprland 0.54 (HookSystemManager.hpp moved). Upstream
+                # tags track hyprland releases — pin the matching one.
+                hyprlandPlugins = prev.hyprlandPlugins // {
+                  hyprsplit = prev.hyprlandPlugins.hyprsplit.overrideAttrs (old: {
+                    version = "0.54.2";
+                    src = prev.fetchFromGitHub {
+                      owner = "shezdy";
+                      repo = "hyprsplit";
+                      rev = "v0.54.2";
+                      hash = "sha256-NFMLZmM6lM7v6WFcewOp7pKPlr6ampX/MB/kGxt/gPE=";
+                    };
+                  });
+                };
               })
             ];
           }

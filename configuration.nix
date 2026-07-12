@@ -176,6 +176,13 @@ in
     xwayland.enable = true;
   };
 
+  # hyprsplit: dwm-style per-monitor workspace sets (Super+N switches to the
+  # Nth workspace OF THE FOCUSED MONITOR; second monitor's set is ids 11-20).
+  # Stable /etc path so the stow-managed hyprland.conf can `plugin =` it
+  # without hardcoding a nix store path. Version pinned in flake.nix overlay.
+  environment.etc."hypr/plugins/libhyprsplit.so".source =
+    "${pkgs.hyprlandPlugins.hyprsplit}/lib/libhyprsplit.so";
+
   # ── Alternative compositors, selectable at the greetd session picker ──
   # Purely additive: Hyprland stays the default. Log out and pick one to try it.
   #   niri  — scrollable tiling (infinite horizontal strip), Rust
