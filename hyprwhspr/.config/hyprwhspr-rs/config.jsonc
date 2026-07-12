@@ -26,8 +26,32 @@
   // app rejects the synthetic paste
   "auto_copy_clipboard": true,
 
+  // Fix recognition of vocabulary the models reliably mangle.
+  // Case-insensitive whole-word/phrase replacement at injection time —
+  // grow this list whenever a dictation gets a term wrong.
+  "word_overrides": {
+    "nix os": "NixOS",
+    "nixos": "NixOS",
+    "hyper land": "Hyprland",
+    "hyprland": "Hyprland",
+    "way bar": "waybar",
+    "wave bar": "waybar",
+    "git hub": "GitHub",
+    "neo vim": "Neovim",
+    "system d": "systemd"
+  },
+
   "transcription": {
-    "provider": "whisper_cpp",
+    // parakeet-tdt-0.6b-v3 (ONNX, in-process): model stays resident in the
+    // daemon — no per-utterance reload — runs on CPU so it never fights the
+    // GPU-hungry workloads for VRAM, and beats whisper-large on English WER.
+    // Model files: scripts/download-parakeet-tdt.sh (upstream repo) →
+    // ~/.local/share/hyprwhspr-rs/models/parakeet/parakeet-tdt-0.6b-v3-onnx
+    "provider": "parakeet",
+
+    // Fallback: switch provider back to "whisper_cpp" for GPU whisper
+    // (multilingual beyond parakeet's 25 languages; reloads model per
+    // utterance, ~0.5-1s slower, needs free VRAM).
     "whisper_cpp": {
       "model": "large-v3-turbo-q8_0",
       "gpu_layers": 999,
