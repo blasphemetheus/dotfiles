@@ -330,10 +330,10 @@
     satty      # screenshot annotation tool
     wf-recorder
 
-    # AGS (Astal) — dashboard + dictation pill. Was referenced by the ags/
-    # config and hyprland exec-once all along but never actually installed,
-    # so `ags run` had been failing silently at every login.
-    ags
+    # AGS v3 (aylur/ags flake, overlaid as ags-v3) — dashboard + dictation
+    # pill. nixpkgs' `ags` (v2.3, astal-API) stays untouched because hyprpanel
+    # builds against it. The `ags` on PATH is v3.
+    ags-v3
 
     # Dictation (see services.hyprwhspr-rs): whisper-cli for testing,
     # whisper-cpp-download-ggml-model for fetching models
