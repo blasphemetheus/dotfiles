@@ -1,23 +1,24 @@
 import { Astal, Gdk } from "astal/gtk3"
 import { Variable } from "astal"
+import GLib from "gi://GLib"
 
 // Dictation state pill — floats bottom-center while hyprwhspr-rs is hot.
-// Reads the daemon's status.json (same file waybar uses); click-through so
-// it never steals input. Hidden via opacity when idle (see style.scss).
+// State/label logic lives in scripts/dictation-pill.sh ("<style>|<label>"):
+// listening (with recording timer), transcribing, done (flashes the inserted
+// text), error, hidden. Click-through so it never steals input.
 //
 // NOTE: written for AGS v2 / astal imports (what nixpkgs ships). The rest of
 // this config (Dashboard.tsx) is AGS v3 style and needs a flake input to run.
 
+const HOME = GLib.get_home_dir()
+
 const state = Variable("hidden|").poll(250, [
   "bash",
-  "-c",
-  `case "$(jq -r .class "$HOME/.cache/hyprwhspr-rs/status.json" 2>/dev/null)" in
-    active) echo "listening|●  Listening…";;
-    processing) echo "transcribing|◌  Transcribing…";;
-    error) echo "error|✕  Dictation error";;
-    *) echo "hidden|";;
-  esac`,
+  `${HOME}/.config/ags/scripts/dictation-pill.sh`,
 ])
+
+const styleOf = (v: string) => v.slice(0, v.indexOf("|"))
+const labelOf = (v: string) => v.slice(v.indexOf("|") + 1)
 
 export default function DictationPill(gdkmonitor: Gdk.Monitor) {
   return (
@@ -32,8 +33,8 @@ export default function DictationPill(gdkmonitor: Gdk.Monitor) {
       clickThrough={true}
       visible={true}
     >
-      <box className={state((v) => `dictation-pill ${v.split("|")[0]}`)}>
-        <label label={state((v) => v.split("|")[1] ?? "")} />
+      <box className={state((v) => `dictation-pill ${styleOf(v)}`)}>
+        <label label={state((v) => labelOf(v))} />
       </box>
     </window>
   )

@@ -47,10 +47,9 @@ case "$cls" in
             cls=$(state)
         done
         pkill -RTMIN+8 waybar
+        # success is shown by the pill's "✓ <text>" flash; only failures toast
         clip_now=$(timeout 1 wl-paste 2>/dev/null | head -c 200 || true)
-        if [ -n "$clip_now" ] && [ "$clip_now" != "$clip_before" ]; then
-            notify "✓ $clip_now" -t 4000
-        else
+        if [ -z "$clip_now" ] || [ "$clip_now" = "$clip_before" ]; then
             # daemon never left inactive (keypress not seen?) or VAD found no speech
             notify "No speech detected (if the mic never went hot: relog/reboot for input-group access)" -t 3000
         fi
