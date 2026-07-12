@@ -230,15 +230,8 @@ in
 
   programs.zoxide.enable = true;
 
-  # ags 2.x resolves `astal/*` imports from node_modules (no npm install step
-  # on nix), so keep node_modules/astal pointed at the CURRENT astal-gjs store
-  # path. A hand-made link dangles whenever nixpkgs bumps ags/astal — this
-  # re-links on every rebuild. node_modules/ is gitignored.
-  home.activation.relinkAstalGjs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    mkdir -p "${dotfiles}/ags/.config/ags/node_modules"
-    run ln -sfn "${pkgs.astal.gjs}/share/astal/gjs" \
-      "${dotfiles}/ags/.config/ags/node_modules/astal"
-  '';
+  # (relinkAstalGjs activation removed 2026-07-12: AGS v3's nix wrapper embeds
+  # its JS lib, so `ags run` needs no node_modules at all.)
 
   # Weekly "setup health" desktop notification (script defined in `let` above).
   systemd.user.services.nixos-health-hints = {
@@ -344,7 +337,12 @@ in
       diff = "delta";
       top = "btop";
       md = "glow";
-      slippi = "${config.home.homeDirectory}/.nix-profile/bin/Slippi_Online-x86_64.AppImage";
+      # slippi is an autoloaded function (fish/functions/slippi.fish): opens
+      # Slippi Launcher under the performance power profile. An alias here
+      # would shadow it with the bare game Dolphin, which can't log in.
+      # slippi-dolphin: the bare netplay Dolphin, for launching the game
+      # without the launcher (local play, quick testing).
+      slippi-dolphin = "${config.home.homeDirectory}/.nix-profile/bin/Slippi_Online-x86_64.AppImage";
     };
 
     shellAbbrs.nrs = "sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka";

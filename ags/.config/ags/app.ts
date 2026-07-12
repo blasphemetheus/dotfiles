@@ -1,19 +1,17 @@
-import { App } from "astal/gtk3"
+import app from "ags/gtk3/app"
 import style from "./style.scss"
+import Dashboard from "./widget/Dashboard"
 import DictationPill from "./widget/DictationPill"
 
-// NOTE: Dashboard.tsx is written for AGS v3 (`ags/gtk3` imports, createPoll)
-// but nixpkgs ships AGS v2.3 whose library is `astal` — the dashboard has
-// never actually run on this machine (it also still calls /home/dori paths).
-// Reviving it means adding the aylur/ags v3 flake input and porting, or
-// rewriting it against the v2 API like DictationPill below.
-// import Dashboard from "./widget/Dashboard"
+// AGS v3 (aylur/ags flake input — nixpkgs only ships the v2 astal API).
+// Dashboard toggles with Super+D (hyprland.conf → `ags toggle dashboard`).
 
-App.start({
+app.start({
   css: style,
   main() {
-    const monitors = App.get_monitors()
+    const monitors = app.get_monitors()
     if (monitors.length > 0) {
+      Dashboard(monitors[0])
       DictationPill(monitors[0])
     }
   },

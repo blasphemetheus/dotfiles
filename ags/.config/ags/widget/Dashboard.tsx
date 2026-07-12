@@ -1,241 +1,69 @@
 import app from "ags/gtk3/app"
 import { Astal, Gtk, Gdk } from "ags/gtk3"
-import { execAsync, exec } from "ags/process"
+import { execAsync } from "ags/process"
 import { createPoll } from "ags/time"
+import GLib from "gi://GLib"
 
-// ============ POLLED DATA ============
+// Command center for nixos_slanka. Toggle with Super+D (`ags toggle dashboard`).
+// Rebuilt 2026-07 from the inherited config (which was never functional here
+// and still pointed at /home/dori): these widgets are about THIS machine —
+// VRAM pressure from the BEAM workloads, dictation state, disk pressure on
+// the shared / + /nix partition, dotfiles health.
 
+const HOME = GLib.get_home_dir()
+
+// ── System ──────────────────────────────────────────────────────────
 const uptime = createPoll("...", 30000, "uptime -p | sed 's/up //'")
-const processCount = createPoll("...", 5000, "ps aux | wc -l")
-const sshSessions = createPoll("0", 10000, "bash -c \"who | grep -c pts 2>/dev/null || echo 0\"")
-const publicIP = createPoll("...", 300000, "bash -c \"curl -s --max-time 5 ifconfig.me || echo 'offline'\"")
-const hotspotStatus = createPoll("OFF", 10000, "bash -c \"nmcli -t -f NAME con show --active 2>/dev/null | grep -qi hotspot && echo ON || echo OFF\"")
-const portWatchers = createPoll("None", 15000, "bash -c \"ss -tlnp 2>/dev/null | grep LISTEN | awk '{print \\$4}' | grep -oE '[0-9]+\\$' | sort -nu | head -8 | tr '\\n' ' ' || echo None\"")
-const batteryHealth = createPoll("...", 60000, `bash -c "
-  if [ -f /sys/class/power_supply/BAT0/cycle_count ]; then
-    cycles=\\$(cat /sys/class/power_supply/BAT0/cycle_count 2>/dev/null || echo 0)
-    full=\\$(cat /sys/class/power_supply/BAT0/charge_full 2>/dev/null || cat /sys/class/power_supply/BAT0/energy_full 2>/dev/null || echo 1)
-    design=\\$(cat /sys/class/power_supply/BAT0/charge_full_design 2>/dev/null || cat /sys/class/power_supply/BAT0/energy_full_design 2>/dev/null || echo 1)
-    health=\\$((full * 100 / design))
-    echo \\"Cycles: \\$cycles | Health: \\$health%\\"
-  else
-    echo 'N/A'
-  fi
-"`)
-const vramUsage = createPoll("N/A", 5000, `bash -c "
-  if command -v nvidia-smi &>/dev/null; then
-    nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader,nounits 2>/dev/null | awk -F', ' '{printf \\"%.1fGB / %.1fGB\\", \\$1/1024, \\$2/1024}'
-  elif [ -f /sys/class/drm/card0/device/mem_info_vram_used ]; then
-    used=\\$(cat /sys/class/drm/card0/device/mem_info_vram_used)
-    total=\\$(cat /sys/class/drm/card0/device/mem_info_vram_total)
-    echo \\"\\$((used/1024/1024))MB / \\$((total/1024/1024))MB\\"
-  else
-    echo 'N/A'
-  fi
-"`)
-const weatherData = createPoll("Loading...", 900000, `bash -c "
-  data=\\$(curl -s --max-time 10 'wttr.in/?format=%t+%C+|+UV:%u+|+Humidity:%h' 2>/dev/null)
-  if [ -n \\"\\$data\\" ]; then echo \\"\\$data\\"; else echo 'Weather unavailable'; fi
-"`)
-const sunTimes = createPoll("", 3600000, `bash -c "
-  data=\\$(curl -s --max-time 10 'wttr.in/?format=Rise:%S+Set:%s' 2>/dev/null)
-  if [ -n \\"\\$data\\" ]; then echo \\"\\$data\\"; else echo 'N/A'; fi
-"`)
-const screenRecording = createPoll("⚫ Not Recording", 1000, "/home/dori/.config/ags/scripts/screen-record-status.sh")
-const caffeineLabel = createPoll("😴 Caffeine OFF", 1000, "/home/dori/.config/ags/scripts/caffeine-status.sh")
 
-// Debug: simple time poll to verify polls work
-const debugTime = createPoll("--:--:--", 1000, "date +%H:%M:%S")
+const diskRoot = createPoll("...", 30000, `bash -c "df -h / | awk 'NR==2 {print \\$3\\" / \\"\\$2\\"  (\\"\\$5\\")\\"}'"`)
+const diskData = createPoll("...", 30000, `bash -c "df -h /data 2>/dev/null | awk 'NR==2 {print \\$3\\" / \\"\\$2\\"  (\\"\\$5\\")\\"}' || echo 'not mounted'"`)
 
-// Word of the day (static per day)
-const spanishWords = [
-  { word: "mariposa", meaning: "butterfly" },
-  { word: "esperanza", meaning: "hope" },
-  { word: "estrella", meaning: "star" },
-  { word: "corazón", meaning: "heart" },
-  { word: "amanecer", meaning: "dawn" },
-  { word: "lluvia", meaning: "rain" },
-  { word: "montaña", meaning: "mountain" },
-]
-const chineseWords = [
-  { word: "快乐", pinyin: "kuàilè", meaning: "happy" },
-  { word: "朋友", pinyin: "péngyou", meaning: "friend" },
-  { word: "学习", pinyin: "xuéxí", meaning: "to study" },
-  { word: "美丽", pinyin: "měilì", meaning: "beautiful" },
-  { word: "时间", pinyin: "shíjiān", meaning: "time" },
-  { word: "天空", pinyin: "tiānkōng", meaning: "sky" },
-  { word: "音乐", pinyin: "yīnyuè", meaning: "music" },
-]
-const todayIndex = new Date().getDate() % spanishWords.length
-const spanishWord = spanishWords[todayIndex]
-const chineseWord = chineseWords[todayIndex]
+const ram = createPoll("...", 5000, `bash -c "free -h | awk '/^Mem/ {print \\$3\\" / \\"\\$2}'"`)
 
-// Stopwatch state
-let stopwatchSeconds = 0
-let stopwatchRunning = false
+// VRAM + the current biggest hog. The BEAM workloads routinely hold ~29GB of
+// the 5090 — this answers "can a GPU job even fit right now?" at a glance.
+const vram = createPoll("...", 5000, `bash -c "nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader,nounits 2>/dev/null | awk -F', ' '{printf \\"%.1f / %.1f GB\\", \\$1/1024, \\$2/1024}'"`)
+const vramHog = createPoll("", 10000, `bash -c "nvidia-smi --query-compute-apps=process_name,used_memory --format=csv,noheader,nounits 2>/dev/null | sort -t, -k2 -rn | head -1 | awk -F', ' '{n=\\$1; sub(/.*\\\\//,\\"\\",n); printf \\"%s: %.1f GB\\", n, \\$2/1024}'"`)
 
-function formatTime(seconds: number): string {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = seconds % 60
-  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
-}
+// ── Dictation ───────────────────────────────────────────────────────
+const RUNTIME = GLib.get_user_runtime_dir()
+const dictationState = createPoll("...", 2000, `bash -c "jq -r '.tooltip // \\"unknown\\"' ~/.cache/hyprwhspr-rs/status.json 2>/dev/null"`)
+const lastDictation = createPoll("—", 5000, `bash -c "cat ${RUNTIME}/dictation-pill/flash_text 2>/dev/null | head -c 60 || echo '—'"`)
 
-function toggleStopwatch() {
-  stopwatchRunning = !stopwatchRunning
-}
+// ── Dotfiles health (the weekly notifier's essentials, always visible) ──
+const flakeAge = createPoll("...", 3600000, `bash -c "echo \\$(( ( \\$(date +%s) - \\$(stat -c %Y ${HOME}/dotfiles/flake.lock) ) / 86400 ))' days'"`)
+const gitDirty = createPoll("...", 60000, `bash -c "cd ${HOME}/dotfiles && n=\\$(git status --porcelain | wc -l); u=\\$(git log origin/main..main --oneline 2>/dev/null | wc -l); echo \\"\\$n dirty, \\$u unpushed\\""`)
 
-function resetStopwatch() {
-  stopwatchRunning = false
-  stopwatchSeconds = 0
-}
+// ── Weather (kept from the old dashboard — it earned its spot) ─────
+const weather = createPoll("Loading...", 900000, `bash -c "curl -s --max-time 10 'wttr.in/?format=%t+%C' 2>/dev/null || echo 'unavailable'"`)
 
-// ============ WIDGET COMPONENTS ============
-
-function SectionTitle({ title }: { title: string }) {
-  return <label class="section-title" label={title} halign={Gtk.Align.START} />
-}
-
-function InfoRow({ label, value }: { label: string; value: any }) {
+function Row({ label, value }: { label: string; value: any }) {
   return (
-    <box class="info-row">
-      <label class="info-label" label={label} halign={Gtk.Align.START} hexpand />
-      <label class="info-value" label={value} />
+    <box class="info-row" homogeneous>
+      <label class="info-label" label={label} halign={Gtk.Align.START} />
+      <label class="info-value" label={value} halign={Gtk.Align.END} />
     </box>
   )
 }
 
-function SystemSection() {
+function Section({ title, children }: { title: string; children?: any }) {
   return (
     <box vertical class="section">
-      <SectionTitle title="System" />
-      <InfoRow label="Uptime:" value={uptime} />
-      <InfoRow label="Processes:" value={processCount} />
-      <InfoRow label="SSH Sessions:" value={sshSessions} />
-      <InfoRow label="Public IP:" value={publicIP} />
-      <InfoRow label="Hotspot:" value={hotspotStatus} />
-      <InfoRow label="Battery:" value={batteryHealth} />
-      <InfoRow label="VRAM:" value={vramUsage} />
+      <label class="section-title" label={title} halign={Gtk.Align.START} />
+      {children}
     </box>
   )
 }
 
-function PortsSection() {
+function ActionButton({ label, cmd }: { label: string; cmd: string }) {
   return (
-    <box vertical class="section">
-      <SectionTitle title="Listening Ports" />
-      <label class="ports-list" label={portWatchers} halign={Gtk.Align.START} wrap />
-    </box>
+    <button
+      class="utility-btn"
+      label={label}
+      onClicked={() => execAsync(cmd).catch((e) => print(`${label}: ${e}`))}
+    />
   )
 }
-
-function WeatherSection() {
-  return (
-    <box vertical class="section">
-      <SectionTitle title="Weather" />
-      <label class="weather-main" label={weatherData} halign={Gtk.Align.START} wrap />
-      <label label={sunTimes} halign={Gtk.Align.START} />
-    </box>
-  )
-}
-
-function StopwatchSection() {
-  const stopwatchDisplay = createPoll("00:00:00", 1000, () => {
-    if (stopwatchRunning) stopwatchSeconds++
-    return formatTime(stopwatchSeconds)
-  })
-
-  return (
-    <box vertical class="section">
-      <SectionTitle title="Stopwatch" />
-      <label class="stopwatch-display" label={stopwatchDisplay} />
-      <box class="stopwatch-buttons" homogeneous>
-        <button class="stopwatch-btn" label="Start/Stop" onClicked={toggleStopwatch} />
-        <button class="stopwatch-btn" label="Reset" onClicked={resetStopwatch} />
-      </box>
-    </box>
-  )
-}
-
-function TogglesSection() {
-  return (
-    <box vertical class="section">
-      <SectionTitle title="Toggles" />
-      <box class="toggles-row" homogeneous>
-        <button
-          class="toggle-btn"
-          onClicked={() => {
-            execAsync("/home/dori/.config/ags/scripts/caffeine-toggle.sh").catch((e) => print(`Caffeine error: ${e}`))
-          }}
-        >
-          <label label={caffeineLabel} />
-        </button>
-        <button
-          class="toggle-btn"
-          onClicked={() => {
-            execAsync("/home/dori/.config/ags/scripts/screen-record-toggle.sh").catch((e) => print(`Recording error: ${e}`))
-          }}
-        >
-          <label label={screenRecording} />
-        </button>
-      </box>
-    </box>
-  )
-}
-
-function UtilitiesSection() {
-  return (
-    <box vertical class="section">
-      <SectionTitle title="Utilities" />
-      <box class="utilities-row" homogeneous>
-        <button
-          class="utility-btn"
-          label="🔢 Calc"
-          onClicked={() => execAsync("/home/dori/.config/ags/scripts/calculator.sh").catch((e) => print(`Calc error: ${e}`))}
-        />
-        <button
-          class="utility-btn"
-          label="😀 Emoji"
-          onClicked={() => execAsync("/home/dori/.config/ags/scripts/emoji.sh").catch((e) => print(`Emoji error: ${e}`))}
-        />
-        <button
-          class="utility-btn"
-          label="🔍 Zoom"
-          onClicked={() => execAsync("/home/dori/.config/ags/scripts/zoom-toggle.sh").catch((e) => print(`Zoom error: ${e}`))}
-        />
-      </box>
-    </box>
-  )
-}
-
-function WordOfDaySection() {
-  return (
-    <box vertical class="section">
-      <SectionTitle title="Word of the Day" />
-      <box vertical class="word-content">
-        <label class="word-lang" label="🇪🇸 Spanish" halign={Gtk.Align.START} />
-        <label class="word-entry" label={`${spanishWord.word} - ${spanishWord.meaning}`} halign={Gtk.Align.START} />
-        <label class="word-lang" label="🇨🇳 Chinese" halign={Gtk.Align.START} />
-        <label class="word-entry" label={`${chineseWord.word} (${chineseWord.pinyin}) - ${chineseWord.meaning}`} halign={Gtk.Align.START} />
-      </box>
-    </box>
-  )
-}
-
-function DiscordSection() {
-  return (
-    <box vertical class="section">
-      <SectionTitle title="Discord" />
-      <button
-        class="utility-btn"
-        label="Open Discord"
-        onClicked={() => execAsync("discord || vesktop").catch(() => {})}
-      />
-    </box>
-  )
-}
-
-// ============ MAIN DASHBOARD ============
 
 export default function Dashboard(gdkmonitor: Gdk.Monitor) {
   const { TOP, RIGHT, BOTTOM } = Astal.WindowAnchor
@@ -252,22 +80,48 @@ export default function Dashboard(gdkmonitor: Gdk.Monitor) {
       visible={false}
       keymode={Astal.Keymode.ON_DEMAND}
     >
-      <scrollable
-        hscroll={Gtk.PolicyType.NEVER}
-        vscroll={Gtk.PolicyType.AUTOMATIC}
-        css="min-width: 380px;"
-      >
+      <scrollable hscroll={Gtk.PolicyType.NEVER} vscroll={Gtk.PolicyType.AUTOMATIC} css="min-width: 380px;">
         <box vertical class="dashboard-content">
-          <label class="dashboard-title" label="Dashboard" />
-          <label label={debugTime} />
-          <SystemSection />
-          <PortsSection />
-          <WeatherSection />
-          <StopwatchSection />
-          <TogglesSection />
-          <UtilitiesSection />
-          <WordOfDaySection />
-          <DiscordSection />
+          <label class="dashboard-title" label="slanka" />
+
+          <Section title="System">
+            <Row label="Uptime" value={uptime} />
+            <Row label="RAM" value={ram} />
+            <Row label="/ (with /nix)" value={diskRoot} />
+            <Row label="/data" value={diskData} />
+          </Section>
+
+          <Section title="GPU — RTX 5090">
+            <Row label="VRAM" value={vram} />
+            <Row label="Top hog" value={vramHog} />
+          </Section>
+
+          <Section title="Dictation  (F12 · hold Super+Space)">
+            <Row label="State" value={dictationState} />
+            <Row label="Last" value={lastDictation} />
+          </Section>
+
+          <Section title="Dotfiles">
+            <Row label="flake.lock age" value={flakeAge} />
+            <Row label="git" value={gitDirty} />
+          </Section>
+
+          <Section title="Weather">
+            <label label={weather} halign={Gtk.Align.START} />
+          </Section>
+
+          <Section title="Quick actions">
+            <box class="utilities-row" homogeneous>
+              <ActionButton label="🔢 Calc" cmd={`${HOME}/.config/ags/scripts/calculator.sh`} />
+              <ActionButton label="😀 Emoji" cmd={`${HOME}/.config/ags/scripts/emoji.sh`} />
+              <ActionButton label="🔍 Zoom" cmd={`${HOME}/.config/ags/scripts/zoom-toggle.sh`} />
+            </box>
+            <box class="utilities-row" homogeneous>
+              <ActionButton label="⏺ Record" cmd={`${HOME}/.config/ags/scripts/screen-record-toggle.sh`} />
+              <ActionButton label="🎮 rwing" cmd="rwing" />
+              <ActionButton label="☕ Caffeine" cmd={`${HOME}/.config/ags/scripts/caffeine-toggle.sh`} />
+            </box>
+          </Section>
         </box>
       </scrollable>
     </window>
