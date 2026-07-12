@@ -201,6 +201,30 @@ button {
     color: #6b8cae;
 }
 
+/* Dictation (hyprwhspr-rs) */
+#custom-dictation {
+    padding: 0 12px;
+    margin: 3px 3px;
+    border-radius: 10px;
+    background: rgba(107, 140, 174, 0.3);
+    transition: all 0.3s ease;
+}
+#custom-dictation.inactive {
+    color: #5a5a6a;
+}
+#custom-dictation.active {
+    color: #a8c686;
+    background: rgba(168, 198, 134, 0.25);
+    animation: pulse 2s ease infinite;
+}
+#custom-dictation.processing {
+    color: #f5a623;
+    animation: pulse 1s ease infinite;
+}
+#custom-dictation.error {
+    color: #e85a5a;
+}
+
 /* Pulse animation */
 @keyframes pulse {
     0% { opacity: 1; }
