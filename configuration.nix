@@ -213,6 +213,17 @@
     SUBSYSTEM=="usb", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="0337", MODE="0666", TAG+="uaccess"
   '';
 
+  # Dictation daemon (systemd user service): F12 toggle / Super+F12 push-to-talk
+  # in Hyprland. Whisper runs on the 5090 via Vulkan — the Vulkan build is on
+  # the Hydra binary cache, unlike the unfree CUDA build, and is ~as fast here.
+  services.hyprwhspr-rs = {
+    enable = true;
+    package = pkgs.hyprwhspr-rs.override {
+      # override arg is hyphenated `whisper-cpp` (upstream README says `whispercpp`)
+      whisper-cpp = pkgs.whisper-cpp-vulkan;
+    };
+  };
+
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
@@ -221,7 +232,7 @@
     isNormalUser = true;
     description = "Bradley Lewis Fargo";
     shell = pkgs.fish;
-    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" "input" ]; # input: hyprwhspr-rs evdev listener
     packages = with pkgs; [
     #  thunderbird
     ];
@@ -302,6 +313,18 @@
     satty      # screenshot annotation tool
     wf-recorder
 
+    # AGS (Astal) — dashboard + dictation pill. Was referenced by the ags/
+    # config and hyprland exec-once all along but never actually installed,
+    # so `ags run` had been failing silently at every login.
+    ags
+
+    # Dictation (see services.hyprwhspr-rs): whisper-cli for testing,
+    # whisper-cpp-download-ggml-model for fetching models
+    whisper-cpp-vulkan
+    # the module only creates the user service; install the binary too for
+    # `hyprwhspr-rs --test` (interactive dictation debugging in a terminal)
+    config.services.hyprwhspr-rs.package
+
     # Disk / dedup (added after finding / at 93% full)
     ncdu       # interactive disk usage browser
     dua        # faster parallel `du` with a TUI (dua i)
@@ -374,6 +397,24 @@
     yazi       # TUI file manager with image preview
     zellij     # terminal multiplexer
     glow       # terminal markdown renderer
+
+    # Video editing
+    davinci-resolve  # free version: no H.264/H.265/AAC *import* on Linux — use to-dnxhr first
+    (writeShellApplication {
+      name = "to-dnxhr";
+      runtimeInputs = [ ffmpeg ];
+      text = ''
+        # Convert H.264/H.265+AAC footage to DNxHR HQ + PCM audio, which free
+        # DaVinci Resolve on Linux can import. Output lands next to the input
+        # as <name>.dnxhr.mov. Usage: to-dnxhr file1.mp4 [file2.mkv ...]
+        for f in "$@"; do
+          out="''${f%.*}.dnxhr.mov"
+          ffmpeg -i "$f" -c:v dnxhd -profile:v dnxhr_hq -pix_fmt yuv422p \
+                 -c:a pcm_s16le "$out"
+          echo "→ $out"
+        done
+      '';
+    })
 
     # Audio visualizer
     cava
