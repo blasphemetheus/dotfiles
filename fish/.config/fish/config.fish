@@ -51,7 +51,8 @@ alias md='glow'
 abbr -a nrs 'sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka'
 
 # Slippi Dolphin (installed via nix profile: github:lytedev/slippi-nix#slippi-netplay)
-alias slippi="$HOME/.nix-profile/bin/Slippi_Online-x86_64.AppImage"
+# `slippi` itself is an autoloaded function that opens Slippi Launcher.
+alias slippi-dolphin="$HOME/.nix-profile/bin/Slippi_Online-x86_64.AppImage"
 # Folder containing the Dolphin executable — pass to ExPhil play scripts as --dolphin $DOLPHIN_DIR
 # (symlink dir: libmelee requires "netplay" in the path, hardcoded Slippi Launcher convention)
 set -gx DOLPHIN_DIR "$HOME/.local/share/slippi/netplay"
