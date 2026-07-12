@@ -20,6 +20,14 @@
   # Resume device for hibernate
   boot.resumeDevice = "/dev/nvme0n1p6";
 
+  # Extra data partition, created in the free gap after /boot. Holds large,
+  # relocatable data (PHMUB, build caches, local model weights) so it doesn't
+  # fill / (which shares one ext4 partition with /nix).
+  fileSystems."/data" = {
+    device = "/dev/disk/by-uuid/f9889b12-35a4-4872-961b-a5466ebb6b64";
+    fsType = "ext4";
+  };
+
   # Fix MT7925 WiFi PCIe link training (card not enumerating without this)
   boot.kernelParams = [ "pcie_aspm=off" ];
 
