@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Retrain a wedged HDMI link (ASUS shows "no signal" while the GPU drives it).
-# Same fix the hdmi-link-retrain boot service applies before greetd.
-hyprctl dispatch dpms off HDMI-A-1
-sleep 1
-hyprctl dispatch dpms on HDMI-A-1
-notify-send "HDMI" "Link retrained on HDMI-A-1" -t 3000
+# Manual revive for the ASUS (Super+Shift+H) — same 60→165Hz bounce as the
+# hypridle after_sleep hook. For the rarer boot-time wedge (no compositor
+# yet), the root-level hdmi-link-retrain.service handles it before greetd;
+# it can also be fired in-session without a password (polkit rule):
+#   systemctl restart hdmi-link-retrain.service
+~/.config/hypr/scripts/hdmi-wake.sh
+notify-send "HDMI" "ASUS re-synced (60→165Hz bounce)" -t 3000

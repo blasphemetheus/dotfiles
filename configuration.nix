@@ -263,12 +263,15 @@ in
     };
   };
 
-  # Heal a wedged HDMI handshake before the greeter appears. Symptom (seen
-  # 2026-07-12): the ASUS VG27V reports "no signal" from power-on even though
-  # the GPU is driving it; a connector off→reprobe cycle (equivalent to the
-  # dpms off/on fix inside Hyprland) forces a fresh link train. No-op when the
-  # link is healthy apart from a brief blink, and skipped entirely if the
-  # connector never shows up.
+  # Heal a wedged HDMI handshake at BOOT, before the greeter appears.
+  # Symptom (seen 2026-07-12): the ASUS VG27V reports "no signal" from
+  # power-on even though the GPU is driving it; a connector off→reprobe cycle
+  # forces a fresh link train. Boot-time only: the post-S3-resume wedge is a
+  # different failure (165Hz link training fails cold; connector cycling
+  # doesn't help) and is handled in-session by scripts/hdmi-wake.sh
+  # (60→165Hz bounce) via hypridle after_sleep_cmd and Super+Shift+H.
+  # Do NOT hook this unit to post-resume.target: without After= ordering it
+  # starts at suspend ENTRY, cycling the connector as the box goes down.
   systemd.services.hdmi-link-retrain = {
     description = "Cycle HDMI connector to retrain a wedged link";
     wantedBy = [ "graphical.target" ];
@@ -290,6 +293,18 @@ in
       done
     '';
   };
+
+  # Allow blewf to fire the boot-style connector retrain on demand without
+  # sudo (manual escalation: systemctl restart hdmi-link-retrain).
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      if (action.id == "org.freedesktop.systemd1.manage-units" &&
+          action.lookup("unit") == "hdmi-link-retrain.service" &&
+          subject.user == "blewf") {
+        return polkit.Result.YES;
+      }
+    });
+  '';
 
   # Keep GNOME as a fallback desktop environment
   services.desktopManager.gnome.enable = true;
