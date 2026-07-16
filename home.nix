@@ -207,6 +207,13 @@ in
   # ── Phase 4: native programs.* modules (shell integration hooks) ─────
   home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
 
+  # Helix everywhere: git commits, aerc compose, sudoedit, anything honoring
+  # $EDITOR/$VISUAL. (NixOS's default was nano.)
+  home.sessionVariables = {
+    EDITOR = "hx";
+    VISUAL = "hx";
+  };
+
   programs.git = {
     enable = true;
     settings.merge.conflictstyle = "zdiff3";
