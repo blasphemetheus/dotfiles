@@ -399,7 +399,10 @@ in
       slippi-dolphin = "${config.home.homeDirectory}/.nix-profile/bin/Slippi_Online-x86_64.AppImage";
     };
 
-    shellAbbrs.nrs = "sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka";
+    shellAbbrs = {
+      nrs = "sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka";
+      nos = "nh os switch";
+    };
 
     # Login / non-interactive init. PATH (~/.local/bin) comes from home.sessionPath;
     # starship/direnv/zoxide hooks come from their programs.* modules above.
