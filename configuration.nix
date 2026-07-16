@@ -376,7 +376,7 @@ in
     shell = pkgs.fish;
     extraGroups = [ "networkmanager" "wheel" "docker" "input" ]; # input: hyprwhspr-rs evdev listener
     packages = with pkgs; [
-    #  thunderbird
+      thunderbird
     ];
   };
   programs.fish.enable = true;

@@ -184,6 +184,10 @@ in
     # Mako — notification daemon
     "mako/config".source = ./mako/.config/mako/config;
 
+    # aerc — keybindings (defaults + helix tweaks; aerc replaces its built-in
+    # binds when this file exists, so it carries the full set)
+    "aerc/binds.conf".source = ./aerc/binds.conf;
+
     # ── Phase 3: Active configs (edited + reloaded live) ─────────────────
     # Whole-dir out-of-store symlinks: ~/.config/<x> points straight at the repo,
     # so edits apply on reload without a rebuild, and HM does NOT manage the
@@ -284,7 +288,9 @@ in
   };
 
   # notification-picker on PATH so the Hyprland keybind can call it by name.
-  home.packages = [ notifPicker ];
+  # libsecret: `secret-tool` — aerc reads the mailbox password from the
+  # GNOME keyring (running with --components=secrets) instead of plaintext.
+  home.packages = [ notifPicker pkgs.libsecret ];
 
   # Shell history in SQLite, fuzzy-searchable. Owns Ctrl-R.
   programs.atuin = {
@@ -304,6 +310,47 @@ in
   programs.zellij = {
     enable = true;
     enableFishIntegration = false;
+  };
+
+  # ── Email: spikenard@ramblings.cc on Migadu ──────────────────────────
+  # aerc (TUI client) is configured from this account block; Thunderbird is
+  # installed system-side (configuration.nix) and self-configures via the
+  # autoconfig DNS record on ramblings.cc. Password lives in the GNOME
+  # keyring — store it once with:
+  #   secret-tool store --label="Migadu spikenard" email spikenard@ramblings.cc
+  accounts.email.accounts.ramblings = {
+    primary = true;
+    address = "spikenard@ramblings.cc";
+    realName = "Bradley Fargo";
+    userName = "spikenard@ramblings.cc";
+    passwordCommand = "secret-tool lookup email spikenard@ramblings.cc";
+    imap = {
+      host = "imap.migadu.com";
+      port = 993;
+    };
+    smtp = {
+      host = "smtp.migadu.com";
+      port = 465;
+      tls.enable = true;
+    };
+    aerc = {
+      enable = true;
+      extraAccounts = {
+        copy-to = "Sent";
+        default = "INBOX";
+        archive = "Archive";
+      };
+    };
+  };
+
+  programs.aerc = {
+    enable = true;
+    extraConfig = {
+      # accounts.conf lands in the world-readable Nix store; that's fine here
+      # because it holds only the secret-tool lookup command, never the password.
+      general.unsafe-accounts-conf = true;
+      # compose editor: inherits $EDITOR = hx (home.sessionVariables)
+    };
   };
 
   # Git-compatible VCS. Works inside existing git repos (`jj git init --colocate`).
