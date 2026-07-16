@@ -9,4 +9,6 @@ hyprctl dispatch dpms on
 sleep 1
 hyprctl keyword monitor "$ASUS, 1920x1080@60, 0x0, 1"
 sleep 2
-hyprctl keyword monitor "$ASUS, highrr, 0x0, 1, vrr, 1"
+# Restore the 120Hz config default (not highrr — 165Hz is opt-in via
+# Super+Shift+F / refresh-toggle.sh; re-toggle after resume if you were at 165).
+hyprctl keyword monitor "$ASUS, 1920x1080@120, 0x0, 1, vrr, 1"
