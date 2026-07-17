@@ -140,33 +140,6 @@ in
     options nvidia NVreg_DynamicPowerManagement=0x00
   '';
 
-  # ── DP-1 EDID override — AOpen 16PM1Q portable monitor ──
-  # Its DP→mini-HDMI converter cable passes video but drops DDC/EDID, so the
-  # GPU sees an unknown 640x480 panel ("Nvidia 0x0000"). Feed the kernel the
-  # panel's real EDID (linuxhw/EDID Digital/AOpen/AOP0EAC, "16PM1Q J",
-  # 1920x1080@60 native) and force the connector on — the NVIDIA driver
-  # ignores drm.edid_firmware unless video=DP-1:e is also set.
-  # Side effect of :e — DP-1 counts as connected even with nothing plugged in.
-  hardware.display = {
-    edid.packages = [
-      (pkgs.runCommand "edid-aopen-16pm1q" { } ''
-        mkdir -p "$out/lib/firmware/edid"
-        base64 -d > "$out/lib/firmware/edid/aopen-16pm1q.bin" <<'EOF'
-        AP///////wAF8KwOAAAAABcjAQS1IxN4K9FllVpakykfUFQhCABxQIGAqcDRwLPA
-        lQCzAJUA2DaAoHA4LUAwIEUAWcIQAAAeAAAA/wAxNTIzMTAwQzk1VjAxAAAA/AAx
-        NlBNMVEgSgogICAgAAAA/QAwPGRkFAEKICAgICAgAfwCAy7yRZABAgMEIwl/B4MB
-        AADjBcAA4gDV5gYFAWJiKG0aAAACATDmAAAAAAAAAjqAGHE4LUBYLEUAWcIQAAAe
-        XR9WGFEALTBYLCUAWcIQAAAeAAAAAAAAAAAAAAAAWcIQAAAAAAAAAAAAAAAAAAAA
-        WcIQAAAAAAAAAAAAAAAADQ==
-        EOF
-      '')
-    ];
-    outputs."DP-1" = {
-      edid = "aopen-16pm1q.bin";
-      mode = "e";
-    };
-  };
-
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
