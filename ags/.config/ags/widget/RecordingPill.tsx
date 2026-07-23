@@ -72,13 +72,15 @@ export default function RecordingPill(gdkmonitor: Gdk.Monitor) {
       // never sits invisibly at top-center swallowing clicks when idle.
       visible={pill((v) => styleOf(v) === "recording")}
     >
+      {/* Use the button's OWN reactive label prop, not a child <label>: a child
+          label inside a Gtk.Button does not re-render on state change (the timer
+          stuck at 0:00), whereas the button's label prop updates reliably. */}
       <button
         class={pill((v) => `recording-pill ${styleOf(v)}`)}
+        label={pill((v) => labelOf(v))}
         tooltipText="Click to stop recording"
         onClicked={() => execAsync(["bash", TOGGLE]).catch((e) => print(`stop: ${e}`))}
-      >
-        <label label={pill((v) => labelOf(v))} />
-      </button>
+      />
     </window>
   )
 }
