@@ -201,6 +201,14 @@ button {
     color: #6b8cae;
 }
 
+/* RGB LEDs (led-ctl.sh / OpenRGB) */
+#custom-leds.on {
+    color: #f5a623;
+}
+#custom-leds.off {
+    color: #5a5a6a;
+}
+
 /* Dictation (hyprwhspr-rs) */
 #custom-dictation {
     padding: 0 12px;

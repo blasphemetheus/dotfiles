@@ -20,6 +20,7 @@
         "custom/claude",
         "custom/dnd",
         "custom/gpu-temp",
+        "custom/leds",
         "custom/bluetooth",
         "tray",
         "pulseaudio",
@@ -118,6 +119,19 @@
         "on-scroll-up": "playerctl next",
         "on-scroll-down": "playerctl previous",
         "tooltip-format": "Click: play/pause | Scroll: next/prev"
+    },
+    "custom/leds": {
+        // Case/motherboard RGB (OpenRGB). led-ctl.sh sends RTMIN+9 on changes.
+        "exec": "~/.config/hypr/scripts/led-ctl.sh status",
+        "return-type": "json",
+        "format": "{text}",
+        "interval": 60,
+        "signal": 9,
+        "tooltip": true,
+        "on-click": "~/.config/hypr/scripts/led-ctl.sh toggle",
+        "on-click-right": "~/.config/hypr/scripts/led-ctl.sh menu",
+        "on-scroll-up": "~/.config/hypr/scripts/led-ctl.sh bright +10",
+        "on-scroll-down": "~/.config/hypr/scripts/led-ctl.sh bright -10"
     },
     "custom/bluetooth": {
         "exec": "~/.config/waybar/scripts/bluetooth.sh",

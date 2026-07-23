@@ -23,6 +23,9 @@ set_wallpaper() {
             --transition-fps 60
         echo "$img" > "$CURRENT_FILE"
         notify-send "Wallpaper Changed" "$(basename "$img")" -t 2000
+        # If RGB LEDs are in wallpaper-sync mode, recolor them to match
+        "$HOME/.config/hypr/scripts/led-ctl.sh" wallsync-refresh &
+
     fi
 }
 

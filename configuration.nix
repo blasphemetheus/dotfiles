@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running 'nixos-help').
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   # Session list for the greeter: everything the display manager knows about
@@ -313,6 +313,31 @@ in
 
   # Power profiles (performance/balanced/power-saver)
   services.power-profiles-daemon.enable = true;
+
+  # Case/motherboard RGB via OpenRGB (MSI Mystic Light USB controller 0db0:0076
+  # on the MAG X870E Tomahawk). Installs udev rules and runs the SDK server so
+  # the `openrgb` CLI autoconnects instead of re-detecting hardware every call.
+  # `motherboard = "amd"` loads i2c-piix4/i2c-dev for RAM/GPU RGB detection.
+  # Toggle keybind: Super+Shift+L (led-toggle.sh).
+  services.hardware.openrgb = {
+    enable = true;
+    motherboard = "amd";
+    # 1.0rc2 (nixpkgs) rejects this board ("No matching driver found for
+    # MS-7E59"); support landed in master's MSIMysticLight761 driver
+    # (gitlab issue #4910). Pin master until the next release ships it.
+    # The systemd-service patch is upstream in master, so drop it.
+    package = pkgs.openrgb.overrideAttrs (old: {
+      version = "1.0rc2-unstable-2026-07-21";
+      src = pkgs.fetchFromGitLab {
+        owner = "CalcProgrammer1";
+        repo = "OpenRGB";
+        rev = "bd41ba3b5cb619485899b40c8ff073dcad3aa4ed";
+        hash = "sha256-jITHNPieOPuhRqMghnW8NoOoL6GJmwzUWQRCW7KWzNM=";
+      };
+      patches = builtins.filter
+        (p: !(lib.hasInfix "systemd-service" (baseNameOf p))) old.patches;
+    });
+  };
 
   # Nintendo / Mayflash GameCube controller adapter (WUP-028, 057e:0337, Wii-U
   # mode) for Slippi Dolphin. The device node otherwise comes up root-only and
