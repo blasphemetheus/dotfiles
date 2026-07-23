@@ -279,6 +279,39 @@ in
     Install.WantedBy = [ "timers.target" ];
   };
 
+  # Flip hyprshade at the schedule boundaries. Without this there is NO trigger
+  # for a session that simply stays logged in: `exec-once = hyprshade auto` runs
+  # only at compositor start, and hyprshade-resume (configuration.nix) only on
+  # wake. Sit at the desk through 19:00 and the filter never comes on; sit
+  # through 06:00 and it never goes off.
+  #
+  # Replaces hand-written ~/.config/systemd/user/hyprshade.{service,timer} that
+  # `hyprshade install` dropped — those pinned an absolute /nix/store path that
+  # breaks on every upgrade, and were never enabled anyway.
+  systemd.user.services.hyprshade-schedule = {
+    Unit.Description = "Apply hyprshade schedule";
+    Service = {
+      Type = "oneshot";
+      # Same stale-instance trap as hyprshade-resume: never `ls -t` the runtime
+      # dir, dead instances outlive the live one there.
+      ExecStart = toString (pkgs.writeShellScript "hyprshade-schedule" ''
+        sig=$(${pkgs.hyprland}/bin/hyprctl instances 2>/dev/null \
+              | sed -n 's/^instance \(.*\):$/\1/p' | head -n1)
+        [ -z "$sig" ] && exit 0
+        export HYPRLAND_INSTANCE_SIGNATURE="$sig"
+        exec ${pkgs.hyprshade}/bin/hyprshade auto
+      '');
+    };
+  };
+  systemd.user.timers.hyprshade-schedule = {
+    Unit.Description = "hyprshade schedule boundaries (see hyprshade.toml)";
+    Timer = {
+      OnCalendar = [ "*-*-* 06:00:00" "*-*-* 19:00:00" ];
+      Persistent = true;
+    };
+    Install.WantedBy = [ "timers.target" ];
+  };
+
   # Persistent notification logger. WantedBy=default.target, NOT
   # graphical-session.target — the latter doesn't activate under greetd.
   systemd.user.services.notification-logger = {

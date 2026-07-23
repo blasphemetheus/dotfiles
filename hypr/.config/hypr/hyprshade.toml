@@ -1,4 +1,8 @@
+# blue-light-3500 is our own shader (shaders/blue-light-3500.glsl) — the
+# bundled "blue-light-filter" is hardcoded to a fairly aggressive 2600K and
+# hyprshade 4.0.1 has no way to parameterise it. Distinct name is required:
+# a same-named user shader does NOT shadow the bundled one.
 [[shades]]
-name = "blue-light-filter"
+name = "blue-light-3500"
 start_time = 19:00:00
 end_time = 06:00:00

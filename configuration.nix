@@ -654,7 +654,8 @@ in
 
   # Re-evaluate hyprshade schedule on resume from suspend/hibernate.
   # `exec-once = hyprshade auto` only fires at Hyprland startup, so a wake
-  # that crosses 19:00 / 07:00 leaves the filter stuck in its pre-sleep state.
+  # that crosses 19:00 / 06:00 leaves the filter stuck in its pre-sleep state.
+  # (Window is 19:00-06:00 per hypr/.config/hypr/hyprshade.toml.)
   systemd.services.hyprshade-resume = {
     description = "Re-apply hyprshade schedule after wake from suspend/hibernate";
     after = [
@@ -673,8 +674,13 @@ in
       Type = "oneshot";
       User = "blewf";
       Environment = [ "XDG_RUNTIME_DIR=/run/user/1000" ];
+      # Do NOT pick the instance by mtime (`ls -t`): Hyprland leaves the runtime
+      # dir behind when an instance dies, and those stale dirs get touched later
+      # than the live one, so `ls -t | head -1` reliably picks a DEAD instance.
+      # `hyprctl instances` lists only compositors that are actually running.
       ExecStart = pkgs.writeShellScript "hyprshade-resume" ''
-        sig=$(ls -t /run/user/1000/hypr/ 2>/dev/null | head -n1)
+        sig=$(${pkgs.hyprland}/bin/hyprctl instances 2>/dev/null \
+              | sed -n 's/^instance \(.*\):$/\1/p' | head -n1)
         [ -z "$sig" ] && exit 0
         export HYPRLAND_INSTANCE_SIGNATURE="$sig"
         exec ${pkgs.hyprshade}/bin/hyprshade auto
