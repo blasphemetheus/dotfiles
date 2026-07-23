@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running 'nixos-help').
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 let
   # Session list for the greeter: everything the display manager knows about
@@ -143,18 +143,29 @@ in
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
-  # Enable Hyprland
+  # Enable Hyprland — compositor and matching portal from the upstream flake
+  # (see flake.nix), not nixpkgs. nixpkgs lags the compositor and dropped
+  # hyprexpo; pulling from the flake keeps compositor + plugins on one ABI.
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
+    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+    portalPackage = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
   };
 
-  # hyprsplit: dwm-style per-monitor workspace sets (Super+N switches to the
-  # Nth workspace OF THE FOCUSED MONITOR; second monitor's set is ids 11-20).
-  # Stable /etc path so the stow-managed hyprland.conf can `plugin =` it
-  # without hardcoding a nix store path. Version pinned in flake.nix overlay.
+  # Hyprland plugins. Stable /etc paths so the stow-managed hyprland.conf can
+  # `plugin =` them without hardcoding nix store paths. All three are built
+  # against the flake Hyprland (flake.nix inputs) so their ABI matches 0.55.4.
+  #   hyprsplit — dwm-style per-monitor workspace sets (Super+N = Nth workspace
+  #               of the FOCUSED monitor; second monitor's set is ids 11-20).
+  #   Hyprspace — KDE/GNOME-style workspace overview with window drag.
+  #   hyprexpo  — expo grid overview (community fork; see pkgs/hyprexpo.nix).
   environment.etc."hypr/plugins/libhyprsplit.so".source =
-    "${pkgs.hyprlandPlugins.hyprsplit}/lib/libhyprsplit.so";
+    "${inputs.hyprsplit.packages.${pkgs.system}.hyprsplit}/lib/libhyprsplit.so";
+  environment.etc."hypr/plugins/libHyprspace.so".source =
+    "${inputs.hyprspace.packages.${pkgs.system}.Hyprspace}/lib/libHyprspace.so";
+  environment.etc."hypr/plugins/libhyprexpo.so".source =
+    "${pkgs.hyprexpo}/lib/libhyprexpo.so";
 
   # ── Alternative compositors, selectable at the greetd session picker ──
   # Purely additive: Hyprland stays the default. Log out and pick one to try it.
@@ -195,6 +206,13 @@ in
 
   # Enable flakes and the new nix command
   nix.settings.experimental-features = ["nix-command" "flakes" ];
+
+  # hyprwm's binary cache, so the flake Hyprland (+ hypr* deps) is substituted
+  # instead of built from source. Merged with the default cache.nixos.org.
+  nix.settings.substituters = [ "https://hyprland.cachix.org" ];
+  nix.settings.trusted-public-keys = [
+    "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+  ];
 
   # trust devenv's binary cache and allow blewf to manage caches
   nix.settings.trusted-users = [ "root" "blewf" ];

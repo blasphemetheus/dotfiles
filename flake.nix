@@ -20,35 +20,57 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.astal.follows = "astal";
     };
+
+    # Hyprland straight from upstream. nixpkgs lags the compositor (shipped 0.53
+    # plugins against a 0.54 hyprland) and, as of the 0.55 cycle, DROPPED
+    # hyprexpo entirely. Pinning the release tag lets every plugin below follow
+    # this exact build so their ABI matches — no per-plugin version chasing.
+    # Deliberately NOT following our nixpkgs: that keeps hyprwm's cachix
+    # (hyprland.cachix.org, added in configuration.nix) usable instead of
+    # source-building the whole hypr* stack.
+    hyprland.url = "github:hyprwm/Hyprland/v0.55.4";
+
+    # per-monitor workspace sets (already in use). Third-party; follows hyprland.
+    hyprsplit = {
+      url = "github:shezdy/hyprsplit";
+      inputs.hyprland.follows = "hyprland";
+    };
+    # workspace overview with window drag. Third-party; follows hyprland.
+    hyprspace = {
+      url = "github:KZDKM/Hyprspace";
+      inputs.hyprland.follows = "hyprland";
+    };
+    # expo-style overview. hyprwm abandoned the original (removed from
+    # hyprland-plugins in #663); this community fork is the maintained successor.
+    hyprexpo = {
+      url = "github:sandwichfarm/hyprexpo";
+      inputs.hyprland.follows = "hyprland";
+    };
   };
 
-  outputs = { nixpkgs, home-manager, astal, ags, ... }:
+  outputs = inputs@{ nixpkgs, home-manager, astal, ags, ... }:
     let
       slanka = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
+        # Thread the flake inputs into configuration.nix so it can pull the
+        # Hyprland compositor + plugin packages straight from the flakes above.
+        specialArgs = { inherit inputs; };
         modules = [
           ./configuration.nix
 
           # Expose the v3 CLI as `ags-v3` WITHOUT replacing pkgs.ags: nixpkgs
           # consumers (hyprpanel calls `ags.bundle`) still need the v2 package.
+          # (hyprsplit no longer overridden here — it now comes from the
+          # shezdy/hyprsplit flake input, built against our pinned Hyprland.)
           {
             nixpkgs.overlays = [
               (final: prev: {
                 ags-v3 = ags.packages.${prev.stdenv.hostPlatform.system}.default;
 
-                # nixpkgs still ships hyprsplit 0.53.1, which doesn't compile
-                # against hyprland 0.54 (HookSystemManager.hpp moved). Upstream
-                # tags track hyprland releases — pin the matching one.
-                hyprlandPlugins = prev.hyprlandPlugins // {
-                  hyprsplit = prev.hyprlandPlugins.hyprsplit.overrideAttrs (old: {
-                    version = "0.54.2";
-                    src = prev.fetchFromGitHub {
-                      owner = "shezdy";
-                      repo = "hyprsplit";
-                      rev = "v0.54.2";
-                      hash = "sha256-NFMLZmM6lM7v6WFcewOp7pKPlr6ampX/MB/kGxt/gPE=";
-                    };
-                  });
+                # hyprexpo has no flake at its last 0.55.x tag, so build it here
+                # against the flake Hyprland (see pkgs/hyprexpo.nix).
+                hyprexpo = final.callPackage ./pkgs/hyprexpo.nix {
+                  hyprlandPkg = inputs.hyprland.packages.${prev.stdenv.hostPlatform.system}.hyprland;
                 };
               })
             ];
