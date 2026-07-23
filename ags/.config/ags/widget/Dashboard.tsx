@@ -23,6 +23,9 @@ const ram = createPoll("...", 5000, `bash -c "free -h | awk '/^Mem/ {print \\$3\
 // VRAM + the current biggest hog. The BEAM workloads routinely hold ~29GB of
 // the 5090 — this answers "can a GPU job even fit right now?" at a glance.
 const vram = createPoll("...", 5000, `bash -c "nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader,nounits 2>/dev/null | awk -F', ' '{printf \\"%.1f / %.1f GB\\", \\$1/1024, \\$2/1024}'"`)
+// Core utilization + temp — VRAM alone doesn't say whether the card is actually
+// pegged. Same nvidia-smi cost as the VRAM query.
+const gpuUtil = createPoll("...", 5000, `bash -c "nvidia-smi --query-gpu=utilization.gpu,temperature.gpu --format=csv,noheader,nounits 2>/dev/null | awk -F', ' '{printf \\"%s%%  ·  %s°C\\", \\$1, \\$2}'"`)
 const vramHog = createPoll("", 10000, `bash -c "nvidia-smi --query-compute-apps=process_name,used_memory --format=csv,noheader,nounits 2>/dev/null | sort -t, -k2 -rn | head -1 | awk -F', ' '{n=\\$1; sub(/.*\\\\//,\\"\\",n); printf \\"%s: %.1f GB\\", n, \\$2/1024}'"`)
 
 // ── Dictation ───────────────────────────────────────────────────────
@@ -93,6 +96,7 @@ export default function Dashboard(gdkmonitor: Gdk.Monitor) {
 
           <Section title="GPU — RTX 5090">
             <Row label="VRAM" value={vram} />
+            <Row label="Util / Temp" value={gpuUtil} />
             <Row label="Top hog" value={vramHog} />
           </Section>
 
