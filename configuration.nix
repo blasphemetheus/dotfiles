@@ -215,6 +215,20 @@ in
     dates = "weekly";
     options = "--delete-older-than 30d";
   };
+  # devenv memoizes evaluation results — including absolute /nix/store paths —
+  # in <project>/.devenv/nix-eval-cache.db, but only GC-roots the newest shell
+  # (.devenv/gc/shell, overwritten each rebuild). The sweep above deletes the
+  # older paths the cache still references, after which devenv either dies with
+  # "path '/nix/store/...-devenv-shell.drv' does not exist and cannot be
+  # created" or silently serves a stale evaluation. Drop the caches so the next
+  # devenv command re-evaluates; they are pure cache and cost ~1s to rebuild.
+  systemd.services.nix-gc.postStop = ''
+    ${pkgs.findutils}/bin/find /home/blewf -maxdepth 5 \
+      \( -name node_modules -o -name .git -o -name .direnv -o -name result \) -prune -o \
+      -type d -name .devenv -exec ${pkgs.coreutils}/bin/rm -f \
+        {}/nix-eval-cache.db {}/nix-eval-cache.db-shm {}/nix-eval-cache.db-wal \;
+  '';
+
   # Hardlink identical files in the store. auto-optimise-store dedups on every
   # build; the weekly timer sweeps what already accumulated.
   nix.settings.auto-optimise-store = true;
