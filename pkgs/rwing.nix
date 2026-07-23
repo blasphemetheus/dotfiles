@@ -58,10 +58,14 @@ let
       install -Dm755 $src $out/bin/.rwing-unwrapped
       # WINIT_X11_SCALE_FACTOR=1 pins winit to 1:1 (sane default; does NOT fix the click offset — see
       # the launcher below). GDK_BACKEND=wayland only affects the GTK (rfd) file dialogs.
+      # XDG_DATA_DIRS must include gtk3's gsettings schemas: opening the rfd file dialog (e.g. the
+      # "export training mode savestate" path picker) makes GTK load org.gtk.Settings.FileChooser,
+      # and a missing schema is a *fatal* GLib-GIO-ERROR → abort() → the process dies with SIGTRAP.
       makeWrapper $out/bin/.rwing-unwrapped $out/bin/rwing \
         --argv0 rwing \
         --set-default WINIT_X11_SCALE_FACTOR 1 \
         --set-default GDK_BACKEND wayland \
+        --prefix XDG_DATA_DIRS : "${gtk3}/share/gsettings-schemas/${gtk3.name}" \
         --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath libs}:/run/opengl-driver/lib"
       runHook postInstall
     '';

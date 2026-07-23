@@ -35,7 +35,17 @@ hash="$(nix hash file "$BIN")"
 echo "==> hash:     $hash"
 
 echo "==> registering binary in the Nix store (nix-store --add-fixed)…"
-nix-store --add-fixed sha256 "$BIN" >/dev/null
+storepath="$(nix-store --add-fixed sha256 "$BIN")"
+
+# The requireFile source is copied into rwing-unwrapped at build time, so it is NOT in the
+# runtime closure — nothing roots it, and every `nix-collect-garbage` deletes it. That is
+# silent until a rebuild is forced (version bump, editing rwing.nix, or a nixpkgs bump of a
+# buildInput like gtk3), which then fails because the source is gone. Pin it with a GC root so
+# it survives collection. Indirect root: gcroots/auto → this link → store path.
+echo "==> pinning binary as a GC root (survives nix-collect-garbage)…"
+gcroots="${XDG_STATE_HOME:-$HOME/.local/state}/nix/rwing-gcroots"
+mkdir -p "$gcroots"
+nix-store --add-root "$gcroots/$base" --indirect --realise "$storepath" >/dev/null
 
 echo "==> patching $NIXFILE"
 # Only the two single-source-of-truth lines at the top of the `let` block change.
@@ -56,6 +66,7 @@ cat <<EOF
     sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka
 
 Notes:
-  • Keep $BIN until after the switch — the requireFile source is not a GC root.
+  • The binary is pinned as a GC root under \$XDG_STATE_HOME/nix/rwing-gcroots, so it now
+    survives nix-collect-garbage. Old versions' roots there can be deleted once unused.
   • Commit pkgs/rwing.nix when ready (the binary itself is never committed).
 EOF
