@@ -441,6 +441,17 @@ in
     # starship/direnv/zoxide hooks come from their programs.* modules above.
     shellInit = ''
       set -gx DOLPHIN_DIR "$HOME/.local/share/slippi/netplay"
+
+      # Dolphin GCI-folder cards (emulated GameCube Slot A). Drop a .gci here
+      # and Training Mode CE / Melee sees it as a memory-card file; Dolphin
+      # globs *.gci and reads the gamecode out of each header, so the on-disk
+      # name is cosmetic (convention: <makercode>-<gamecode>-<internal name>).
+      # Variables, not aliases, so they work as arguments: `cp x.gci $card_a`.
+      # card_a       = mainline beta build (Slippi Launcher useNetplayBeta=true)
+      # card_a_online = the older Ishiiruka ~/.config/SlippiOnline build
+      set -gx card_a "$HOME/.config/slippi-dolphin/netplay-beta/GC/USA/Card A"
+      set -gx card_a_online "$HOME/.config/SlippiOnline/GC/USA/Card A"
+
       test -f ~/.config/fish/secrets.fish && source ~/.config/fish/secrets.fish
     '';
 
