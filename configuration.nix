@@ -494,6 +494,11 @@ in
     slurp
     satty      # screenshot annotation tool
     wf-recorder
+    # Video playback (for reviewing screen recordings from wf-recorder)
+    mpv        # lightweight keyboard-driven player: `mpv file.mp4`
+    celluloid  # GTK GUI front-end over mpv
+    vlc        # heavyweight, plays everything
+    timg       # in-terminal video/gif playback via kitty graphics: `timg file.mp4`
 
     # AGS v3 (aylur/ags flake, overlaid as ags-v3) — dashboard + dictation
     # pill. nixpkgs' `ags` (v2.3, astal-API) stays untouched because hyprpanel

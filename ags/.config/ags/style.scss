@@ -244,3 +244,39 @@ window.DictationPill {
     border-color: rgba(168, 198, 134, 0.5);
   }
 }
+
+// ── Recording pill (top-center, driven by wf-recorder + screen-record state) ──
+window.RecordingPill {
+  background-color: transparent;
+}
+
+@keyframes recording-pulse {
+  0%   { box-shadow: 0 0 4px 0 rgba(232, 90, 90, 0.35); }
+  50%  { box-shadow: 0 0 18px 3px rgba(232, 90, 90, 0.9); }
+  100% { box-shadow: 0 0 4px 0 rgba(232, 90, 90, 0.35); }
+}
+
+// It's a <button> (click to stop) — reset GTK's default chrome, keep the pill.
+.recording-pill {
+  background-color: rgba(30, 28, 35, 0.95);
+  border: 1px solid rgba(232, 90, 90, 0.7);
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #e85a5a;
+  box-shadow: none;
+
+  &:hover  { background-color: rgba(48, 34, 38, 0.98); }
+  &:focus  { outline: none; }
+
+  &.recording {
+    animation: recording-pulse 1.4s ease-in-out infinite;
+  }
+
+  &.hidden {
+    opacity: 0;
+    padding: 0;
+    border: none;
+  }
+}
