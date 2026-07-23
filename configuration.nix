@@ -603,6 +603,10 @@ in
     # Polkit agent (needed for privilege escalation prompts)
     polkit_gnome
 
+    # utils
+    unzip
+    xdelta
+    
     # rwing — Super Smash Bros. Melee replay viewer (Patreon, closed-source binary).
     # Packaged from the prebuilt Linux binary; see pkgs/rwing.nix. The binary itself is
     # non-redistributable and NOT in git — add it once with:
