@@ -479,6 +479,34 @@ in
       sandbox-join = ''
         docker exec -it (docker ps -q --filter ancestor=claude-sandbox) fish
       '';
+
+      # Recover a dead lockscreen. hyprlock 0.9.2 SEGVs on teardown (CShader
+      # dtor racing the async asset thread) and leaves Hyprland's session-lock
+      # surface orphaned: black screen that swallows input. Nothing unlocks it,
+      # but the compositor is still alive underneath.
+      #
+      # Run from a TTY (Ctrl+Alt+F2, log in, `lockfix`) or any shell you can
+      # still reach. Do NOT parse /run/user/$UID/hypr by mtime — dead instances
+      # leave dirs behind with newer mtimes than the live one. `hyprctl
+      # instances` filters to actually-running compositors, so trust that.
+      lockfix = ''
+        set -l sigs (hyprctl instances | string replace -rf '^instance (.*):$' '$1')
+        if test (count $sigs) -eq 0
+            echo "lockfix: no running Hyprland instance — nothing to recover"
+            return 1
+        end
+        if test (count $sigs) -gt 1
+            echo "lockfix: "(count $sigs)" Hyprland instances running — you probably"
+            echo "         started an extra one by typing 'hyprland' inside your session."
+            echo "         Each spawns its own hypridle, and they race to lock. Using the first."
+        end
+        set -gx HYPRLAND_INSTANCE_SIGNATURE $sigs[1]
+        pkill -x hyprlock
+        sleep 0.5
+        hyprctl keyword misc:allow_session_lock_restore 1
+        hyprctl dispatch exec hyprlock
+        echo "lockfix: relaunched hyprlock on $sigs[1]"
+      '';
     };
   };
 }

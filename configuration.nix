@@ -288,6 +288,12 @@ in
     variant = "";
   };
 
+  # Give hyprlock its own PAM stack. Without /etc/pam.d/hyprlock it falls
+  # back to the `su` stack, which includes pam_faillock: three typos at the
+  # lockscreen would lock the ACCOUNT for 10 minutes on top of the screen —
+  # journal showed `pam_unix(su:auth)` entries from exactly this fallback.
+  security.pam.services.hyprlock = { };
+
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
