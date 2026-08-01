@@ -30,6 +30,15 @@
     # source-building the whole hypr* stack.
     hyprland.url = "github:hyprwm/Hyprland/v0.55.4";
 
+    # hyprlock straight from upstream too: our nixpkgs pin ships 0.9.2, which
+    # SEGVs on teardown (CShader dtor racing the async asset thread — the
+    # 6-coredumps-in-2-days saga of 2026-07/08, see lock-wrapper.sh) and can
+    # wedge in a busy-loop leaving the "oopsie" screen. v0.9.3 fixed the
+    # use-after-free in async resource callbacks + NVIDIA teardown order;
+    # v0.9.6 guards dtors against a destroyed EGL context. Deliberately NOT
+    # following our nixpkgs (same cachix rationale as hyprland above).
+    hyprlock.url = "github:hyprwm/hyprlock/v0.9.6";
+
     # per-monitor workspace sets (already in use). Third-party; follows hyprland.
     hyprsplit = {
       url = "github:shezdy/hyprsplit";
@@ -66,6 +75,11 @@
             nixpkgs.overlays = [
               (final: prev: {
                 ags-v3 = ags.packages.${prev.stdenv.hostPlatform.system}.default;
+
+                # Replace nixpkgs' hyprlock 0.9.2 with the crash-fixed upstream
+                # tag (see the hyprlock input comment). systemPackages picks
+                # this up via `hyprlock` in configuration.nix.
+                hyprlock = inputs.hyprlock.packages.${prev.stdenv.hostPlatform.system}.hyprlock;
 
                 # hyprexpo has no flake at its last 0.55.x tag, so build it here
                 # against the flake Hyprland (see pkgs/hyprexpo.nix).
