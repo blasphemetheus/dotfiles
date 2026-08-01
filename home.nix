@@ -539,17 +539,43 @@ in
             echo "lockfix: no running Hyprland instance — nothing to recover"
             return 1
         end
+        # Which instances already have a live hyprlock? Read each hyprlock's
+        # signature out of /proc — never pkill globally: with two instances up
+        # (tty2-escape scenario) that murders the healthy instance's lock too.
+        set -l lock_pids (pgrep -x hyprlock)
+        set -l locked_sigs
+        for p in $lock_pids
+            set -a locked_sigs (tr '\0' '\n' < /proc/$p/environ 2>/dev/null | string replace -f 'HYPRLAND_INSTANCE_SIGNATURE=' "")
+        end
+        set -l orphans
+        for s in $sigs
+            contains -- $s $locked_sigs; or set -a orphans $s
+        end
+        if test (count $orphans) -gt 0
+            # Orphaned session lock, no hyprlock attached: just respawn —
+            # allow_session_lock_restore reattaches it. Nothing to kill.
+            for s in $orphans
+                set -gx HYPRLAND_INSTANCE_SIGNATURE $s
+                hyprctl keyword misc:allow_session_lock_restore 1
+                hyprctl dispatch exec hyprlock
+                echo "lockfix: relaunched hyprlock on orphaned instance $s"
+            end
+            return 0
+        end
+        # Every instance has a hyprlock — assume the visible one is hung.
+        # Kill and respawn only the first instance's hyprlock.
         if test (count $sigs) -gt 1
-            echo "lockfix: "(count $sigs)" Hyprland instances running — you probably"
-            echo "         started an extra one by typing 'hyprland' inside your session."
-            echo "         Each spawns its own hypridle, and they race to lock. Using the first."
+            echo "lockfix: "(count $sigs)" Hyprland instances, all locked — recovering the first."
         end
         set -gx HYPRLAND_INSTANCE_SIGNATURE $sigs[1]
-        pkill -x hyprlock
+        for p in $lock_pids
+            grep -qz "HYPRLAND_INSTANCE_SIGNATURE=$sigs[1]" /proc/$p/environ 2>/dev/null
+            and kill $p
+        end
         sleep 0.5
         hyprctl keyword misc:allow_session_lock_restore 1
         hyprctl dispatch exec hyprlock
-        echo "lockfix: relaunched hyprlock on $sigs[1]"
+        echo "lockfix: killed and relaunched hyprlock on $sigs[1]"
       '';
     };
   };

@@ -20,7 +20,12 @@
 # scenario), a global one would let instance A's lockscreen block instance B's.
 exec 9>"/tmp/hyprlock-${HYPRLAND_INSTANCE_SIGNATURE:-global}.lock"
 flock -n 9 || exit 0            # another wrapper already owns the lockscreen
-pidof hyprlock >/dev/null && exit 0
+# Only bail if THIS instance's hyprlock is up — a global pidof lets another
+# instance's lock block our respawn (two-instance scenario, 2026-08-01).
+for p in $(pgrep -x hyprlock); do
+    grep -qz "HYPRLAND_INSTANCE_SIGNATURE=$HYPRLAND_INSTANCE_SIGNATURE" \
+        "/proc/$p/environ" 2>/dev/null && exit 0
+done
 
 LEDCTL=~/.config/hypr/scripts/led-ctl.sh
 "$LEDCTL" lock-off              # LEDs dark while locked; saved state untouched
