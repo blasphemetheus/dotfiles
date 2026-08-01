@@ -195,6 +195,72 @@ in
   # Allow dynamically linked binaries (Bazel hermetic toolchains, etc.)
   programs.nix-ld.enable = true;
 
+  # Update-resilient game/AppImage support (2026-07-31): the Slippi
+  # Launcher's downloaded Dolphin builds (and any future downloaded
+  # binary) resolve their host libs through nix-ld instead of failing
+  # after every update. This is the exact dependency chain discovered
+  # empirically for the ExPhil netplay bot (asound -> EGL -> X11 ->
+  # fontconfig -> harfbuzz -> drm -> gmp).
+  programs.nix-ld.libraries = with pkgs; [
+    alsa-lib
+    libglvnd
+    libusb1
+    udev
+    pulseaudio
+    xorg.libX11
+    xorg.libXext
+    xorg.libXrandr
+    xorg.libXi
+    xorg.libXcursor
+    xorg.libXinerama
+    xorg.libXxf86vm
+    xorg.libXfixes
+    xorg.libXrender
+    xorg.libxcb
+    xorg.libSM
+    xorg.libICE
+    fontconfig
+    freetype
+    dbus
+    zlib
+    harfbuzz
+    glib
+    pango
+    cairo
+    gdk-pixbuf
+    atk
+    gtk3
+    libpng
+    expat
+    libxkbcommon
+    wayland
+    libdrm
+    mesa
+    vulkan-loader
+    gmp
+    # Full-ldd sweep remainder (mainline beta Dolphin, 2026-07-31)
+    libgpg-error
+    fribidi
+    e2fsprogs
+  ];
+
+  # AppImages from GUI-spawned processes (Slippi Launcher's Dolphin child,
+  # 2026-07-31): skip FUSE mounting entirely — the slippi-nix launcher
+  # wrapper pins FUSERMOUNT_PROG to an unprivileged nix-store fusermount
+  # ("mount failed: Operation not permitted"), and its version probe fails
+  # the same way (hence the eternal beta.19 redownload loop). Extraction
+  # mode needs no fusermount, no setuid, and works from any spawn context.
+  environment.sessionVariables.APPIMAGE_EXTRACT_AND_RUN = "1";
+
+  # Kill the biggest memory hog BEFORE the box freezes (2026-07-31 hard
+  # freeze: GPU-VRAM starvation -> memory-pressure spiral -> 30s of
+  # journald cache-flushing -> hard reboot, no OOM kill ever fired).
+  services.earlyoom = {
+    enable = true;
+    freeMemThreshold = 4;   # % RAM
+    freeSwapThreshold = 10; # % swap
+  };
+
   # Bazel toolchain wrappers use #!/bin/bash shebangs
   system.activationScripts.binbash = ''
     mkdir -p /bin
@@ -381,8 +447,16 @@ in
   # mode) for Slippi Dolphin. The device node otherwise comes up root-only and
   # needs a manual chown after every replug/reboot; this grants access
   # declaratively. uaccess ACLs it to the logged-in seat; MODE=0666 is the belt.
+  #
+  # OpenRGB SDK server holds the RGB controller's device fd for its whole
+  # lifetime; when the MSI Mystic Light USB controller (0db0:0076) re-enumerates
+  # (suspend/resume, USB power glitch) that fd goes stale — LEDs stop responding
+  # while `openrgb -c` still exits 0. Restart the server whenever the controller
+  # re-appears so it re-grabs the live handle. --no-block keeps the udev worker
+  # from blocking on the restart. (See memory: openrgb-stale-handle.)
   services.udev.extraRules = ''
     SUBSYSTEM=="usb", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="0337", MODE="0666", TAG+="uaccess"
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0db0", ATTR{idProduct}=="0076", RUN+="${pkgs.systemd}/bin/systemctl --no-block restart openrgb.service"
   '';
 
   # Overclock the GC adapter's USB polling from 125Hz to 1000Hz (standard
@@ -540,6 +614,7 @@ in
     brightnessctl
     playerctl
     pavucontrol
+    audacity   # Audio recording/editing (interviews)
     blueman
     wob            # Volume/brightness overlay bar
     hyprshade      # Blue light filter
@@ -555,6 +630,7 @@ in
     direnv
     gh             # GitHub CLI
     zed-editor     # Rust GPU-accelerated editor
+    opencode       # provider-agnostic terminal coding agent (Kimi K3 via "Kimi For Coding")
 
     # Modern CLI tools (Rust/Go replacements)
     bat        # cat with syntax highlighting
