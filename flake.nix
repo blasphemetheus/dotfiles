@@ -28,7 +28,22 @@
     # Deliberately NOT following our nixpkgs: that keeps hyprwm's cachix
     # (hyprland.cachix.org, added in configuration.nix) usable instead of
     # source-building the whole hypr* stack.
-    hyprland.url = "github:hyprwm/Hyprland/v0.55.4";
+    # v0.56.2: fixes the aquamarine output-teardown SEGV (DP-2 deep-sleep link
+    # flap at DPMS wake crashed 0.55.4 into safe mode 3x, 2026-08-01..10).
+    #
+    # nixpkgs pin: the tag's own lock (2026-08-04) has glaze 8.0.0, but its
+    # CMake demands glaze 7.x (`find_package(glaze 7...<8)`) — find_package
+    # fails, FetchContent tries to git-clone in the sandbox, build dies.
+    # Upstream shipped the tag broken. Pin hyprland's nixpkgs to the last
+    # nixos-unstable channel rev with glaze 7.9.1 (pre-8.0.0 bump of Aug 3).
+    # This forfeits hyprland.cachix.org substitution (different drv hashes),
+    # but the cache was already useless for this tag. Drop this pin (and the
+    # nixpkgs-hypr input) at the next hyprland bump if upstream's lock is fixed.
+    nixpkgs-hypr.url = "github:NixOS/nixpkgs/cd017c33bbf56d9d918cb6d21b3118acb4cee58d";
+    hyprland = {
+      url = "github:hyprwm/Hyprland/v0.56.2";
+      inputs.nixpkgs.follows = "nixpkgs-hypr";
+    };
 
     # hyprlock straight from upstream too: our nixpkgs pin ships 0.9.2, which
     # SEGVs on teardown (CShader dtor racing the async asset thread — the
@@ -40,8 +55,13 @@
     hyprlock.url = "github:hyprwm/hyprlock/v0.9.6";
 
     # per-monitor workspace sets (already in use). Third-party; follows hyprland.
+    # TEMP PIN 2026-08-11: upstream shezdy/hyprsplit (last commit Jun 11) does
+    # not compile against Hyprland 0.56 (helpers/Monitor.hpp → output/,
+    # CCompositor → state/* refactor; issue #90). This is PR #89 ("chase
+    # hyprland", cryeprecision's fork, author-tested on 0.56). Point back at
+    # github:shezdy/hyprsplit once #89 or equivalent is merged.
     hyprsplit = {
-      url = "github:shezdy/hyprsplit";
+      url = "github:cryeprecision/hyprsplit/6870872c24672745614d1cf61cb70dcc0d6fd0a9";
       inputs.hyprland.follows = "hyprland";
     };
     # workspace overview with window drag. Third-party; follows hyprland.
@@ -51,8 +71,12 @@
     };
     # expo-style overview. hyprwm abandoned the original (removed from
     # hyprland-plugins in #663); this community fork is the maintained successor.
+    # Pinned to release v0.56.1+3 (2026-08-07, first 0.56-compatible release;
+    # sha pin because "+" in the tag name breaks flake ref parsing). Since the
+    # fork now ships a working flake for 0.56, we consume its package directly —
+    # pkgs/hyprexpo.nix (the hand-built 0.55.4 tag) is no longer referenced.
     hyprexpo = {
-      url = "github:sandwichfarm/hyprexpo";
+      url = "github:sandwichfarm/hyprexpo/40352e2663deded7c6536b2fda1ed18a97234a80";
       inputs.hyprland.follows = "hyprland";
     };
   };
