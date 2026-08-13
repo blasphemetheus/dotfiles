@@ -543,7 +543,6 @@ in
     vim
     wget
     git
-    firefox
     btop
     elixir
     erlang
@@ -553,7 +552,6 @@ in
     cachix
     google-chrome
     chromium
-    helix
     discord
     openssl
     mosh
@@ -575,7 +573,6 @@ in
     hyprlock
     hypridle
     hyprpicker
-    xdg-desktop-portal-hyprland
     pyprland       # Scratchpads, magnify, and more
 
     # Launcher and notifications
@@ -683,7 +680,6 @@ in
     just       # task runner (make replacement)
     tealdeer   # tldr pages (simplified man pages)
     xh         # HTTP client (curl/httpie replacement)
-    bandwhich  # network bandwidth monitor
     hyperfine  # benchmarking tool
     ouch       # compression (tar/zip/7z auto-detect)
     doggo      # DNS lookup (dig replacement)
@@ -745,7 +741,7 @@ in
     xdelta
 
     # elixir livebook
-    pkgs.livebook
+    livebook
     # rwing — Super Smash Bros. Melee replay viewer (Patreon, closed-source binary).
     # Packaged from the prebuilt Linux binary; see pkgs/rwing.nix. The binary itself is
     # non-redistributable and NOT in git — add it once with:
@@ -836,7 +832,7 @@ in
       # than the live one, so `ls -t | head -1` reliably picks a DEAD instance.
       # `hyprctl instances` lists only compositors that are actually running.
       ExecStart = pkgs.writeShellScript "hyprshade-resume" ''
-        sig=$(${pkgs.hyprland}/bin/hyprctl instances 2>/dev/null \
+        sig=$(${config.programs.hyprland.package}/bin/hyprctl instances 2>/dev/null \
               | sed -n 's/^instance \(.*\):$/\1/p' | head -n1)
         [ -z "$sig" ] && exit 0
         export HYPRLAND_INSTANCE_SIGNATURE="$sig"
