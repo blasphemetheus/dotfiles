@@ -266,6 +266,27 @@ in
     freeSwapThreshold = 10; # % swap
   };
 
+  # GPU-aware suspend guard: while ANY process holds CUDA compute, hold a
+  # sleep:idle inhibitor. Catches everything the script-level inhibitors
+  # don't know about (Livebook runtimes, python experiments, ad-hoc runs).
+  systemd.services.gpu-suspend-inhibitor = {
+    description = "Inhibit idle-suspend while GPU compute is active";
+    wantedBy = [ "multi-user.target" ];
+    path = [ config.hardware.nvidia.package pkgs.systemd pkgs.gnugrep ];
+    script = ''
+      while true; do
+        if nvidia-smi --query-compute-apps=pid --format=csv,noheader 2>/dev/null | grep -q .; then
+          # Hold the lock for 60s at a time while compute apps exist
+          systemd-inhibit --what=sleep:idle --who=gpu-watch \
+            --why="GPU compute active" sleep 60
+        else
+          sleep 60
+        fi
+      done
+    '';
+    serviceConfig.Restart = "always";
+  };
+
   # Bazel toolchain wrappers use #!/bin/bash shebangs
   system.activationScripts.binbash = ''
     mkdir -p /bin
