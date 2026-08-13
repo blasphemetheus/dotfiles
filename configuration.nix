@@ -517,6 +517,10 @@ in
   };
   programs.fish.enable = true;
 
+  # Steam for Rivals of Aether 1/2 (octopus workshop character project,
+  # 2026-08-08). The module wires up 32-bit graphics, FHS wrapper, udev.
+  programs.steam.enable = true;
+
   # Install firefox.
   programs.firefox.enable = true;
 

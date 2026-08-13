@@ -495,6 +495,23 @@ in
         command rm -f -- "$tmp"
       '';
 
+      # Steam with GameCube adapter support (Wii U mode, 057e:0337). Steam's
+      # native GC support (Nov 2025) is off by default because libusb access
+      # to the adapter is EXCLUSIVE — the same handle Slippi Dolphin needs,
+      # so don't run this while playing Slippi / the ExPhil bot is up.
+      steam-gcc = ''
+        if pgrep -f "Slippi_Online|slippi-netplay" >/dev/null
+            echo "steam-gcc: Slippi Dolphin is running — it and Steam fight over the adapter."
+            echo "Close Slippi first (or launch plain 'steam' to leave the adapter alone)."
+            return 1
+        end
+        if lsusb | grep -q "0079:1843"
+            echo "steam-gcc: adapter is in PC mode (DragonRise) — flip the switch to 'Wii U'"
+            echo "for Steam's native GC support + the 1000Hz overclock. Continuing anyway."
+        end
+        steam -enable-libusb-gamecube $argv
+      '';
+
       # Claude Code wrapper — sets the terminal title so it's identifiable in Hyprland
       claude = ''
         printf '\033]0;Claude Code: %s\007' (basename (pwd))
