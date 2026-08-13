@@ -153,6 +153,8 @@ in
     portalPackage = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
   };
 
+  programs.direnv.enable = true;
+  
   # Hyprland plugins. Stable /etc paths so the stow-managed hyprland.conf can
   # `plugin =` them without hardcoding nix store paths. All three are built
   # against the flake Hyprland (flake.nix inputs) so their ABI matches 0.55.4.
@@ -555,6 +557,7 @@ in
     discord
     openssl
     mosh
+    aseprite  # pixel art/animation for RoA workshop character
         
     # (stow removed — Home Manager owns all dotfiles as of the Phase 6 migration.
     #  If you ever need it: nix shell nixpkgs#stow)
@@ -662,6 +665,11 @@ in
     zed-editor     # Rust GPU-accelerated editor
     opencode       # provider-agnostic terminal coding agent (Kimi K3 via "Kimi For Coding")
 
+    # Game dev — PHMUB (the biota-browser branch). nixpkgs is on 4.6.1 while
+    # game/project.godot declares config/features="4.7"; it runs and renders fine,
+    # the editor just notes the mismatch. Bump when nixpkgs catches up to 4.7.
+    godot_4
+
     # Modern CLI tools (Rust/Go replacements)
     bat        # cat with syntax highlighting
     eza        # ls with icons and git status
@@ -735,7 +743,9 @@ in
     # utils
     unzip
     xdelta
-    
+
+    # elixir livebook
+    pkgs.livebook
     # rwing — Super Smash Bros. Melee replay viewer (Patreon, closed-source binary).
     # Packaged from the prebuilt Linux binary; see pkgs/rwing.nix. The binary itself is
     # non-redistributable and NOT in git — add it once with:
