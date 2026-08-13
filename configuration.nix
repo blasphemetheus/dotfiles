@@ -149,8 +149,8 @@ in
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
-    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
-    portalPackage = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
 
   programs.direnv.enable = true;
@@ -163,16 +163,16 @@ in
   #   Hyprspace — KDE/GNOME-style workspace overview with window drag.
   #   hyprexpo  — expo grid overview (community fork; see pkgs/hyprexpo.nix).
   environment.etc."hypr/plugins/libhyprsplit.so".source =
-    "${inputs.hyprsplit.packages.${pkgs.system}.hyprsplit}/lib/libhyprsplit.so";
+    "${inputs.hyprsplit.packages.${pkgs.stdenv.hostPlatform.system}.hyprsplit}/lib/libhyprsplit.so";
   # Hyprspace DISABLED 2026-08-11: upstream (last commit 2026-05-28) doesn't
   # compile against Hyprland 0.56 (AnimationManager.hpp moved). Re-enable this
   # line + the hyprland.conf plugin/bind lines when KZDKM/Hyprspace catches up.
   # environment.etc."hypr/plugins/libHyprspace.so".source =
-  #   "${inputs.hyprspace.packages.${pkgs.system}.Hyprspace}/lib/libHyprspace.so";
+  #   "${inputs.hyprspace.packages.${pkgs.stdenv.hostPlatform.system}.Hyprspace}/lib/libHyprspace.so";
   # hyprexpo from the fork's flake since v0.56.1+3 (built against our pinned
   # Hyprland via `follows`); pkgs/hyprexpo.nix was the 0.55-era hand-build.
   environment.etc."hypr/plugins/libhyprexpo.so".source =
-    "${inputs.hyprexpo.packages.${pkgs.system}.hyprexpo}/lib/libhyprexpo.so";
+    "${inputs.hyprexpo.packages.${pkgs.stdenv.hostPlatform.system}.hyprexpo}/lib/libhyprexpo.so";
 
   # ── Alternative compositors, selectable at the greetd session picker ──
   # Purely additive: Hyprland stays the default. Log out and pick one to try it.
@@ -214,18 +214,18 @@ in
     libusb1
     udev
     pulseaudio
-    xorg.libX11
-    xorg.libXext
-    xorg.libXrandr
-    xorg.libXi
-    xorg.libXcursor
-    xorg.libXinerama
-    xorg.libXxf86vm
-    xorg.libXfixes
-    xorg.libXrender
-    xorg.libxcb
-    xorg.libSM
-    xorg.libICE
+    libx11
+    libxext
+    libxrandr
+    libxi
+    libxcursor
+    libxinerama
+    libxxf86vm
+    libxfixes
+    libxrender
+    libxcb
+    libsm
+    libice
     fontconfig
     freetype
     dbus
