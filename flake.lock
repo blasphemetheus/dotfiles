@@ -29,29 +29,23 @@
           "hyprland",
           "hyprutils"
         ],
-        "hyprwayland-scanner": [
-          "hyprland",
-          "hyprwayland-scanner"
-        ],
+        "hyprwayland-scanner": "hyprwayland-scanner",
         "nixpkgs": [
-          "hyprland",
-          "nixpkgs"
+          "nixpkgs-hypr"
         ],
-        "systems": [
-          "hyprland",
-          "systems"
-        ]
+        "systems": "systems"
       },
       "locked": {
-        "lastModified": 1785877886,
-        "narHash": "sha256-H2CrAlJD9FsUbSEIhPVK3IyVjnK0vSxPruBef17GcBs=",
+        "lastModified": 1788016784,
+        "narHash": "sha256-RO90Fk+Rn2Yy+I8oL4ePTLLKLgOAr8hrTx7tlpwdLaA=",
         "owner": "hyprwm",
         "repo": "aquamarine",
-        "rev": "1a10fe26a9f7d989c359e6a9ea61aa2e44d06c36",
+        "rev": "783bfd9ae441d1d0519b979ac68b73ddd6e81df0",
         "type": "github"
       },
       "original": {
         "owner": "hyprwm",
+        "ref": "v0.15.0",
         "repo": "aquamarine",
         "type": "github"
       }
@@ -227,20 +221,22 @@
     },
     "hyprland": {
       "inputs": {
-        "aquamarine": "aquamarine",
+        "aquamarine": [
+          "aquamarine"
+        ],
         "hyprcursor": "hyprcursor",
         "hyprgraphics": "hyprgraphics",
         "hyprland-guiutils": "hyprland-guiutils",
         "hyprland-protocols": "hyprland-protocols",
         "hyprlang": "hyprlang",
         "hyprutils": "hyprutils",
-        "hyprwayland-scanner": "hyprwayland-scanner",
+        "hyprwayland-scanner": "hyprwayland-scanner_2",
         "hyprwire": "hyprwire",
         "nixpkgs": [
           "nixpkgs-hypr"
         ],
         "pre-commit-hooks": "pre-commit-hooks",
-        "systems": "systems",
+        "systems": "systems_2",
         "xdph": "xdph"
       },
       "locked": {
@@ -392,9 +388,9 @@
         "hyprgraphics": "hyprgraphics_2",
         "hyprlang": "hyprlang_2",
         "hyprutils": "hyprutils_2",
-        "hyprwayland-scanner": "hyprwayland-scanner_2",
+        "hyprwayland-scanner": "hyprwayland-scanner_3",
         "nixpkgs": "nixpkgs",
-        "systems": "systems_2"
+        "systems": "systems_3"
       },
       "locked": {
         "lastModified": 1784390127,
@@ -416,7 +412,7 @@
         "hyprland": [
           "hyprland"
         ],
-        "systems": "systems_3"
+        "systems": "systems_4"
       },
       "locked": {
         "lastModified": 1779971083,
@@ -559,6 +555,31 @@
     "hyprwayland-scanner": {
       "inputs": {
         "nixpkgs": [
+          "aquamarine",
+          "nixpkgs"
+        ],
+        "systems": [
+          "aquamarine",
+          "systems"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786464033,
+        "narHash": "sha256-QM8Qe4/L8lpdVN4bgwahmi+jyyc4fisseDMe4afcDxA=",
+        "owner": "hyprwm",
+        "repo": "hyprwayland-scanner",
+        "rev": "62e62c1ca23da17612c6890d4ad2064f575643db",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hyprwm",
+        "repo": "hyprwayland-scanner",
+        "type": "github"
+      }
+    },
+    "hyprwayland-scanner_2": {
+      "inputs": {
+        "nixpkgs": [
           "hyprland",
           "nixpkgs"
         ],
@@ -581,7 +602,7 @@
         "type": "github"
       }
     },
-    "hyprwayland-scanner_2": {
+    "hyprwayland-scanner_3": {
       "inputs": {
         "nixpkgs": [
           "hyprlock",
@@ -724,6 +745,7 @@
     "root": {
       "inputs": {
         "ags": "ags",
+        "aquamarine": "aquamarine",
         "astal": "astal",
         "home-manager": "home-manager",
         "hyprexpo": "hyprexpo",
@@ -766,6 +788,21 @@
       }
     },
     "systems_3": {
+      "locked": {
+        "lastModified": 1689347949,
+        "narHash": "sha256-12tWmuL2zgBgZkdoB6qXZsgJEH9LR3oUgpaQq2RbI80=",
+        "owner": "nix-systems",
+        "repo": "default-linux",
+        "rev": "31732fcf5e8fea42e59c2488ad31a0e651500f68",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default-linux",
+        "type": "github"
+      }
+    },
+    "systems_4": {
       "locked": {
         "lastModified": 1689347949,
         "narHash": "sha256-12tWmuL2zgBgZkdoB6qXZsgJEH9LR3oUgpaQq2RbI80=",

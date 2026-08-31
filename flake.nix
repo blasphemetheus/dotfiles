@@ -40,9 +40,25 @@
     # but the cache was already useless for this tag. Drop this pin (and the
     # nixpkgs-hypr input) at the next hyprland bump if upstream's lock is fixed.
     nixpkgs-hypr.url = "github:NixOS/nixpkgs/cd017c33bbf56d9d918cb6d21b3118acb4cee58d";
+    # TEMP OVERRIDE 2026-08-30: v0.56.2 did NOT fully fix the DP-2 wake crash —
+    # crash #4 (Aug 30) SEGV'd inside aquamarine 0.14.0 CBackend::dispatchIdle
+    # (stale idle callback after output teardown). aquamarine v0.15.0
+    # (2026-08-29) carries the connector-sequencing/idle-frame fixes, but no
+    # Hyprland tag pairs with it yet, so override just hyprland's aquamarine.
+    # Hyprland 0.56.2 only demands aquamarine>=0.9.3, and its hyprutils 0.14.0
+    # satisfies aquamarine's >=0.8.0 (shared via the follows below, so exactly
+    # one hyprutils ends up in the process). Drop this input + both follows at
+    # the next Hyprland tag bump (>=0.57), which will lock aquamarine 0.15+
+    # itself.
+    aquamarine = {
+      url = "github:hyprwm/aquamarine/v0.15.0";
+      inputs.nixpkgs.follows = "nixpkgs-hypr";
+      inputs.hyprutils.follows = "hyprland/hyprutils";
+    };
     hyprland = {
       url = "github:hyprwm/Hyprland/v0.56.2";
       inputs.nixpkgs.follows = "nixpkgs-hypr";
+      inputs.aquamarine.follows = "aquamarine";
     };
 
     # hyprlock straight from upstream too: our nixpkgs pin ships 0.9.2, which
