@@ -8,6 +8,16 @@ set -u
 TV_DESC='Toshiba America Info Systems Inc TOSHIBA-TV 0x00000001'
 TV_MODE='1920x1080@60'
 TV_POS='3840x0'
+HDMI_SINK='alsa_output.pci-0000_01_00.1.hdmi-stereo'   # NVIDIA HDMI audio (pw-cli ls Node)
+SINK_STATE="$HOME/.local/state/hypr/mirror-prev-sink"
+
+# PipeWire-only (no pactl here): names are stable, ids are not.
+default_sink() { wpctl inspect @DEFAULT_AUDIO_SINK@ 2>/dev/null | grep -oP 'node\.name = "\K[^"]+'; }
+set_sink() {   # $1 = node.name
+    local id
+    id=$(pw-dump 2>/dev/null | jq -r --arg n "$1" '.[] | select(.info.props["node.name"] == $n) | .id' | head -1)
+    [[ -n $id ]] && wpctl set-default "$id"
+}
 
 mons=$(hyprctl monitors all -j)
 tv=$(jq -r --arg d "$TV_DESC" '.[] | select(.description == $d) | .name' <<<"$mons")
@@ -23,7 +33,9 @@ rule() {  # $1 = mirror target ('none' to extend)
 
 if [[ $mirror_of != none ]]; then
     rule none
-    notify-send "Mirror" "TV back to extended desktop" -t 3000
+    # audio back to whatever was default before mirroring
+    if [[ -s $SINK_STATE ]]; then set_sink "$(cat "$SINK_STATE")"; rm -f "$SINK_STATE"; fi
+    notify-send "Mirror" "TV back to extended desktop, audio restored" -t 3000
 else
     src=$(jq -r '.[] | select(.focused == true) | .name' <<<"$mons")
     if [[ -z $src || $src == "$tv" ]]; then
@@ -31,5 +43,9 @@ else
     fi
     [[ -n $src ]] || { notify-send "Mirror" "No monitor to mirror" -t 3000; exit 1; }
     rule "$src"
-    notify-send "Mirror" "TV mirroring $src" -t 3000
+    # audio to the TV, remembering the current default sink for the way back
+    mkdir -p "$(dirname "$SINK_STATE")"
+    default_sink > "$SINK_STATE"
+    set_sink "$HDMI_SINK"
+    notify-send "Mirror" "TV mirroring $src, audio via HDMI" -t 3000
 fi
