@@ -519,6 +519,71 @@ in
         printf '\033]0;%s\007' (hostname)": "(prompt_pwd)
       '';
 
+      # Claude Code pointed at a third-party Anthropic-compatible endpoint.
+      #
+      # `env` builds the child process's environment directly, so none of
+      # these overrides touch the shell — plain `claude` still goes to
+      # Anthropic on your subscription, in the same terminal, afterwards.
+      # (`env` also runs the real binary rather than the `claude` function
+      # above, so each wrapper sets its own title.)
+      #
+      # CLAUDE_CONFIG_DIR gives each provider a fully separate profile:
+      # its own credentials, sessions, projects and .claude.json. Verified
+      # empirically — pointing it at an empty dir populates all four.
+      #
+      # Auth header differs by vendor, so follow each one's own docs:
+      # ANTHROPIC_AUTH_TOKEN sends `Authorization: Bearer` (Moonshot),
+      # ANTHROPIC_API_KEY sends `x-api-key` (DeepSeek).
+      #
+      # Keys go in ~/.config/fish/secrets.fish, already sourced by shellInit.
+      claude-k3 = ''
+        if not set -q MOONSHOT_API_KEY
+            echo "claude-k3: MOONSHOT_API_KEY unset — add it to ~/.config/fish/secrets.fish" >&2
+            return 1
+        end
+        printf '\033]0;Claude K3: %s\007' (basename (pwd))
+        env -u ANTHROPIC_API_KEY \
+            CLAUDE_CONFIG_DIR="$HOME/.claude-k3" \
+            ANTHROPIC_BASE_URL="https://api.moonshot.ai/anthropic" \
+            ANTHROPIC_AUTH_TOKEN="$MOONSHOT_API_KEY" \
+            ANTHROPIC_MODEL="kimi-k3" \
+            ANTHROPIC_DEFAULT_OPUS_MODEL="kimi-k3" \
+            ANTHROPIC_DEFAULT_SONNET_MODEL="kimi-k3" \
+            ANTHROPIC_DEFAULT_HAIKU_MODEL="kimi-k3" \
+            CLAUDE_CODE_MAX_CONTEXT_TOKENS=1048576 \
+            claude $argv
+        printf '\033]0;%s\007' (hostname)": "(prompt_pwd)
+      '';
+
+      # DeepSeek V4 Pro. Cheaper than K3 and scores higher on SWE-bench, but
+      # its Anthropic shim does NOT support MCP tools, document/search content
+      # blocks, or container uploads — so MCP servers silently do nothing here.
+      # Unknown model names get silently remapped to deepseek-v4-flash, so a
+      # typo downgrades you rather than erroring.
+      #
+      # CLAUDE_CODE_MAX_CONTEXT_TOKENS is required: Claude Code doesn't know
+      # these model ids, so it assumes a 200K window and auto-compacts at 200K
+      # even though both models are 1M. (Not CLAUDE_CODE_AUTO_COMPACT_WINDOW —
+      # that one is a percentage, 1-100, and a token count there is nonsense.)
+      claude-ds = ''
+        if not set -q DEEPSEEK_API_KEY
+            echo "claude-ds: DEEPSEEK_API_KEY unset — add it to ~/.config/fish/secrets.fish" >&2
+            return 1
+        end
+        printf '\033]0;Claude DeepSeek: %s\007' (basename (pwd))
+        env -u ANTHROPIC_AUTH_TOKEN \
+            CLAUDE_CONFIG_DIR="$HOME/.claude-ds" \
+            ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic" \
+            ANTHROPIC_API_KEY="$DEEPSEEK_API_KEY" \
+            ANTHROPIC_MODEL="deepseek-v4-pro" \
+            ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro" \
+            ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro" \
+            ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash" \
+            CLAUDE_CODE_MAX_CONTEXT_TOKENS=1048576 \
+            claude $argv
+        printf '\033]0;%s\007' (hostname)": "(prompt_pwd)
+      '';
+
       # Run Claude Code in a Docker sandbox
       sandbox = ''
         docker run -it \
