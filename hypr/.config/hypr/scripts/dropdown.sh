@@ -16,11 +16,11 @@ if [ -z "$ADDR" ]; then
     kitty --class dropdown &
 elif [ "$WS" = "$ACTIVE_WS" ]; then
     # Visible on current workspace, hide it
-    hyprctl dispatch movetoworkspacesilent "special:dropdown_hide,address:${ADDR}"
+    hyprctl dispatch "hl.dsp.window.move({ workspace = 'special:dropdown_hide', follow = false, window = 'address:${ADDR}' })"
 else
     # Hidden, bring to current workspace, focus, and pin to top
-    hyprctl dispatch movetoworkspacesilent "${ACTIVE_WS},address:${ADDR}"
-    hyprctl dispatch focuswindow "address:${ADDR}"
+    hyprctl dispatch "hl.dsp.window.move({ workspace = '${ACTIVE_WS}', follow = false, window = 'address:${ADDR}' })"
+    hyprctl dispatch "hl.dsp.focus({ window = 'address:${ADDR}' })"
     sleep 0.05
-    hyprctl dispatch movewindowpixel "exact 0 0,address:${ADDR}"
+    hyprctl dispatch "hl.dsp.window.move({ x = 0, y = 0, window = 'address:${ADDR}' })"
 fi

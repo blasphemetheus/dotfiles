@@ -14,7 +14,6 @@ if [ -n "$ADDR" ]; then
     W=$(hyprctl monitors -j | grep -o '"width":[0-9]*' | head -1 | cut -d: -f2)
     H=$(hyprctl monitors -j | grep -o '"height":[0-9]*' | head -1 | cut -d: -f2)
     DH=$((H * 40 / 100))
-    hyprctl --batch "\
-        dispatch resizewindowpixel exact ${W} ${DH},address:${ADDR} ;\
-        dispatch movewindowpixel exact 0 0,address:${ADDR}"
+    # Lua config: one eval, two dispatches (was hyprctl --batch resize/move)
+    hyprctl eval "local w = 'address:${ADDR}'; hl.dispatch(hl.dsp.window.resize({ x = ${W}, y = ${DH}, window = w })); hl.dispatch(hl.dsp.window.move({ x = 0, y = 0, window = w }))"
 fi

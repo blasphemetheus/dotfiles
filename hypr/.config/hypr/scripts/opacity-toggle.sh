@@ -1,35 +1,27 @@
 #!/usr/bin/env bash
-# Toggle between transparent and fully opaque mode
-
-STATE_FILE="/tmp/.hypr-opacity-mode"
-HYPR_DIR="$HOME/.config/hypr"
+# Toggle between transparent and fully opaque mode.
+# Hyprland side: lua/opacity.lua declares the six window rules from a mode
+# name; we persist the mode and re-apply it live via `hyprctl eval` (the
+# legacy version swapped a `source =` symlink and reloaded the whole config).
+STATE_DIR="$HOME/.local/state/hypr"
+STATE_FILE="$STATE_DIR/opacity"
 WAYBAR_DIR="$HOME/.config/waybar"
 KITTY_OVERRIDE="$HOME/.config/kitty/opacity-override.conf"
+mkdir -p "$STATE_DIR"
 
-if [ -f "$STATE_FILE" ]; then
-    # Currently opaque — switch back to transparent
-    rm "$STATE_FILE"
-    ln -sf "$HYPR_DIR/opacity-transparent.conf" "$HYPR_DIR/opacity-active.conf"
-    cp "$WAYBAR_DIR/style-transparent.css" "$WAYBAR_DIR/style.css"
-    # Kitty: remove override, restore existing windows
-    echo "background_opacity 0.82" > "$KITTY_OVERRIDE"
-    for sock in /tmp/kitty-*; do
-        kitty @ --to "unix:${sock}" set-background-opacity 0.82 2>/dev/null
-    done
-    pkill waybar; sleep 0.3; waybar &disown
-    hyprctl reload
-    notify-send "Opacity" "Transparent mode" -t 1500
+current=$(cat "$STATE_FILE" 2>/dev/null || echo opaque)
+if [ "$current" = "opaque" ]; then
+    mode=transparent; label="Transparent mode"; kitty_op=0.82; css=style-transparent.css
 else
-    # Currently transparent — switch to fully opaque
-    touch "$STATE_FILE"
-    ln -sf "$HYPR_DIR/opacity-opaque.conf" "$HYPR_DIR/opacity-active.conf"
-    cp "$WAYBAR_DIR/style-opaque.css" "$WAYBAR_DIR/style.css"
-    # Kitty: set override, update existing windows
-    echo "background_opacity 1.0" > "$KITTY_OVERRIDE"
-    for sock in /tmp/kitty-*; do
-        kitty @ --to "unix:${sock}" set-background-opacity 1.0 2>/dev/null
-    done
-    pkill waybar; sleep 0.3; waybar &disown
-    hyprctl reload
-    notify-send "Opacity" "Opaque mode" -t 1500
+    mode=opaque; label="Opaque mode"; kitty_op=1.0; css=style-opaque.css
 fi
+
+echo "$mode" > "$STATE_FILE"
+cp "$WAYBAR_DIR/$css" "$WAYBAR_DIR/style.css"
+echo "background_opacity $kitty_op" > "$KITTY_OVERRIDE"
+for sock in /tmp/kitty-*; do
+    kitty @ --to "unix:${sock}" set-background-opacity "$kitty_op" 2>/dev/null
+done
+pkill waybar; sleep 0.3; waybar &disown
+hyprctl eval "opacity.apply('$mode')"
+notify-send "Opacity" "$label" -t 1500

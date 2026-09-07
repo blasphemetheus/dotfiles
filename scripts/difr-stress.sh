@@ -14,11 +14,11 @@ echo "[$(date -Iseconds)] stress: $ITERATIONS iters, idle=${IDLE_SECS}s active=$
 
 for i in $(seq 1 "$ITERATIONS"); do
   echo "[$(date -Iseconds)] iter $i: dpms off" | tee -a "$LOG"
-  hyprctl dispatch dpms off >/dev/null
+  hyprctl dispatch 'hl.dsp.dpms({ action = "off" })' >/dev/null
   sleep "$IDLE_SECS"
 
   echo "[$(date -Iseconds)] iter $i: dpms on" | tee -a "$LOG"
-  hyprctl dispatch dpms on >/dev/null
+  hyprctl dispatch 'hl.dsp.dpms({ action = "on" })' >/dev/null
   sleep "$ACTIVE_SECS"
 done
 

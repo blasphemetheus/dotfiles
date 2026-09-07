@@ -53,6 +53,6 @@ for _ in 1 2 3 4 5; do
 done
 "$LEDCTL" apply
 if (( STRICT )); then
-    hyprctl dispatch exit   # autologin session with no lock: hand back to tuigreet
+    hyprctl dispatch 'hl.dsp.exit()'   # autologin session with no lock: hand back to tuigreet
 fi
 exit 1

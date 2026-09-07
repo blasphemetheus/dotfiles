@@ -94,7 +94,7 @@ writeShellScriptBin "rwing" ''
       done
       if [ -n "$addr" ]; then
         ${coreutils}/bin/sleep 0.3
-        hyprctl dispatch movewindowpixel "exact 968 50,address:$addr" >/dev/null 2>&1 || true
+        hyprctl dispatch "hl.dsp.window.move({ x = 968, y = 50, window = 'address:$addr' })" >/dev/null 2>&1 || true
       fi
     ) &
   fi

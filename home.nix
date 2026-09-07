@@ -664,8 +664,8 @@ in
             # allow_session_lock_restore reattaches it. Nothing to kill.
             for s in $orphans
                 set -gx HYPRLAND_INSTANCE_SIGNATURE $s
-                hyprctl keyword misc:allow_session_lock_restore 1
-                hyprctl dispatch exec hyprlock
+                hyprctl eval 'hl.config({ misc = { allow_session_lock_restore = true } })'
+                hyprctl dispatch 'hl.dsp.exec_cmd("hyprlock")'
                 echo "lockfix: relaunched hyprlock on orphaned instance $s"
             end
             return 0
@@ -681,8 +681,8 @@ in
             and kill $p
         end
         sleep 0.5
-        hyprctl keyword misc:allow_session_lock_restore 1
-        hyprctl dispatch exec hyprlock
+        hyprctl eval 'hl.config({ misc = { allow_session_lock_restore = true } })'
+        hyprctl dispatch 'hl.dsp.exec_cmd("hyprlock")'
         echo "lockfix: killed and relaunched hyprlock on $sigs[1]"
       '';
     };

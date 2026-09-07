@@ -56,7 +56,7 @@ route_window() {
 
     (( found_marker )) || return
     [[ -n "$target_ws" && "$target_ws" != "$cur_ws" ]] || return
-    hyprctl dispatch movetoworkspacesilent "$target_ws,address:0x$addr" >/dev/null
+    hyprctl dispatch "hl.dsp.window.move({ workspace = '$target_ws', follow = false, window = 'address:0x$addr' })" >/dev/null
 }
 
 socat -U - "UNIX-CONNECT:$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock" | while IFS= read -r line; do

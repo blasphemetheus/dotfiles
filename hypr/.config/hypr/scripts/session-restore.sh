@@ -78,8 +78,8 @@ jq -c '.[] | select(.workspace > 0)' "$SESSION_FILE" | while read -r window; do
 
     # Set up window rules for placement before launching
     # These are dynamic rules that apply once then expire
-    hyprctl --batch "\
-        dispatch exec [workspace $workspace silent] $launch_cmd"
+    # exec with a one-shot window rule (was: dispatch exec [workspace N silent] cmd)
+    hyprctl dispatch "hl.dsp.exec_cmd([==[$launch_cmd]==], { workspace = '$workspace silent' })"
 
     LAUNCHED=$((LAUNCHED + 1))
 
@@ -94,10 +94,7 @@ jq -c '.[] | select(.workspace > 0)' "$SESSION_FILE" | while read -r window; do
             --arg c "$class" \
             '[.[] | select(.class == $c)] | last | .address // empty')
         if [[ -n "$addr" ]]; then
-            hyprctl --batch "\
-                dispatch togglefloating address:$addr; \
-                dispatch movewindowpixel exact $pos_x $pos_y,address:$addr; \
-                dispatch resizewindowpixel exact $size_w $size_h,address:$addr"
+            hyprctl eval "local w = 'address:$addr'; hl.dispatch(hl.dsp.window.float({ action = 'set', window = w })); hl.dispatch(hl.dsp.window.move({ x = $pos_x, y = $pos_y, window = w })); hl.dispatch(hl.dsp.window.resize({ x = $size_w, y = $size_h, window = w }))"
         fi
     fi
 
@@ -108,7 +105,7 @@ jq -c '.[] | select(.workspace > 0)' "$SESSION_FILE" | while read -r window; do
             --arg c "$class" \
             '[.[] | select(.class == $c)] | last | .address // empty')
         if [[ -n "$addr" ]]; then
-            hyprctl dispatch fullscreen $fullscreen address:$addr
+            hyprctl dispatch "hl.dsp.window.fullscreen({ mode = '$fullscreen', action = 'set', window = 'address:$addr' })"
         fi
     fi
 done
