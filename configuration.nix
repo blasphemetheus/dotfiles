@@ -8,11 +8,22 @@ let
   # Session list for the greeter: everything the display manager knows about
   # except hyprland-uwsm.desktop — the hyprland package ships that entry
   # unconditionally, and we always launch plain Hyprland.
+  #
+  # Default session = Hyprland. tuigreet sorts the menu by Name= with a plain
+  # (case-sensitive) compare and picks index 0 when nothing is remembered, so
+  # "GNOME" used to beat "Hyprland". The GNOME entries are copied with a
+  # lowercase name so they sort last. The list is also exposed at the stable
+  # path /etc/greeter-sessions (see environment.etc + --sessions below):
+  # --remember-session stores the absolute .desktop path, and a /nix/store
+  # path went stale on every rebuild, which is what kept resetting the default.
   greeterSessions = pkgs.runCommand "greeter-sessions" { } ''
     mkdir -p $out/share/wayland-sessions
     for f in ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions/*.desktop; do
       case "$(basename "$f")" in
         hyprland-uwsm.desktop) ;;
+        gnome*.desktop)
+          sed -e 's/^Name=GNOME on Wayland$/Name=gnome on Wayland (fallback)/' \
+              -e 's/^Name=GNOME$/Name=gnome (fallback)/' "$f" > "$out/share/wayland-sessions/$(basename "$f")" ;;
         *) ln -s "$f" "$out/share/wayland-sessions/" ;;
       esac
     done
@@ -41,7 +52,7 @@ let
       --greeting "$banner
 
 $quote" \
-      --sessions ${greeterSessions}/share/wayland-sessions
+      --sessions /etc/greeter-sessions
   '';
 in
 {
@@ -377,6 +388,8 @@ in
       user = "greeter";
     };
   };
+  # Stable path for tuigreet's session list (see greeterSessions above).
+  environment.etc."greeter-sessions".source = "${greeterSessions}/share/wayland-sessions";
 
   # Heal a wedged HDMI handshake at BOOT, before the greeter appears.
   # Symptom (seen 2026-07-12): the ASUS VG27V reports "no signal" from
