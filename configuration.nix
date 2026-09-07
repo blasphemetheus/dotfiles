@@ -298,6 +298,22 @@ in
   # Docker
   virtualisation.docker.enable = false;
 
+  # Local LLM for offline troubleshooting (the 2026-09-07 WiFi-dead-after-reset
+  # episode). Ollama speaks the Anthropic Messages API on :11434, so the fish
+  # function `claude-local` (home.nix) runs Claude Code against it with no
+  # internet. Pull the model once while online:
+  #   ollama pull qwen3-coder:30b     # MoE, 3B active — fast on the 5090
+  # 64k context so a repo-sized conversation fits; ~24GB VRAM at that size.
+  services.ollama = {
+    enable = true;
+    package = pkgs.ollama-cuda;
+    loadModels = [ "qwen3-coder:30b" ];   # pulled on service start if missing
+    environmentVariables = {
+      OLLAMA_CONTEXT_LENGTH = "65536";
+      OLLAMA_KEEP_ALIVE = "30m";
+    };
+  };
+
   # Enable flakes and the new nix command
   nix.settings.experimental-features = ["nix-command" "flakes" ];
 

@@ -584,6 +584,32 @@ in
         printf '\033]0;%s\007' (hostname)": "(prompt_pwd)
       '';
 
+      # Fully offline Claude Code against the local Ollama server
+      # (services.ollama in configuration.nix). Same isolation scheme as the
+      # wrappers above: its own CLAUDE_CONFIG_DIR, provider env only on the
+      # child. Ollama ignores the token but Claude Code insists one is set.
+      # Override the model per call: `claude-local --model gpt-oss:20b`.
+      claude-local = ''
+        set -l model qwen3-coder:30b
+        if not curl -sf --max-time 2 http://localhost:11434/api/version >/dev/null
+            echo "claude-local: ollama not answering on :11434 — sudo systemctl start ollama" >&2
+            return 1
+        end
+        printf '\033]0;Claude Local: %s\007' (basename (pwd))
+        env -u ANTHROPIC_API_KEY \
+            CLAUDE_CONFIG_DIR="$HOME/.claude-local" \
+            ANTHROPIC_BASE_URL="http://localhost:11434" \
+            ANTHROPIC_AUTH_TOKEN="ollama" \
+            ANTHROPIC_MODEL="$model" \
+            ANTHROPIC_DEFAULT_OPUS_MODEL="$model" \
+            ANTHROPIC_DEFAULT_SONNET_MODEL="$model" \
+            ANTHROPIC_DEFAULT_HAIKU_MODEL="$model" \
+            CLAUDE_CODE_MAX_CONTEXT_TOKENS=65536 \
+            DISABLE_TELEMETRY=1 \
+            claude $argv
+        printf '\033]0;%s\007' (hostname)": "(prompt_pwd)
+      '';
+
       # Run Claude Code in a Docker sandbox
       sandbox = ''
         docker run -it \
