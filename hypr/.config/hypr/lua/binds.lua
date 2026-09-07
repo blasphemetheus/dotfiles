@@ -77,6 +77,7 @@ bind(B .. "L", exec(S .. "/lock-wrapper.sh"))
 -- Displays / hardware
 bind(B .. "SHIFT + H", exec(S .. "/hdmi-retrain.sh"))     -- retrain wedged HDMI link
 bind(B .. "SHIFT + F", exec(S .. "/refresh-toggle.sh"))   -- ASUS 120Hz <-> 165Hz
+bind(B .. "SHIFT + T", exec(S .. "/mirror-toggle.sh"))    -- mirror focused monitor onto the TV / back to extended
 bind(B .. "SHIFT + L", exec(S .. "/led-ctl.sh toggle"))   -- RGB LEDs
 bind(B .. "CTRL + L",  exec(S .. "/led-ctl.sh menu"))
 bind(B .. "SHIFT + D", exec(S .. "/dnd-toggle.sh"))       -- do not disturb

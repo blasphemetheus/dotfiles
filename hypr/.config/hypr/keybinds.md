@@ -71,6 +71,7 @@ Screenshots saved to: `~/Pictures/Screenshots/`
 | Super+L | Lock screen (hyprlock — also the boot login screen; buttons work without a password) |
 | Super+M | Exit Hyprland |
 | Super+Shift+H | Retrain HDMI link (curved ASUS says "no signal") |
+| Super+Shift+T | Mirror the focused monitor onto the TV (toggle; off = TV is an extended screen) |
 | Super+Shift+? | **Show this keybinds cheatsheet!** |
 
 ## Media Keys (Fn row)
