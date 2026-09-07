@@ -67,7 +67,7 @@ Screenshots saved to: `~/Pictures/Screenshots/`
 | Super+Q | Terminal (kitty) |
 | Super+E | File manager (dolphin) |
 | Super+R | App launcher (rofi) |
-| Super+L | Lock screen (hyprlock) |
+| Super+L | Lock screen (hyprlock — also the boot login screen; buttons work without a password) |
 | Super+M | Exit Hyprland |
 | Super+Shift+H | Retrain HDMI link (curved ASUS says "no signal") |
 | Super+Shift+? | **Show this keybinds cheatsheet!** |

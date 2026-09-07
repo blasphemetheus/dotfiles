@@ -15,6 +15,13 @@
 #
 # Exit 0 from hyprlock means the user typed their password — done. Anything
 # else is a crash; retry a few times, then give up and leave it to `lockfix`.
+#
+# --strict: used for the autologin boot lock (hyprland.conf exec-once with
+# HYPR_AUTOLOGIN_LOCK=1). greetd started this session without a password, so
+# if hyprlock cannot be kept up the only safe outcome is ending the session
+# and letting greetd fall back to tuigreet — never an unlocked desktop.
+STRICT=0
+[[ ${1-} == --strict ]] && STRICT=1
 
 # Per-compositor lock file: with two Hyprland instances up (the tty2-escape
 # scenario), a global one would let instance A's lockscreen block instance B's.
@@ -30,9 +37,22 @@ done
 LEDCTL=~/.config/hypr/scripts/led-ctl.sh
 "$LEDCTL" lock-off              # LEDs dark while locked; saved state untouched
 
+# Lock-screen data: notifs.sh counts notifications newer than this stamp, and
+# hyprlock.conf paints the current swww wallpaper (it needs a fixed path).
+STATE=~/.local/state/hyprland
+mkdir -p "$STATE"
+date +%s > "$STATE/lock-start"
+wp=$(cat ~/.cache/current_wallpaper 2>/dev/null)
+[[ -r $wp ]] && cp -f "$wp" ~/.cache/lock-wallpaper 2>/dev/null
+~/.config/hypr/scripts/lock/nowplaying-art.sh >/dev/null 2>&1   # ensures the blank placeholder exists
+[[ -s ~/.cache/lock-wallpaper ]] || cp -f ~/.cache/lock-art-blank.png ~/.cache/lock-wallpaper   # no wallpaper yet: plain dark
+
 for _ in 1 2 3 4 5; do
     hyprlock && { "$LEDCTL" apply; exit 0; }    # clean unlock — restore LEDs
     sleep 0.5                   # crashed — let the compositor settle, respawn
 done
 "$LEDCTL" apply
+if (( STRICT )); then
+    hyprctl dispatch exit   # autologin session with no lock: hand back to tuigreet
+fi
 exit 1

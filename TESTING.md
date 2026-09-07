@@ -121,7 +121,7 @@ The VM also uses a fresh empty disk, not your real `/home`.
 
 ## New This Session (needs testing)
 
-- [x] **Hyprlock theme** — `Super+L` shows gold-to-rose lock screen with blur, time, date, password field
+- [x] **Hyprlock theme** — `Super+L`: gold-to-rose over the blurred current wallpaper; greeter banner + random quote, keybind tip, notifications-since-lock, health warnings + live GPU/CPU/RAM/disk panel, now-playing + art, clickable suspend/reboot/poweroff/LED/mute/blue-light (`hyprlock.conf`, `scripts/lock/*.sh`)
 - [x] **Waybar GPU temp** — Shows RTX 5090 temp on right side of bar
 - [x] **Waybar media** — Shows currently playing song, click to pause, scroll for next/prev
 - [x] **Waybar window title** — Shows focused window title/directory in bar
@@ -143,7 +143,7 @@ The VM also uses a fresh empty disk, not your real `/home`.
 ## Not Yet Implemented (from ENHANCEMENTS.md)
 
 - [ ] Hyprland animation tuning — test and fine-tune bounce/elastic curves
-- [ ] greetd theme — tuigreet is plain text, could use a visual greeter
+- [x] greetd theme — boot autologs into Hyprland which locks immediately, so hyprlock IS the login screen; tuigreet (banner + quote from /etc/greeter) is the fallback after logout
 - [ ] hyprbars — window title bars (version mismatch with Hyprland 0.54, needs flake)
 - [ ] Hyprspace — BLOCKED: plugin 0.53 doesn't build on Hyprland 0.54, wait for nixpkgs update
 - [ ] Hyprtrails — BLOCKED: plugin 0.53 doesn't build on Hyprland 0.54, wait for nixpkgs update
