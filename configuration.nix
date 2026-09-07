@@ -37,9 +37,11 @@ let
   # Quotes live in greeter/quotes.txt — add lines there, rebuild to apply.
   # greet-align stays left: tuigreet centers each greeting line separately,
   # which would shear the ASCII art; the banner file carries its own indent.
+  # Banner/quotes are read from /etc/greeter (environment.etc below) so the
+  # hyprlock lock screen shows the same files (scripts/greeter-{banner,quote}.sh).
   greeterLaunch = pkgs.writeShellScript "tuigreet-launch" ''
-    banner="$(${pkgs.coreutils}/bin/cat ${./greeter/banner.txt})"
-    quote="$(${pkgs.gnugrep}/bin/grep -Ev '^[[:space:]]*(#|$)' ${./greeter/quotes.txt} \
+    banner="$(${pkgs.coreutils}/bin/cat /etc/greeter/banner.txt)"
+    quote="$(${pkgs.gnugrep}/bin/grep -Ev '^[[:space:]]*(#|$)' /etc/greeter/quotes.txt \
       | ${pkgs.coreutils}/bin/shuf -n 1 \
       | ${pkgs.coreutils}/bin/fold -s -w 72)"
     exec ${pkgs.tuigreet}/bin/tuigreet \
@@ -383,13 +385,30 @@ in
   # Display manager — greetd + tuigreet (GDM core-dumps with NVIDIA open modules)
   services.greetd = {
     enable = true;
-    settings.default_session = {
-      command = "${greeterLaunch}";
-      user = "greeter";
+    settings = {
+      # Boot → straight into Hyprland, which locks itself immediately
+      # (hyprland.conf exec-once on HYPR_AUTOLOGIN_LOCK; hyprlock is the
+      # login screen). No password is taken here, so the keyring is unlocked
+      # by hyprlock's PAM stack instead — see security.pam.services.hyprlock.
+      initial_session = {
+        command = "${pkgs.writeShellScript "hyprland-autologin" ''
+          export HYPR_AUTOLOGIN_LOCK=1
+          exec ${config.programs.hyprland.package}/bin/start-hyprland
+        ''}";
+        user = "blewf";
+      };
+      # After logout (or if the session dies) greetd falls back to tuigreet.
+      default_session = {
+        command = "${greeterLaunch}";
+        user = "greeter";
+      };
     };
   };
-  # Stable path for tuigreet's session list (see greeterSessions above).
+  # Stable paths for tuigreet's session list and the shared banner/quotes
+  # (see greeterSessions / greeterLaunch above; hyprlock reads the same files).
   environment.etc."greeter-sessions".source = "${greeterSessions}/share/wayland-sessions";
+  environment.etc."greeter/banner.txt".source = ./greeter/banner.txt;
+  environment.etc."greeter/quotes.txt".source = ./greeter/quotes.txt;
 
   # Heal a wedged HDMI handshake at BOOT, before the greeter appears.
   # Symptom (seen 2026-07-12): the ASUS VG27V reports "no signal" from
@@ -447,7 +466,10 @@ in
   # back to the `su` stack, which includes pam_faillock: three typos at the
   # lockscreen would lock the ACCOUNT for 10 minutes on top of the screen —
   # journal showed `pam_unix(su:auth)` entries from exactly this fallback.
-  security.pam.services.hyprlock = { };
+  # enableGnomeKeyring: with greetd autologin nobody types a password at
+  # session start, so the first hyprlock unlock is what opens the keyring
+  # (pam_gnome_keyring auth against the already-running daemon).
+  security.pam.services.hyprlock = { enableGnomeKeyring = true; };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
