@@ -32,7 +32,8 @@ if hl.get_config("plugin.hyprexpo.columns") ~= nil then
         plugin = {
             hyprexpo = {
                 columns          = 3,
-                gap_size         = 5,
+                gaps_in          = 5,   -- (legacy config said gap_size, which this fork never had)
+                gaps_out         = 0,
                 bg_col           = "rgb(111111)",
                 workspace_method = "center current",
             },
