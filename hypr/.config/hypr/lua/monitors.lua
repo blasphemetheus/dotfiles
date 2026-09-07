@@ -8,7 +8,17 @@
 -- Explicit positions (auto-placement flipped sides once): VG27V main at 0x0,
 -- VY279HGR physically to its RIGHT so it starts at 1920x0.
 
-hl.monitor({ output = "", mode = "highrr", position = "auto", scale = 1, vrr = 1 })
+-- Catch-all for anything unlisted. "preferred", NOT highrr: the Toshiba TV's
+-- highest-refresh mode is 800x600@60.32, which highrr picked over 1080p@60.00.
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1, vrr = 1 })
+
+-- Toshiba TV (Fire TV's screen) on the HDMI port when the ASUS is unplugged.
+hl.monitor({
+    output   = "desc:Toshiba America Info Systems Inc TOSHIBA-TV 0x00000001",
+    mode     = "1920x1080@60",
+    position = "3840x0",
+    scale    = 1,
+})
 
 hl.monitor({
     output   = "desc:ASUSTek COMPUTER INC ASUS VG27V 0x0003ABEC",
