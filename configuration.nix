@@ -296,7 +296,7 @@ in
   '';
 
   # Docker
-  virtualisation.docker.enable = true;
+  virtualisation.docker.enable = false;
 
   # Enable flakes and the new nix command
   nix.settings.experimental-features = ["nix-command" "flakes" ];
@@ -487,6 +487,32 @@ in
     ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0db0", ATTR{idProduct}=="0076", RUN+="${pkgs.systemd}/bin/systemctl --no-block restart openrgb.service"
   '';
 
+  # The udev rule above only catches a genuine unplug/replug. S3 resume instead
+  # resets the controller IN PLACE (kernel: "usb 3-11: reset full-speed USB
+  # device" — same devnum, no add event), which stales the fd just the same, so
+  # also restart the server on every resume. led-ctl.sh resume-apply (hypridle
+  # after_sleep_cmd) then re-applies the user's LED state once the SDK port is
+  # back up.
+  systemd.services.openrgb-resume = {
+    description = "Restart OpenRGB after resume (in-place USB reset stales its device fd)";
+    after = [
+      "suspend.target"
+      "hibernate.target"
+      "hybrid-sleep.target"
+      "suspend-then-hibernate.target"
+    ];
+    wantedBy = [
+      "suspend.target"
+      "hibernate.target"
+      "hybrid-sleep.target"
+      "suspend-then-hibernate.target"
+    ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.systemd}/bin/systemctl --no-block restart openrgb.service";
+    };
+  };
+
   # Overclock the GC adapter's USB polling from 125Hz to 1000Hz (standard
   # Slippi input-lag fix, ~4-8ms average latency reduction). If inputs ever
   # drop, load with rate=2 (500Hz) via boot.extraModprobeConfig.
@@ -552,7 +578,18 @@ in
     cachix
     google-chrome
     chromium
-    discord
+    # Force native Wayland instead of XWayland. Discord ran as an XWayland
+    # client by default, and on 2026-08-27 its renderer wedged on the splash
+    # spinner after 6d18h of uptime across several S3 cycles — gateway still
+    # connected and logs still flowing, but the window never repainted. Chrome
+    # and Chromium both run native Wayland here and don't do this. Verified
+    # xwayland:0 and a clean load under these flags before committing.
+    # NB: the nixpkgs wrapper already appends --enable-speech-dispatcher, so
+    # don't repeat it here or it lands on the command line twice.
+    # Recovery if it wedges anyway: scripts/discord-recover.sh (Super+Shift+K).
+    (discord.override {
+      commandLineArgs = "--ozone-platform=wayland --enable-features=UseOzonePlatform,WaylandWindowDecorations";
+    })
     openssl
     mosh
     aseprite  # pixel art/animation for RoA workshop character
@@ -648,7 +685,7 @@ in
     blueman
     wob            # Volume/brightness overlay bar
     hyprshade      # Blue light filter
-
+    qbittorrent
     # File manager
     kdePackages.dolphin
 
