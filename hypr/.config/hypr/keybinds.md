@@ -17,7 +17,8 @@
 |----------|--------|
 | F9 | Screenshot area -> clipboard + save |
 | Print | Screenshot full screen -> clipboard + save |
-| Super+Shift+R | Toggle screen recording (select area, press again to stop) |
+| Super+Shift+R | Reload Hyprland config (hyprland.lua) |
+| Super+Shift+V | Toggle screen recording (select area, press again to stop) |
 | Super+Shift+C | Color picker (click to copy hex color) - *needs system upgrade* |
 
 Recordings saved to: `~/Videos/recording_*.mp4`

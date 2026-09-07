@@ -8,7 +8,7 @@ This documents all the customizations made to your Hyprland setup.
 
 ### RGB Animated Borders
 Your active window border cycles through rainbow colors!
-- Location: `~/.config/hypr/hyprland.conf` (line ~95)
+- Location: `~/.config/hypr/lua/binds.lua` (hyprland.conf is the legacy fallback)
 - Colors: Red -> Orange -> Yellow -> Green -> Blue -> Indigo -> Violet
 - Animation: Continuously rotating gradient
 
@@ -125,7 +125,7 @@ Unfocused windows are dimmed 15% to help you focus.
 
 ```
 ~/.config/hypr/
-├── hyprland.conf      # Main config (heavily modified)
+├── hyprland.lua       # Main config (Lua, requires lua/*.lua); hyprland.conf = legacy rollback
 ├── keybinds.md        # Keybind cheatsheet
 └── FREAKY-SETUP.md    # This file
 

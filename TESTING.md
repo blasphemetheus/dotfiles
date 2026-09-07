@@ -121,6 +121,7 @@ The VM also uses a fresh empty disk, not your real `/home`.
 
 ## New This Session (needs testing)
 
+- [x] **Lua config** — `hyprland.lua` + `lua/*.lua` replace `hyprland.conf` (hyprlang is dropped in 0.57). Nested test: `HYPR_NO_AUTOSTART=1 Hyprland --config ~/dotfiles/hypr/.config/hypr/hyprland.lua`; live switch needs a relogin. Runtime tweaks are `hyprctl eval 'hl.config{…}'` / `hyprctl dispatch 'hl.dsp.…'` — `hyprctl keyword` is gone. hyprsplit is now a Lua library (`/etc/hypr/hyprsplit/init.lua`), hyprexpo still a .so.
 - [x] **Hyprlock theme** — `Super+L`: gold-to-rose over the blurred current wallpaper; greeter banner + random quote, keybind tip, notifications-since-lock, health warnings + live GPU/CPU/RAM/disk panel, now-playing + art, clickable suspend/reboot/poweroff/LED/mute/blue-light (`hyprlock.conf`, `scripts/lock/*.sh`)
 - [x] **Waybar GPU temp** — Shows RTX 5090 temp on right side of bar
 - [x] **Waybar media** — Shows currently playing song, click to pause, scroll for next/prev
