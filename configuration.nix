@@ -175,6 +175,10 @@ in
   #               of the FOCUSED monitor; second monitor's set is ids 11-20).
   #   Hyprspace — KDE/GNOME-style workspace overview with window drag.
   #   hyprexpo  — expo grid overview (community fork; see pkgs/hyprexpo.nix).
+  # hyprsplit is a Lua LIBRARY since Hyprland 0.55 (the .so refuses Lua configs):
+  # install the pinned input's init.lua where hypr/.config/hypr/hyprsplit/init.lua
+  # symlinks to, and lua/plugins.lua require()s it.
+  environment.etc."hypr/hyprsplit/init.lua".source = "${inputs.hyprsplit}/init.lua";
   environment.etc."hypr/plugins/libhyprsplit.so".source =
     "${inputs.hyprsplit.packages.${pkgs.stdenv.hostPlatform.system}.hyprsplit}/lib/libhyprsplit.so";
   # Hyprspace DISABLED 2026-08-11: upstream (last commit 2026-05-28) doesn't
