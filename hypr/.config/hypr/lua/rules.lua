@@ -45,6 +45,9 @@ hl.window_rule({ name = "launcher-float", match = { class = "^(wofi)$|^(rofi)$" 
 -- wlogout power menu - fullscreen overlay
 hl.window_rule({ name = "wlogout-float", match = { class = "^(wlogout)$" }, float = true, fullscreen = true })
 
+-- hyprdisplays (Rust/iced display manager, Super+Shift+M): floating, centred
+hl.window_rule({ name = "hyprdisplays-float", match = { class = "^(hyprdisplays)$" }, float = true, center = true, size = "1200 720" })
+
 -- Layer rules: blur behind rofi/notifications/wofi; waybar stays crisp
 hl.layer_rule({ name = "blur-waybar",        match = { namespace = "waybar" },        blur = false })
 hl.layer_rule({ name = "blur-rofi",          match = { namespace = "rofi" },          blur = true })

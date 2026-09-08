@@ -135,6 +135,26 @@
         "type": "github"
       }
     },
+    "hyprdisplays": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788856752,
+        "narHash": "sha256-cw3JxOk16A+eCZzHJKDtCHI/Fn6WkLIgW1GZyiiqI4s=",
+        "ref": "refs/heads/master",
+        "rev": "690efac36c4ca89d7007b5fbd4bf0b6d65ce61d0",
+        "revCount": 4,
+        "type": "git",
+        "url": "file:///home/blewf/git/hyprdisplays"
+      },
+      "original": {
+        "type": "git",
+        "url": "file:///home/blewf/git/hyprdisplays"
+      }
+    },
     "hyprexpo": {
       "inputs": {
         "hyprland": [
@@ -748,6 +768,7 @@
         "aquamarine": "aquamarine",
         "astal": "astal",
         "home-manager": "home-manager",
+        "hyprdisplays": "hyprdisplays",
         "hyprexpo": "hyprexpo",
         "hyprland": "hyprland",
         "hyprlock": "hyprlock",

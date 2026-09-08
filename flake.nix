@@ -70,6 +70,13 @@
     # following our nixpkgs (same cachix rationale as hyprland above).
     hyprlock.url = "github:hyprwm/hyprlock/v0.9.6";
 
+    # hyprdisplays: our Rust/iced display manager (~/git/hyprdisplays). Local
+    # path input until it is pushed somewhere; then switch to github:.
+    hyprdisplays = {
+      url = "git+file:///home/blewf/git/hyprdisplays";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # per-monitor workspace sets (already in use). Third-party; follows hyprland.
     # TEMP PIN 2026-08-11: upstream shezdy/hyprsplit (last commit Jun 11) does
     # not compile against Hyprland 0.56 (helpers/Monitor.hpp → output/,

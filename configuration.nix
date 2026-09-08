@@ -839,6 +839,7 @@ in
     # non-redistributable and NOT in git — add it once with:
     #   nix-store --add-fixed sha256 rwing-linux-a2.3
     (callPackage ./pkgs/rwing.nix { })
+    inputs.hyprdisplays.packages.${pkgs.stdenv.hostPlatform.system}.default   # Super+Shift+M display manager
   ];
 
   # Cursor theme

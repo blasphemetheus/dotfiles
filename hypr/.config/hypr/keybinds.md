@@ -72,6 +72,8 @@ Screenshots saved to: `~/Pictures/Screenshots/`
 | Super+M | Exit Hyprland |
 | Super+Shift+H | Retrain HDMI link (curved ASUS says "no signal") |
 | Super+Shift+T | Mirror the focused monitor onto the TV (toggle; off = TV is an extended screen) |
+| Super+Shift+M | hyprdisplays — display manager GUI (arrange, modes, mirror, audio, profiles) |
+| Super+Ctrl+D | Apply a saved display profile (rofi) |
 | Super+Shift+? | **Show this keybinds cheatsheet!** |
 
 ## Media Keys (Fn row)
