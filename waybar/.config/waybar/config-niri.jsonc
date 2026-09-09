@@ -1,0 +1,199 @@
+// Waybar for the niri session (spawned by niri/config.kdl). Generated from
+// config.jsonc with the hyprland/* modules swapped for niri/*; keep the rest
+// in sync by hand when config.jsonc changes.
+// -*- mode: jsonc -*-
+{
+    "height": 30,
+    "spacing": 4,
+    "modules-left": [
+        "niri/workspaces",
+        "niri/language",
+        "cpu",
+        "memory",
+        "disk",
+        "temperature",
+        "custom/media",
+        "niri/window"
+    ],
+    "modules-center": [
+        "clock"
+    ],
+    "modules-right": [
+        "custom/dictation",
+        "custom/claude",
+        "custom/dnd",
+        "custom/gpu-temp",
+        "custom/leds",
+        "custom/bluetooth",
+        "tray",
+        "pulseaudio",
+        "network",
+        "backlight",
+        "battery",
+        "custom/power"
+    ],
+    // Module definitions
+    "niri/workspaces": {
+        // niri workspaces are per-output natively (no hyprsplit remap needed);
+        // {value} is the 1-based index on this output, or the name if named.
+        "format": "{value}",
+        "current-only": false
+    },
+    "niri/window": { "format": "{title}", "max-length": 60 },
+    // keyboard-state module REMOVED 2026-07-12: it reads /dev/input via
+    // libinput and segfaults waybar (SIGSEGV in libinput.so) when devices
+    // churn. It had been silently inert until input access arrived with the
+    // dictation setup (input group / setfacl), then started crashing the bar.
+    "tray": {
+        "icon-size": 18,
+        "spacing": 8,
+        "show-passive-items": true
+    },
+    "clock": {
+        "format": "{:%I:%M %p}",
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+        "format-alt": "{:%A, %B %d %Y}"
+    },
+    "cpu": {
+        "format": " {usage}%",
+        "tooltip": true,
+        "tooltip-format": "CPU Usage: {usage}%\nLoad: {load}"
+    },
+    "memory": {
+        "format": " {}%",
+        "tooltip": true,
+        "tooltip-format": "RAM: {used:0.1f}GB / {total:0.1f}GB\nSwap: {swapUsed:0.1f}GB / {swapTotal:0.1f}GB"
+    },
+    "disk": {
+        "path": "/",
+        "format": "󰋊 {percentage_used}%",
+        "tooltip": true,
+        "tooltip-format": "Disk: {used} / {total} ({percentage_used}%)\nFree: {free}"
+    },
+    "temperature": {
+        "hwmon-path": "/sys/class/hwmon/hwmon1/temp1_input",
+        "critical-threshold": 80,
+        "format": "{temperatureC}°C {icon}",
+        "format-icons": ["", "", ""],
+        "tooltip": true,
+        "tooltip-format": "CPU: {temperatureC}°C / {temperatureF}°F"
+    },
+    "custom/dictation": {
+        // hyprwhspr-rs writes waybar-format JSON (classes: inactive/active/processing/error)
+        // on every state change; dictation.sh sends RTMIN+8 for instant updates.
+        // No on-click: v0.3.23 has no CLI control — F12 toggles, Super+Space holds.
+        "exec": "cat \"$HOME/.cache/hyprwhspr-rs/status.json\" 2>/dev/null || echo '{\"text\":\"󰍭\",\"class\":\"inactive\",\"tooltip\":\"Dictation daemon not running\"}'",
+        "return-type": "json",
+        "format": "{text}",
+        "interval": 1,
+        "signal": 8,
+        "tooltip": true
+    },
+    "custom/dnd": {
+        "exec": "makoctl mode 2>/dev/null | grep -q dnd && echo '󰂛' || echo '󰂚'",
+        "interval": 2,
+        "tooltip": true,
+        "tooltip-format": "Do Not Disturb",
+        "on-click": "~/.config/hypr/scripts/dnd-toggle.sh"
+    },
+    "custom/gpu-temp": {
+        "exec": "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader 2>/dev/null | awk '{printf \"%s°C 󰢮\", $1}'",
+        "interval": 5,
+        "tooltip": true,
+        "tooltip-format": "RTX 5090 GPU Temperature"
+    },
+    "custom/media": {
+        "format": "{}",
+        "max-length": 40,
+        "exec": "STATUS=$(playerctl status 2>/dev/null); if [ \"$STATUS\" = \"Playing\" ]; then ICON=' '; elif [ \"$STATUS\" = \"Paused\" ]; then ICON=' '; else echo ''; exit; fi; META=$(playerctl metadata --format '{{artist}} — {{title}}' 2>/dev/null); [ -n \"$META\" ] && echo \"$ICON$META\" || echo ''",
+        "exec-if": "playerctl metadata 2>/dev/null | grep -q .",
+        "interval": 3,
+        "on-click": "playerctl play-pause",
+        "on-scroll-up": "playerctl next",
+        "on-scroll-down": "playerctl previous",
+        "tooltip-format": "Click: play/pause | Scroll: next/prev"
+    },
+    "custom/leds": {
+        // Case/motherboard RGB (OpenRGB). led-ctl.sh sends RTMIN+9 on changes.
+        "exec": "~/.config/hypr/scripts/led-ctl.sh status",
+        "return-type": "json",
+        "format": "{text}",
+        "interval": 60,
+        "signal": 9,
+        "tooltip": true,
+        "on-click": "~/.config/hypr/scripts/led-ctl.sh toggle",
+        "on-click-right": "~/.config/hypr/scripts/led-ctl.sh menu",
+        "on-scroll-up": "~/.config/hypr/scripts/led-ctl.sh bright +10",
+        "on-scroll-down": "~/.config/hypr/scripts/led-ctl.sh bright -10"
+    },
+    "custom/bluetooth": {
+        "exec": "~/.config/waybar/scripts/bluetooth.sh",
+        "interval": 5,
+        "return-type": "text",
+        "tooltip": true,
+        "tooltip-format": "Left: Manage devices\nRight: Toggle on/off",
+        "on-click": "blueman-manager",
+        "on-click-right": "rfkill toggle bluetooth"
+    },
+    "backlight": {
+        "format": "{percent}% {icon}",
+        "format-icons": ["", "", "", "", "", "", "", "", ""],
+        "tooltip": true,
+        "tooltip-format": "Brightness: {percent}%"
+    },
+    "battery": {
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{capacity}% {icon}",
+        "format-full": "{capacity}% {icon}",
+        "format-charging": "{capacity}% ",
+        "format-plugged": "{capacity}% ",
+        "format-alt": "{time} {icon}",
+        "format-icons": ["", "", "", "", ""],
+        "tooltip": true,
+        "tooltip-format": "Battery: {capacity}%\nTime: {time}\nPower: {power:.1f}W"
+    },
+    "network": {
+        "format-wifi": "{essid} ({signalStrength}%) ",
+        "format-ethernet": "{ipaddr}/{cidr} ",
+        "tooltip-format": "{ifname} via {gwaddr} ",
+        "format-linked": "{ifname} (No IP) ",
+        "format-disconnected": "Disconnected ⚠",
+        "format-alt": "{ifname}: {ipaddr}/{cidr}",
+        "on-click": "nm-connection-editor",
+        "on-click-right": "kitty -e nmtui"
+    },
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-bluetooth": " {volume}%",
+        "format-bluetooth-muted": " MUTE",
+        "format-muted": " MUTE",
+        "format-source": "  {volume}%",
+        "format-source-muted": "",
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
+        },
+        "on-click": "pavucontrol",
+        "tooltip": true,
+        "tooltip-format": "{desc}\nVolume: {volume}%"
+    },
+    "custom/claude": {
+        "exec": "~/.config/waybar/scripts/claude-info.sh",
+        "return-type": "json",
+        "restart-interval": 5,
+        "tooltip": true
+    },
+    "custom/power": {
+        "format": "⏻",
+        "tooltip": false,
+        "on-click": "wlogout -b 3"
+    }
+}

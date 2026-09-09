@@ -666,6 +666,7 @@ in
     hypridle
     hyprpicker
     pyprland       # Scratchpads, magnify, and more
+    xwayland-satellite  # X11 apps under niri (niri spawns it; see niri/config.kdl)
 
     # Launcher and notifications
     rofi

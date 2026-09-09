@@ -196,6 +196,8 @@ in
     "hypr".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/hypr/.config/hypr";
     "waybar".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/waybar/.config/waybar";
     "kitty".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/kitty/.config/kitty";
+    # niri: alternative compositor session (config.kdl auto-reloads on save).
+    "niri".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/niri/.config/niri";
 
     # ── Phase 5: remaining app configs (symlinked, not programs.* modules) ──
     # nvim: lazy.nvim manages plugins under ~/.local/share, config stays live.
