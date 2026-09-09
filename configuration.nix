@@ -95,8 +95,19 @@ in
   # Control -> Auto". If WiFi vanishes after a reboot, boot the previous
   # generation from systemd-boot and re-add "pcie_aspm=off" here.
 
-  # Use latest kernel.
-  boot.kernelPackages = pkgs.linuxPackages_6_12;
+  # nixpkgs default kernel (6.18.x as of the 2026-03 lock). Was pinned to 6.12
+  # LTS until 2026-09-09; 6.12.77 prints "RDSEED32 is broken. Disabling the
+  # corresponding CPUID bit." at boot on the 9950X3D because its Zen 5 fixup
+  # table only knew two models and treated everything else as unfixed. 6.18
+  # carries the full table (family 0x1a model 0x44 stepping 0 -> ucode
+  # 0x0b404035, which linux-firmware already ships), so RDSEED stays enabled
+  # and the line is gone. NVIDIA beta 595 + gcadapter-oc-kmod both build on it.
+  boot.kernelPackages = pkgs.linuxPackages;
+
+  # Nothing on the desktop path needs the network to be *online* at boot, and
+  # this waited ~9s every boot, long enough for systemd to paint a "start job
+  # is running" spinner on tty1.
+  systemd.services.NetworkManager-wait-online.enable = false;
 
   networking.networkmanager.dns = "none";
   networking.nameservers = [
@@ -151,6 +162,12 @@ in
   # window. Effectiveness uncertain — being monitored via difr-monitor.sh.
   boot.extraModprobeConfig = ''
     options nvidia NVreg_DynamicPowerManagement=0x00
+    # The CPU-side "Ryzen HD Audio Controller" (79:00.6) has no codec wired to
+    # it on this board (analog audio is the USB codec at 11:00.0-12), so
+    # snd_hda_intel logged "no codecs found!" at boot and registered an empty
+    # card. enable[] is indexed by probe order: NVIDIA HDMI audio (01:00.1)
+    # first, then 79:00.6 - skip the second one silently.
+    options snd_hda_intel enable=1,0
   '';
 
   # Enable the X11 windowing system.
@@ -459,6 +476,13 @@ in
 
   # Keep GNOME as a fallback desktop environment
   services.desktopManager.gnome.enable = true;
+  # GNOME drags in the LocalSearch/Tracker file indexer, which timed out on
+  # D-Bus activation (120s) every Hyprland session. Not wanted here.
+  services.gnome.localsearch.enable = false;
+  services.gnome.tinysparql.enable = false;
+  # avahi is up (via GNOME) but warned "No NSS support for mDNS"; wire nss-mdns
+  # so .local names resolve and the warning goes away.
+  services.avahi.nssmdns4 = true;
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -734,6 +758,7 @@ in
     power-profiles-daemon  # CPU power profile switching
     libnotify  # notify-send
     networkmanagerapplet
+    wsdd           # gvfs network browsing spawns this (was "Failed to spawn the wsdd daemon")
     brightnessctl
     playerctl
     pavucontrol
@@ -876,6 +901,10 @@ in
     serviceConfig = {
       Type = "simple";
       ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+      # At logout the compositor socket is gone; without this the agent
+      # restart-looped ("cannot open display") until systemd hit the start
+      # limit. A failing ExecCondition stops the unit cleanly, no restart.
+      ExecCondition = "${pkgs.bash}/bin/sh -c 'test -S \"$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY\"'";
       Restart = "on-failure";
       RestartSec = 1;
     };
