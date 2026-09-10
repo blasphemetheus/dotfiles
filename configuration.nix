@@ -779,7 +779,6 @@ in
     gh             # GitHub CLI
     zed-editor     # Rust GPU-accelerated editor
     opencode       # provider-agnostic terminal coding agent (Kimi K3 via "Kimi For Coding")
-    codex          # OpenAI Codex CLI coding agent (nixpkgs; `codex login` for ChatGPT auth)
 
     # Game dev — PHMUB (the biota-browser branch). nixpkgs is on 4.6.1 while
     # game/project.godot declares config/features="4.7"; it runs and renders fine,
@@ -911,12 +910,17 @@ in
     };
   };
 
-  # Auto-upgrade claude-code daily
+  # Auto-upgrade the coding agents daily. Both live in the user nix profile
+  # rather than systemPackages so they can move faster than the flake's
+  # nixpkgs lock: claude-code from sadjow/claude-code-nix, codex installed
+  # with `nix profile install github:NixOS/nixpkgs/nixos-unstable#codex`
+  # (NB: not `nixpkgs#codex` — the system registry pins that alias to the
+  # flake lock, so `nix profile upgrade` would never move it).
   systemd.user.services.claude-code-upgrade = {
-    description = "Upgrade claude-code-nix Nix profile";
+    description = "Upgrade claude-code-nix and codex Nix profile entries";
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.nix}/bin/nix profile upgrade claude-code-nix";
+      ExecStart = "${pkgs.nix}/bin/nix profile upgrade claude-code-nix codex";
     };
   };
 
