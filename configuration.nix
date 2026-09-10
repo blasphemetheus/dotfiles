@@ -779,6 +779,7 @@ in
     gh             # GitHub CLI
     zed-editor     # Rust GPU-accelerated editor
     opencode       # provider-agnostic terminal coding agent (Kimi K3 via "Kimi For Coding")
+    codex          # OpenAI Codex CLI coding agent (nixpkgs; `codex login` for ChatGPT auth)
 
     # Game dev — PHMUB (the biota-browser branch). nixpkgs is on 4.6.1 while
     # game/project.godot declares config/features="4.7"; it runs and renders fine,
