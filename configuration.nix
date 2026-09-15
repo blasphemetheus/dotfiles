@@ -516,6 +516,16 @@ in
     # use the example session manager (no others are packaged yet so this is enabled by default,
     # no need to redefine it in your config for now)
     #media-session.enable = true;
+
+    # Keep the NVIDIA HDMI card off so its sink never exists to become the
+    # default (monitors have no speakers). mirror-toggle.sh flips the
+    # profile on (wpctl set-profile) only while the TV is mirrored.
+    wireplumber.extraConfig."50-nvidia-hdmi-off" = {
+      "monitor.alsa.rules" = [{
+        matches = [{ "device.name" = "alsa_card.pci-0000_01_00.1"; }];
+        actions.update-props = { "device.profile" = "off"; };
+      }];
+    };
   };
 
   # Bluetooth
