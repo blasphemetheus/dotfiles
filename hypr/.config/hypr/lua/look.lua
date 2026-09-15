@@ -62,7 +62,10 @@ hl.config({
         -- the PARENT TERMINAL's title: "✳ session" idle, and the working marker
         -- (braille U+2800-U+28FF, later the ◐◓◑◒ spinners — 2026-08-22
         -- regression), so cover Geometric Shapes U+25A0-U+25FF plus braille.
-        swallow_exception_regex = [=[[✳\x{25A0}-\x{25FF}\x{2800}-\x{28FF}].*]=],
+        -- Codex has no marker glyph, so ~/.codex/config.toml sets
+        -- tui.terminal_title = ["activity", "app-name", "project-name"] and
+        -- we match the literal "Codex" the app-name item puts in the title.
+        swallow_exception_regex = [=[([✳\x{25A0}-\x{25FF}\x{2800}-\x{28FF}].*|.*\bCodex\b.*)]=],
         -- hyprlock 0.9.2 SEGV'd on teardown and orphaned the session lock;
         -- with this on, a respawned hyprlock (lock-wrapper.sh / `lockfix`)
         -- re-attaches instead of the "oopsie daisy" screen.
