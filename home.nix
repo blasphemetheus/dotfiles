@@ -458,6 +458,16 @@ in
     '';
 
     interactiveShellInit = ''
+      # atuin 18.12 bug: _atuin_search re-assigns the picked command through a
+      # bare command substitution, which splits it on newlines into a list;
+      # `commandline -r "$list"` then joins with spaces, so a `\`-continued
+      # multi-line command comes back as `\ ` (an escaped space) and breaks.
+      # Re-source the function with `string collect` on that line.
+      functions -q _atuin_search
+      and functions _atuin_search \
+          | string replace -- 'set ATUIN_H (string trim -- $ATUIN_H)' 'set ATUIN_H (string trim -- $ATUIN_H | string collect)' \
+          | source
+
       # fastfetch once per login session
       if not test -f /tmp/.fastfetch-done-(id -u)
           touch /tmp/.fastfetch-done-(id -u)
