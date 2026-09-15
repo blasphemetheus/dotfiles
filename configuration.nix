@@ -830,6 +830,36 @@ in
         done
       '';
     })
+    (writeShellApplication {
+      name = "maketiny";
+      runtimeInputs = [ ffmpeg ];
+      text = ''
+        # Shrink a video to fit under a size limit (default 20 MB) with
+        # two-pass H.264: caps at 60 fps, drops to 720p when the bitrate
+        # budget is thin. Output lands next to the input as <name>.tiny.mp4.
+        # Usage: maketiny file.mp4 [target_mb]
+        f="$1"; target_mb="''${2:-20}"
+        out="''${f%.*}.tiny.mp4"
+        dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$f")
+        has_audio=$(ffprobe -v error -select_streams a -show_entries stream=index -of csv=p=0 "$f" | head -n1)
+        # Aim ~4% under the limit to cover container overhead
+        total_kbps=$(awk -v mb="$target_mb" -v d="$dur" 'BEGIN{printf "%d", mb*8*1024*0.96/d}')
+        audio_kbps=0; audio_opts=(-an)
+        if [ -n "$has_audio" ]; then audio_kbps=96; audio_opts=(-c:a aac -b:a 96k); fi
+        video_kbps=$((total_kbps - audio_kbps))
+        vf="fps=min(source_fps\,60)"
+        if [ "$video_kbps" -lt 2500 ]; then vf="$vf,scale=-2:'min(720,ih)'"; fi
+        echo "→ ''${dur%.*}s, ''${video_kbps} kbps video, ''${audio_kbps} kbps audio"
+        log=$(mktemp -d)
+        ffmpeg -y -hide_banner -loglevel error -stats -i "$f" -vf "$vf" \
+          -c:v libx264 -preset slow -b:v "''${video_kbps}k" -pass 1 -passlogfile "$log/p" -an -f null /dev/null
+        ffmpeg -y -hide_banner -loglevel error -stats -i "$f" -vf "$vf" \
+          -c:v libx264 -preset slow -b:v "''${video_kbps}k" -pass 2 -passlogfile "$log/p" \
+          -pix_fmt yuv420p -movflags +faststart "''${audio_opts[@]}" "$out"
+        rm -rf "$log"
+        echo "→ $out ($(du -h "$out" | cut -f1))"
+      '';
+    })
 
     # Audio visualizer
     cava
