@@ -22,6 +22,13 @@ set_sink() {   # $1 = node.name
 mons=$(hyprctl monitors all -j)
 tv=$(jq -r --arg d "$TV_DESC" '.[] | select(.description == $d) | .name' <<<"$mons")
 if [[ -z $tv ]]; then
+    # TV unplugged while mirroring: still hand audio back, or every app that
+    # follows the default sink stays silent on the dead HDMI output.
+    if [[ -s $SINK_STATE ]]; then
+        set_sink "$(cat "$SINK_STATE")"; rm -f "$SINK_STATE"
+        notify-send "Mirror" "TV not connected, audio restored" -t 3000
+        exit 0
+    fi
     notify-send "Mirror" "TV not connected (HDMI)" -t 3000
     exit 1
 fi
