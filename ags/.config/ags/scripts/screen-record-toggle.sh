@@ -43,7 +43,8 @@ else
         exit 1
     fi
     FILENAME="$RECORDINGS_DIR/recording_$(date +%Y%m%d_%H%M%S).mp4"
-    wf-recorder -o "$OUTPUT" -f "$FILENAME" &
+    # --audio with no device = the default sink's monitor (what you hear)
+    wf-recorder --audio -o "$OUTPUT" -f "$FILENAME" &
     date +%s > "$STATE"                # stamp start → pill appears + times
     printf '%s' "$FILENAME" > "$FILEREF"   # remember what to rename on stop
     # Only claim success if wf-recorder actually stayed alive.
