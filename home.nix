@@ -566,6 +566,7 @@ in
             claude $argv
         printf '\033]0;%s\007' (hostname)": "(prompt_pwd)
       '';
+      claude-kimi = "claude-k3 $argv";
 
       # DeepSeek V4 Pro. Cheaper than K3 and scores higher on SWE-bench, but
       # its Anthropic shim does NOT support MCP tools, document/search content
