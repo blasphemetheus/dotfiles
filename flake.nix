@@ -133,6 +133,21 @@
                 hyprexpo = final.callPackage ./pkgs/hyprexpo.nix {
                   hyprlandPkg = inputs.hyprland.packages.${prev.stdenv.hostPlatform.system}.hyprland;
                 };
+
+                # hyprshade 4.0.1 applies shaders with `hyprctl keyword`, which
+                # the Lua config rejects ("keyword can't work with non-legacy
+                # parsers. Use eval.") — with exit 0, so hyprshade thinks it
+                # worked and nothing happens. Route it through `hyprctl eval`.
+                # The [[EMPTY]] sentinel round-trips through eval unchanged, so
+                # `hyprshade off/toggle/current` keep working.
+                hyprshade = prev.hyprshade.overridePythonAttrs (old: {
+                  postPatch = (old.postPatch or "") + ''
+                    substituteInPlace src/hyprshade/shader/hyprctl.py \
+                      --replace-fail \
+                        '["hyprctl", "keyword", "decoration:screen_shader", shader_path],' \
+                        '["hyprctl", "eval", "hl.config({ decoration = { screen_shader = " + repr(shader_path) + " } })"],'
+                  '';
+                });
               })
             ];
           }
