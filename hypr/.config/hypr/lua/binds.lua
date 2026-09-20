@@ -75,7 +75,7 @@ bind(B .. "F5", exec([[pkill hypridle && notify-send "Hypridle" "Sleep disabled 
 bind(B .. "L", exec(S .. "/lock-wrapper.sh"))
 
 -- Displays / hardware
-bind(B .. "SHIFT + H", exec(S .. "/hdmi-retrain.sh"))     -- retrain wedged HDMI link
+bind(B .. "SHIFT + H", exec(S .. "/hdmi-retrain.sh"))     -- retrain wedged HDMI link + DP-2 bounce
 bind(B .. "SHIFT + F", exec(S .. "/refresh-toggle.sh"))   -- ASUS 120Hz <-> 165Hz
 bind(B .. "SHIFT + T", exec(S .. "/mirror-toggle.sh"))    -- mirror focused monitor onto the TV / back to extended
 bind(B .. "SHIFT + M", exec("hyprdisplays"))               -- display manager GUI (arrange/modes/mirror/audio/profiles)
@@ -123,7 +123,7 @@ bind(B .. "period", hl.dsp.focus({ monitor = "+1" }))
 bind(B .. "SHIFT + comma",  hl.dsp.window.move({ monitor = "-1" }))
 bind(B .. "SHIFT + period", hl.dsp.window.move({ monitor = "+1" }))
 bind(B .. "CTRL + comma",  hs.dsp.workspace.swap_monitors({ monitor1 = "current", monitor2 = "+1" }))
-bind(B .. "CTRL + period", hs.dsp.grab_rogue_windows())   -- rescue windows after monitor unplug
+bind(B .. "CTRL + period", HYPRSPLIT_RESCUE or hs.dsp.grab_rogue_windows())   -- rescue workspaces after monitor unplug (plugins.lua)
 
 -- Scratchpad
 bind(B .. "S", hl.dsp.workspace.toggle_special("magic"))

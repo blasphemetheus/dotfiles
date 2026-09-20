@@ -517,13 +517,14 @@ in
     # no need to redefine it in your config for now)
     #media-session.enable = true;
 
-    # Keep the NVIDIA HDMI card off so its sink never exists to become the
-    # default (monitors have no speakers). mirror-toggle.sh flips the
-    # profile on (wpctl set-profile) only while the TV is mirrored.
-    wireplumber.extraConfig."50-nvidia-hdmi-off" = {
+    # Pin the NVIDIA HDMI card to the stereo profile so the TV sink
+    # (alsa_output.pci-0000_01_00.1.hdmi-stereo) exists at every boot. The TV
+    # is on the first HDMI port (ELD slot 0) since 2026-09-19; it used to be
+    # "off" (monitors have no speakers) with mirror-toggle.sh flipping it on.
+    wireplumber.extraConfig."50-nvidia-hdmi-stereo" = {
       "monitor.alsa.rules" = [{
         matches = [{ "device.name" = "alsa_card.pci-0000_01_00.1"; }];
-        actions.update-props = { "device.profile" = "off"; };
+        actions.update-props = { "device.profile" = "output:hdmi-stereo"; };
       }];
     };
   };
