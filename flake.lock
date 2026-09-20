@@ -142,11 +142,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788856752,
-        "narHash": "sha256-cw3JxOk16A+eCZzHJKDtCHI/Fn6WkLIgW1GZyiiqI4s=",
+        "lastModified": 1789921117,
+        "narHash": "sha256-6yxanCCNuQWHtKtDrE/Z5KXGYnFS3tsUvxsvWzVjaAM=",
         "ref": "refs/heads/master",
-        "rev": "690efac36c4ca89d7007b5fbd4bf0b6d65ce61d0",
-        "revCount": 4,
+        "rev": "8eb3db2faa3da7c126630e5c6df97b8cb9807492",
+        "revCount": 6,
         "type": "git",
         "url": "file:///home/blewf/git/hyprdisplays"
       },
