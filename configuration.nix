@@ -469,12 +469,36 @@ in
     '';
   };
 
-  # Allow blewf to fire the boot-style connector retrain on demand without
-  # sudo (manual escalation: systemctl restart hdmi-link-retrain).
+  # Heal the VY279HGR (DP-2) after a DPMS-off wake. Seen 2026-09-19: the panel
+  # drops its DP AUX channel in deep sleep, nvidia-modeset can't read the EDID
+  # on wake and drops the connector; on reconnect the hot-plug arrives before
+  # the EDID is readable, so aquamarine caches an EMPTY mode list, falls back
+  # to 640x480 (kernel rejects it, EINVAL) and Hyprland shows the output as
+  # 0x0@60 — black panel. aquamarine only re-reads modes on a disconnected→
+  # connected edge, so nothing in-session (hl.monitor, dpms, disabled=true)
+  # helps; a sysfs off→detect bounce once the kernel has the modes does.
+  # Not wantedBy anything: fired on demand by scripts/dp-wake.sh (hypridle
+  # on-resume / after_sleep, Super+Shift+H) via the polkit rule below.
+  systemd.services.dp-link-bounce = {
+    description = "Cycle DP-2 connector so the compositor re-reads its modes";
+    serviceConfig.Type = "oneshot";
+    script = ''
+      for st in /sys/class/drm/card*-DP-2/status; do
+        [ -e "$st" ] || continue
+        echo off > "$st"
+        sleep 2
+        echo detect > "$st"
+      done
+    '';
+  };
+
+  # Allow blewf to fire the connector retrains on demand without sudo
+  # (manual escalation: systemctl restart hdmi-link-retrain / dp-link-bounce).
   security.polkit.extraConfig = ''
     polkit.addRule(function(action, subject) {
       if (action.id == "org.freedesktop.systemd1.manage-units" &&
-          action.lookup("unit") == "hdmi-link-retrain.service" &&
+          (action.lookup("unit") == "hdmi-link-retrain.service" ||
+           action.lookup("unit") == "dp-link-bounce.service") &&
           subject.user == "blewf") {
         return polkit.Result.YES;
       }

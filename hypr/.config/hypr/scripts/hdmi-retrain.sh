@@ -6,3 +6,5 @@
 #   systemctl restart hdmi-link-retrain.service
 ~/.config/hypr/scripts/hdmi-wake.sh
 notify-send "HDMI" "ASUS re-synced (60→165Hz bounce)" -t 3000
+# Also revive the DP-2 VY279HGR if it woke mode-less (see dp-wake.sh).
+~/.config/hypr/scripts/dp-wake.sh &
