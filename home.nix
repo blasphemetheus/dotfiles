@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 let
   # absolute path required by mkOutOfStoreSymlink (Phase 3 active configs)
@@ -45,7 +45,7 @@ let
   # runs unattended. Uses your own nix-profile claude (subscription/quota).
   setupAdvisor = pkgs.writeShellApplication {
     name = "nixos-setup-advisor";
-    runtimeInputs = with pkgs; [ git atuin libnotify coreutils procps findutils ];
+    runtimeInputs = with pkgs; [ git atuin libnotify coreutils procps findutils gawk gnugrep gnused ];
     text = ''
       cd "${dotfiles}" || exit 0
       claude="${config.home.homeDirectory}/.nix-profile/bin/claude"
@@ -72,10 +72,17 @@ let
         echo "flake.lock age (days): $(( ( $(date +%s) - $(stat -c %Y flake.lock) ) / 86400 ))"
         echo "Compositor: $(pgrep -x Hyprland >/dev/null && echo Hyprland || echo non-Hyprland)"
         echo "Recent commits:"; git log --oneline -12
-        echo "Tool usage counts (atuin history, whole db):"
-        for t in jj zellij atuin comma nix-locate niri river difft dua ncdu nh hexyl bandwhich fclones; do
-          printf '  %s: %s\n' "$t" "$(atuin history list --cmd-only 2>/dev/null | grep -cw "$t" || echo 0)"
-        done
+        echo "Tool usage counts (atuin history, first word of each command, whole db):"
+        # One awk pass over the history tallies by command name (no grep -cw
+        # exit-1 double-print bug, no substring false positives). atuin itself
+        # is invoked via Ctrl-R and niri from the greeter, so their counts
+        # would be meaningless zeros — both omitted.
+        atuin history list --cmd-only 2>/dev/null \
+          | awk '{print $1}' | sort | uniq -c \
+          | awk -v tools="jj zellij comma nix-locate river difft dua ncdu nh hexyl bandwhich fclones" '
+              BEGIN { n = split(tools, wanted, " "); for (i = 1; i <= n; i++) count[wanted[i]] = 0 }
+              { count[$2] = $1 }
+              END { for (i = 1; i <= n; i++) printf "  %s: %d\n", wanted[i], count[wanted[i]] }'
       } > "$tmp"
 
       timeout 420 "$claude" -p --allowedTools "Read Edit Write Glob Grep" \
@@ -623,27 +630,12 @@ in
         printf '\033]0;%s\007' (hostname)": "(prompt_pwd)
       '';
 
-      # Run Claude Code in a Docker sandbox
-      sandbox = ''
-        docker run -it \
-            --cap-add NET_ADMIN --cap-add NET_RAW \
-            -v ~/.claude:/home/claude/.claude \
-            -v ~/.claude.json:/home/claude/.claude.json \
-            -v ~/.gitconfig:/home/claude/.gitconfig:ro \
-            -v ~/git/edifice:/workspace/edifice \
-            -v ~/git/exphil:/workspace/exphil \
-            -v ~/git/shine:/workspace/shine \
-            -v ~/git/nx:/workspace/nx \
-            -v ~/dotfiles:/workspace/dotfiles \
-            -v ~/git/.devcontainer/output:/out \
-            -v /tmp/claude-sandbox:/tmp \
-            claude-sandbox $argv
-      '';
+      # (sandbox / sandbox-join removed 2026-09-17: they ran Claude Code in a
+      # `claude-sandbox` Docker container, but the Docker daemon was dropped
+      # 2026-09-08 and the image is gone — the functions only errored. Claude
+      # Code's built-in bubblewrap sandbox covers the use case now. Resurrect
+      # from git history if needed.)
 
-      # Attach to the running sandbox container
-      sandbox-join = ''
-        docker exec -it (docker ps -q --filter ancestor=claude-sandbox) fish
-      '';
 
       # Recover a dead lockscreen. hyprlock 0.9.2 SEGVs on teardown (CShader
       # dtor racing the async asset thread) and leaves Hyprland's session-lock

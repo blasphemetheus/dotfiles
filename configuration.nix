@@ -183,26 +183,18 @@ in
     portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
 
-  programs.direnv.enable = true;
-  
-  # Hyprland plugins. Stable /etc paths so the stow-managed hyprland.conf can
-  # `plugin =` them without hardcoding nix store paths. All three are built
-  # against the flake Hyprland (flake.nix inputs) so their ABI matches 0.55.4.
+  # Hyprland plugins. Stable /etc paths so the Lua config can hl.plugin.load()
+  # them without hardcoding nix store paths. Both are built against the flake
+  # Hyprland (flake.nix inputs) so their ABI matches 0.56.2.
   #   hyprsplit — dwm-style per-monitor workspace sets (Super+N = Nth workspace
   #               of the FOCUSED monitor; second monitor's set is ids 11-20).
-  #   Hyprspace — KDE/GNOME-style workspace overview with window drag.
-  #   hyprexpo  — expo grid overview (community fork; see pkgs/hyprexpo.nix).
+  #   hyprexpo  — expo grid overview (sandwichfarm fork flake input).
   # hyprsplit is a Lua LIBRARY since Hyprland 0.55 (the .so refuses Lua configs):
   # install the pinned input's init.lua where hypr/.config/hypr/hyprsplit/init.lua
   # symlinks to, and lua/plugins.lua require()s it.
   environment.etc."hypr/hyprsplit/init.lua".source = "${inputs.hyprsplit}/init.lua";
   environment.etc."hypr/plugins/libhyprsplit.so".source =
     "${inputs.hyprsplit.packages.${pkgs.stdenv.hostPlatform.system}.hyprsplit}/lib/libhyprsplit.so";
-  # Hyprspace DISABLED 2026-08-11: upstream (last commit 2026-05-28) doesn't
-  # compile against Hyprland 0.56 (AnimationManager.hpp moved). Re-enable this
-  # line + the hyprland.conf plugin/bind lines when KZDKM/Hyprspace catches up.
-  # environment.etc."hypr/plugins/libHyprspace.so".source =
-  #   "${inputs.hyprspace.packages.${pkgs.stdenv.hostPlatform.system}.Hyprspace}/lib/libHyprspace.so";
   # hyprexpo from the fork's flake since v0.56.1+3 (built against our pinned
   # Hyprland via `follows`); pkgs/hyprexpo.nix was the 0.55-era hand-build.
   environment.etc."hypr/plugins/libhyprexpo.so".source =
@@ -329,8 +321,11 @@ in
     ln -sf ${pkgs.bash}/bin/bash /bin/bash
   '';
 
-  # Docker
-  virtualisation.docker.enable = false;
+  # (Docker removed 2026-09-17: virtualisation.docker was disabled and the
+  # daemon never installed, yet blewf was in the docker group and the fish
+  # `sandbox`/`sandbox-join` functions shelled out to it. Group + functions
+  # dropped too. Resurrect from git history if container sandboxes return —
+  # or use podman, which is a drop-in CLI match.)
 
   # Local LLM for offline troubleshooting (the 2026-09-07 WiFi-dead-after-reset
   # episode). Ollama speaks the Anthropic Messages API on :11434, so the fish
@@ -628,7 +623,7 @@ in
     isNormalUser = true;
     description = "Bradley Lewis Fargo";
     shell = pkgs.fish;
-    extraGroups = [ "networkmanager" "wheel" "docker" "input" ]; # input: hyprwhspr-rs evdev listener
+    extraGroups = [ "networkmanager" "wheel" "input" ]; # input: hyprwhspr-rs evdev listener
     packages = with pkgs; [
       thunderbird
     ];
@@ -658,7 +653,11 @@ in
   environment.systemPackages = with pkgs; [
     vim
     wget
-    git
+    # git/fish/zoxide/direnv/starship/zellij used to be here too — removed
+    # 2026-09-17: Home Manager's programs.* modules (home.nix) install them for
+    # blewf, and HM's shell hooks are the ones that actually run. fish stays on
+    # the system PATH via programs.fish.enable (needed as the login shell);
+    # for root-side git: `nix shell nixpkgs#git`.
     btop
     elixir
     erlang
@@ -713,9 +712,7 @@ in
     kitty
     ghostty        # Zig GPU-accelerated terminal
     wezterm        # Rust GPU-accelerated terminal + multiplexer
-    fish
     nushell        # Structured data shell
-    zoxide
 
     # Clipboard
     wl-clipboard
@@ -786,7 +783,6 @@ in
     helix
     lazygit
     vscode
-    direnv
     gh             # GitHub CLI
     zed-editor     # Rust GPU-accelerated editor
     opencode       # provider-agnostic terminal coding agent (Kimi K3 via "Kimi For Coding")
@@ -819,9 +815,7 @@ in
     serpl      # TUI search and replace across files
     felix-fm   # Rust TUI file manager
     fastfetch  # system info splash
-    starship   # cross-shell prompt
     yazi       # TUI file manager with image preview
-    zellij     # terminal multiplexer
     glow       # terminal markdown renderer
 
     # Video editing

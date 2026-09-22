@@ -53,11 +53,11 @@ sudo nixos-rebuild switch --flake .
 ### Phase 1: Flake + Empty Home Manager
 Create `flake.nix` and `home.nix`, verify the system builds.
 
-- [ ] Create `flake.nix` with nixpkgs + home-manager inputs
-- [ ] Create minimal `home.nix` (username, homeDirectory, stateVersion)
-- [ ] Import home-manager as NixOS module in flake
-- [ ] `sudo nixos-rebuild switch --flake .` succeeds
-- [ ] System works identically to before
+- [x] Create `flake.nix` with nixpkgs + home-manager inputs
+- [x] Create minimal `home.nix` (username, homeDirectory, stateVersion)
+- [x] Import home-manager as NixOS module in flake
+- [x] `sudo nixos-rebuild switch --flake .` succeeds
+- [x] System works identically to before
 
 ### Phase 2: Migrate Simple Configs
 Unstow each package, add to `home.nix` as `xdg.configFile`, rebuild, verify.
@@ -73,9 +73,9 @@ Unstow each package, add to `home.nix` as `xdg.configFile`, rebuild, verify.
 ### Phase 3: Migrate Configs with Scripts
 These are trickier — scripts directories + runtime-mutable files.
 
-- [ ] waybar (config.jsonc, style variants, scripts dir — NOT style.css)
-- [ ] hypr (hyprland.conf, hypridle, hyprlock, pyprland, hyprshade, scripts — NOT opacity-active.conf)
-- [ ] kitty (kitty.conf, opacity-override stays runtime-managed)
+- [x] waybar (config.jsonc, style variants, scripts dir — NOT style.css)
+- [x] hypr (hyprland.conf, hypridle, hyprlock, pyprland, hyprshade, scripts — NOT opacity-active.conf)
+- [x] kitty (kitty.conf, opacity-override stays runtime-managed)
 
 ### Phase 4: Convert to `programs.*`
 These benefit from Home Manager's native module integration.

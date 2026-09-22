@@ -87,11 +87,9 @@
       url = "github:cryeprecision/hyprsplit/6870872c24672745614d1cf61cb70dcc0d6fd0a9";
       inputs.hyprland.follows = "hyprland";
     };
-    # workspace overview with window drag. Third-party; follows hyprland.
-    hyprspace = {
-      url = "github:KZDKM/Hyprspace";
-      inputs.hyprland.follows = "hyprland";
-    };
+    # (hyprspace input removed 2026-09-17: disabled since 2026-08-11 — upstream
+    # KZDKM/Hyprspace doesn't compile against Hyprland 0.56 — yet still fetched
+    # on every `nix flake update`. Re-add the input when upstream catches up.)
     # expo-style overview. hyprwm abandoned the original (removed from
     # hyprland-plugins in #663); this community fork is the maintained successor.
     # Pinned to release v0.56.1+3 (2026-08-07, first 0.56-compatible release;
@@ -104,7 +102,7 @@
     };
   };
 
-  outputs = inputs@{ nixpkgs, home-manager, astal, ags, ... }:
+  outputs = inputs@{ nixpkgs, home-manager, ags, ... }:
     let
       slanka = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -117,10 +115,10 @@
           # Expose the v3 CLI as `ags-v3` WITHOUT replacing pkgs.ags: nixpkgs
           # consumers (hyprpanel calls `ags.bundle`) still need the v2 package.
           # (hyprsplit no longer overridden here — it now comes from the
-          # shezdy/hyprsplit flake input, built against our pinned Hyprland.)
+          # cryeprecision/hyprsplit flake input, built against our pinned Hyprland.)
           {
             nixpkgs.overlays = [
-              (final: prev: {
+              (_final: prev: {
                 ags-v3 = ags.packages.${prev.stdenv.hostPlatform.system}.default;
 
                 # Replace nixpkgs' hyprlock 0.9.2 with the crash-fixed upstream
@@ -128,11 +126,9 @@
                 # this up via `hyprlock` in configuration.nix.
                 hyprlock = inputs.hyprlock.packages.${prev.stdenv.hostPlatform.system}.hyprlock;
 
-                # hyprexpo has no flake at its last 0.55.x tag, so build it here
-                # against the flake Hyprland (see pkgs/hyprexpo.nix).
-                hyprexpo = final.callPackage ./pkgs/hyprexpo.nix {
-                  hyprlandPkg = inputs.hyprland.packages.${prev.stdenv.hostPlatform.system}.hyprland;
-                };
+                # (hyprexpo overlay removed 2026-09-17: the sandwichfarm fork's
+                # flake ships a 0.56-compatible package, consumed directly in
+                # configuration.nix. pkgs/hyprexpo.nix was the 0.55-era hand-build.)
 
                 # hyprshade 4.0.1 applies shaders with `hyprctl keyword`, which
                 # the Lua config rejects ("keyword can't work with non-legacy
