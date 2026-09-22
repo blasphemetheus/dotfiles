@@ -337,6 +337,18 @@ in
     enable = true;
     package = pkgs.ollama-cuda;
     loadModels = [ "qwen3-coder:30b" ];   # pulled on service start if missing
+    # Keep the ~19GB model store off / (was /var/lib/ollama, part of the 2026-09
+    # full-disk episode). The module puts `models` in ReadWritePaths, so this
+    # works with the default DynamicUser. One-time move (before the rebuild):
+    #   sudo systemctl stop ollama ollama-model-loader
+    #   sudo mkdir -p /data/ollama && sudo cp -a /var/lib/private/ollama/models /data/ollama/
+    models = "/data/ollama/models";
+    # Static user instead of DynamicUser: the transient uid couldn't write the
+    # root-owned /data path (2026-09-19 startup failure: "mkdir
+    # /data/ollama/models/blobs: permission denied"). A stable account lets us
+    # chown /data/ollama once. The module creates user+group when set.
+    user = "ollama";
+    group = "ollama";
     environmentVariables = {
       OLLAMA_CONTEXT_LENGTH = "65536";
       OLLAMA_KEEP_ALIVE = "30m";
