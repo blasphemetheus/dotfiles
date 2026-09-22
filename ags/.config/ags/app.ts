@@ -3,6 +3,7 @@ import { Gdk } from "ags/gtk3"
 import style from "./style.scss"
 import Dashboard from "./widget/Dashboard"
 import DictationPill from "./widget/DictationPill"
+import CommandPill from "./widget/CommandPill"
 import RecordingPill from "./widget/RecordingPill"
 
 // AGS v3 (aylur/ags flake input — nixpkgs only ships the v2 astal API).
@@ -14,6 +15,7 @@ app.start({
     const make = (monitor: Gdk.Monitor) => {
       Dashboard(monitor)
       DictationPill(monitor)
+      CommandPill(monitor)
       RecordingPill(monitor)
     }
     const monitors = app.get_monitors()

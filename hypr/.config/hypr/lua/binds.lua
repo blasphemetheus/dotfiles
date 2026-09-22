@@ -62,6 +62,13 @@ bind("F12", exec(S .. "/dictation.sh"))
 bind(B .. "SPACE", exec(S .. "/dictation.sh"))
 bind(B .. "SPACE", exec(S .. "/dictation.sh"), { release = true })
 
+-- Voice command router (NOT wake-word, NOT dictation): hold Super+U, speak a
+-- command from the allowlist, release. whisper-cli → ollama → jq-validated
+-- allowlist dispatch (scripts/voice-command.sh). Super+U shares no keys with
+-- F12/Super+Space, so hyprwhspr's subset-matching evdev listener ignores it.
+bind(B .. "U", exec(S .. "/voice-command.sh start"))
+bind(B .. "U", exec(S .. "/voice-command.sh stop"), { release = true })
+
 -- Screen recording toggle (same script as the Super+D ⏺ Record button)
 bind(B .. "SHIFT + V", exec("~/.config/ags/scripts/screen-record-toggle.sh"))
 
