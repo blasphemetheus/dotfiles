@@ -99,9 +99,10 @@
     "custom/dnd": {
         "exec": "makoctl mode 2>/dev/null | grep -q dnd && echo '󰂛' || echo '󰂚'",
         "interval": 2,
+        "signal": 10,
         "tooltip": true,
         "tooltip-format": "Do Not Disturb",
-        "on-click": "~/.config/hypr/scripts/dnd-toggle.sh"
+        "on-click": "~/.config/hypr/scripts/dnd-smart.sh"
     },
     "custom/gpu-temp": {
         "exec": "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader 2>/dev/null | awk '{printf \"%s°C 󰢮\", $1}'",

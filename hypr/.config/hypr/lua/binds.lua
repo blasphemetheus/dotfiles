@@ -89,7 +89,7 @@ bind(B .. "SHIFT + M", exec("hyprdisplays"))               -- display manager GU
 bind(B .. "CTRL + D",  exec(S .. "/display-profile.sh"))   -- rofi: apply a saved hyprdisplays profile
 bind(B .. "SHIFT + L", exec(S .. "/led-ctl.sh toggle"))   -- RGB LEDs
 bind(B .. "CTRL + L",  exec(S .. "/led-ctl.sh menu"))
-bind(B .. "SHIFT + D", exec(S .. "/dnd-toggle.sh"))       -- do not disturb
+bind(B .. "SHIFT + D", exec(S .. "/dnd-smart.sh"))        -- do not disturb (+ hourly digest while on)
 bind(B .. "SHIFT + K", exec(S .. "/discord-recover.sh"))  -- Discord splash wedge
 bind(B .. "SHIFT + O", exec(S .. "/opacity-toggle.sh"))
 

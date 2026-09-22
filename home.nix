@@ -340,6 +340,26 @@ in
     Install.WantedBy = [ "default.target" ];
   };
 
+  # Hourly LLM notification digest, running ONLY while DND is on: the timer
+  # deliberately has no Install.WantedBy — dnd-smart.sh starts/stops it with
+  # the mako mode, so DND state is the only owner and there's no enable-state
+  # to drift across reboots.
+  systemd.user.services.notif-digest = {
+    Unit.Description = "LLM notification digest (mako history → ollama summary)";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "%h/.config/hypr/scripts/notif-digest.sh";
+    };
+  };
+  systemd.user.timers.notif-digest = {
+    Unit.Description = "Hourly notification digest while DND is active";
+    Timer = {
+      OnCalendar = "hourly";
+      Persistent = false;
+    };
+    # NO Install.WantedBy — dnd-smart.sh owns this timer's lifecycle.
+  };
+
   # notification-picker on PATH so the Hyprland keybind can call it by name.
   # libsecret: `secret-tool` — aerc reads the mailbox password from the
   # GNOME keyring (running with --components=secrets) instead of plaintext.
