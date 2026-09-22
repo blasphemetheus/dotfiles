@@ -21,4 +21,9 @@ fi
 if git -C "$HOME/dotfiles" status --porcelain -- '*.nix' 2>/dev/null | grep -q .; then
     out+=("  uncommitted .nix changes in ~/dotfiles")
 fi
+# Not a warning — just surface that the LLM watchers are armed (they're
+# opt-in via agent-watchers-toggle.sh, so their being on is deliberate state).
+if systemctl --user is-active agent-watchers.service >/dev/null 2>&1; then
+    out+=("󰒌  agent watchers on")
+fi
 printf '%s\n' "${out[@]}"

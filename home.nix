@@ -360,6 +360,23 @@ in
     # NO Install.WantedBy — dnd-smart.sh owns this timer's lifecycle.
   };
 
+  # Agent watchers: local-LLM triage of Hyprland ERR lines + post-resume
+  # health. Explicitly opt-in: agent-watchers-toggle.sh runs
+  # `systemctl --user enable --now`, and that enablement is the persistence —
+  # the service has no Install section, so it never starts on its own.
+  systemd.user.services.agent-watchers = {
+    Unit = {
+      Description = "LLM agent watchers (hyprland log tail + resume health)";
+      After = [ "default.target" ];
+    };
+    Service = {
+      ExecStart = "%h/.config/hypr/scripts/agent-watchers.sh";
+      Restart = "on-failure";
+      RestartSec = 10;
+    };
+    # NO Install section — enable/disable is the user's explicit toggle.
+  };
+
   # notification-picker on PATH so the Hyprland keybind can call it by name.
   # libsecret: `secret-tool` — aerc reads the mailbox password from the
   # GNOME keyring (running with --components=secrets) instead of plaintext.
