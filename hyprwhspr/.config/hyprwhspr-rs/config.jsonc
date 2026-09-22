@@ -28,17 +28,57 @@
 
   // Fix recognition of vocabulary the models reliably mangle.
   // Case-insensitive whole-word/phrase replacement at injection time —
-  // grow this list whenever a dictation gets a term wrong.
+  // grow this list whenever a dictation gets a term wrong
+  // (`vocab-add "wrong hearing" "correct term"` — scripts/vocab-add.sh).
+  // 2026-09-21: this is the ONLY post-processing allowed on transcripts —
+  // deterministic fixed mappings, never an LLM rewrite. Verbatim or bust.
   "word_overrides": {
-    "nix os": "NixOS",
-    "nixos": "NixOS",
+    // ── hypr* / desktop stack ──
     "hyper land": "Hyprland",
     "hyprland": "Hyprland",
+    "hyper split": "hyprsplit",
+    "hyper whisper": "hyprwhspr",
+    "hyper shade": "hyprshade",
+    "hyper idle": "hypridle",
+    "hyper lock": "hyprlock",
+    "hyper picker": "hyprpicker",
+    "hyper displays": "hyprdisplays",
     "way bar": "waybar",
     "wave bar": "waybar",
+    "neary": "niri",
+    // ── NixOS ──
+    "nix os": "NixOS",
+    "nixos": "NixOS",
+    "home manager": "Home Manager",
+    "nix pkgs": "nixpkgs",
+    "nixos rebuild": "nixos-rebuild",
+    "nix store": "Nix store",
+    // ── tools ──
+    "mako": "mako",
+    "a toon": "atuin",
+    "atoon": "atuin",
+    "ollama": "Ollama",
+    "qwen": "Qwen",
+    "quen": "Qwen",
+    "jujutsu": "jujutsu",
+    "zellij": "zellij",
+    "rofi": "rofi",
     "git hub": "GitHub",
     "neo vim": "Neovim",
-    "system d": "systemd"
+    "system d": "systemd",
+    // ── Melee / Slippi ──
+    "slippy": "Slippi",
+    "melee": "Melee",
+    "wave shine": "waveshine",
+    "multi shine": "multishine",
+    "l cancel": "L-cancel",
+    "short hop": "short hop",
+    "dash dance": "dash dance",
+    "neutral air": "nair",
+    "forward air": "fair",
+    "back air": "bair",
+    "down air": "dair",
+    "up air": "uair"
   },
 
   "transcription": {
@@ -56,7 +96,9 @@
       "model": "large-v3-turbo-q8_0",
       "gpu_layers": 999,
       "threads": 8,
-      "prompt": "Transcribe with proper punctuation, capitalization, and technical terminology."
+      // 2026-09-21: the prompt doubles as vocabulary bias if the provider
+      // flips back to whisper_cpp — keep it in sync with word_overrides.
+      "prompt": "Transcribe with proper punctuation, capitalization, and technical terminology. Vocabulary: NixOS, Hyprland, hyprsplit, hyprwhspr, hyprshade, hypridle, hyprlock, hyprdisplays, waybar, mako, niri, atuin, Ollama, Qwen, Home Manager, nixpkgs, nixos-rebuild, rofi, zellij, jujutsu, Slippi, Melee, Falco, waveshine, multishine, L-cancel, short hop, nair, fair, bair, uair, dair, dash dance."
     }
   }
 }

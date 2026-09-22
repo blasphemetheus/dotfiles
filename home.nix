@@ -205,6 +205,10 @@ in
     "kitty".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/kitty/.config/kitty";
     # niri: alternative compositor session (config.kdl auto-reloads on save).
     "niri".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/niri/.config/niri";
+    # hyprwhspr-rs: single-source the dictation config. The live copy used to be
+    # a hand-synced real file that could drift from the repo; vocab-add.sh also
+    # edits this file in place and needs the repo path to BE the live path.
+    "hyprwhspr-rs".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/hyprwhspr/.config/hyprwhspr-rs";
 
     # ── Phase 5: remaining app configs (symlinked, not programs.* modules) ──
     # nvim: lazy.nvim manages plugins under ~/.local/share, config stays live.
@@ -636,6 +640,11 @@ in
       # Code's built-in bubblewrap sandbox covers the use case now. Resurrect
       # from git history if needed.)
 
+      # Teach the dictation daemon a word: vocab-add "wrong hearing" "correct term"
+      # (appends to word_overrides in the hyprwhspr-rs config + restarts it)
+      vocab-add = ''
+        ~/.config/hypr/scripts/vocab-add.sh $argv
+      '';
 
       # Recover a dead lockscreen. hyprlock 0.9.2 SEGVs on teardown (CShader
       # dtor racing the async asset thread) and leaves Hyprland's session-lock
