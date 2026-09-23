@@ -330,13 +330,17 @@ in
   # Local LLM for offline troubleshooting (the 2026-09-07 WiFi-dead-after-reset
   # episode). Ollama speaks the Anthropic Messages API on :11434, so the fish
   # function `claude-local` (home.nix) runs Claude Code against it with no
-  # internet. Pull the model once while online:
+  # internet. Pull the models once while online:
   #   ollama pull qwen3-coder:30b     # MoE, 3B active — fast on the 5090
+  #   ollama pull qwen3:8b            # small general model for scripted jobs
   # 64k context so a repo-sized conversation fits; ~24GB VRAM at that size.
+  # That is a DEFAULT, not a cap: short-lived scripted callers should pass
+  # options.num_ctx themselves (notif-digest.sh does) rather than pay a 5.9GiB
+  # KV cache to summarize five notifications.
   services.ollama = {
     enable = true;
     package = pkgs.ollama-cuda;
-    loadModels = [ "qwen3-coder:30b" ];   # pulled on service start if missing
+    loadModels = [ "qwen3-coder:30b" "qwen3:8b" ];  # pulled on service start if missing
     # Keep the ~19GB model store off / (was /var/lib/ollama, part of the 2026-09
     # full-disk episode). The module puts `models` in ReadWritePaths, so this
     # works with the default DynamicUser. One-time move (before the rebuild):
@@ -351,7 +355,13 @@ in
     group = "ollama";
     environmentVariables = {
       OLLAMA_CONTEXT_LENGTH = "65536";
-      OLLAMA_KEEP_ALIVE = "30m";
+      # 5m, not 30m: notif-digest.timer fires hourly, and a 30m keep-alive left
+      # the previous runner still holding ~25GB of VRAM when ollama sized the
+      # next load. On 2026-09-22 at 16:00 and 17:00 it therefore saw 1.7GiB
+      # free, spilled 48/49 layers to system RAM (23.7GiB total, ~10GB of it
+      # into swap) and ran the digest on CPU. Any value well under the 60m
+      # timer gap avoids the collision.
+      OLLAMA_KEEP_ALIVE = "5m";
     };
   };
 

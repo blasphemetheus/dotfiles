@@ -57,13 +57,25 @@ listing=$(printf '%s\n' "$new" | jq -r '"[" + (.time | tostring) + "] " + .app +
 $listing"
 
 sys='Summarize these desktop notifications in at most 5 terse bullets. Group duplicates, drop anything trivial, keep names and facts. One line per bullet, no preamble, no closing remark.'
+
+# qwen3:8b, not qwen3-coder:30b: this is five bullets of plain-English
+# summary, not code, and the 30b spilled to CPU whenever it could not fit.
+# num_ctx is pinned here rather than inherited from the service default
+# (OLLAMA_CONTEXT_LENGTH=65536, sized for `claude-local`): a 64k KV cache
+# costs ~6GB of VRAM to read a batch this script already caps at 60 lines.
+# This is the NATIVE /api/chat endpoint, not /v1/chat/completions — the
+# OpenAI-compatible layer silently drops `options`, so num_ctx only takes
+# effect here. Response shape differs accordingly (.message, not .choices).
+# think:false because qwen3 is a hybrid-thinking model — left on, its
+# <think> block lands verbatim in the notification body.
 payload=$(jq -n --arg sys "$sys" --arg user "$listing" \
-  '{model:"qwen3-coder:30b", temperature:0.2, max_tokens:200, stream:false,
+  '{model:"qwen3:8b", stream:false, think:false,
+    options:{num_ctx:8192, temperature:0.2, num_predict:200},
     messages:[{role:"system",content:$sys},{role:"user",content:$user}]}')
 
-resp=$(timeout 60 curl -sf http://localhost:11434/v1/chat/completions \
+resp=$(timeout 60 curl -sf http://localhost:11434/api/chat \
          -H 'Content-Type: application/json' -d "$payload") || exit 0
-bullets=$(printf '%s' "$resp" | jq -r '.choices[0].message.content // empty')
+bullets=$(printf '%s' "$resp" | jq -r '.message.content // empty')
 [ -n "$bullets" ] || exit 0
 
 # Update `last` only on successful delivery — a failed notify (mako down)
