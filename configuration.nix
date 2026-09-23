@@ -946,6 +946,9 @@ in
     # non-redistributable and NOT in git — add it once with:
     #   nix-store --add-fixed sha256 rwing-linux-a2.3
     (callPackage ./pkgs/rwing.nix { })
+    # ChatGPT desktop (ChatGPT/Work/Codex + Remote connections) — OpenAI's official Linux .deb
+    # in an FHS env; nixpkgs' `chatgpt` is darwin-only. See pkgs/chatgpt.nix to bump.
+    (callPackage ./pkgs/chatgpt.nix { })
     inputs.hyprdisplays.packages.${pkgs.stdenv.hostPlatform.system}.default   # Super+Shift+M display manager
   ];
 
