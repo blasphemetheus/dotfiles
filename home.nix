@@ -275,11 +275,16 @@ in
   };
 
   # Weekly LLM advisor (headless claude → SUGGESTIONS.md + notification).
+  # Wrapped in gpu-guard.sh (2026-09-26): if another compute job holds the
+  # GPU when the timer fires, the run is deferred 24 h and re-checked, and so
+  # on, instead of racing an ExPhil training run. (The advisor itself talks to
+  # the Anthropic API, not Ollama — the guard is cheap insurance so any future
+  # local-model switch inherits it.)
   systemd.user.services.nixos-setup-advisor = {
     Unit.Description = "Weekly LLM setup advisor (writes SUGGESTIONS.md)";
     Service = {
       Type = "oneshot";
-      ExecStart = "${setupAdvisor}/bin/nixos-setup-advisor";
+      ExecStart = "%h/.config/hypr/scripts/gpu-guard.sh nixos-setup-advisor -- ${setupAdvisor}/bin/nixos-setup-advisor";
       TimeoutStartSec = "10min";
     };
   };

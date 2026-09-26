@@ -49,6 +49,20 @@ if [ "$count" -gt 60 ]; then
   count=60
 fi
 
+# GPU busy? (2026-09-26) Loading qwen3:8b puts ~6 GB on the card for
+# OLLAMA_KEEP_ALIVE=5m. That killed two ExPhil CUDA diagnostics — the 00:00:15
+# digest load preceded a training workspace OOM by 50 s. Skip the digest while
+# any compute process other than ollama's own runner holds the GPU; leave
+# `last` untouched so the next hour's run summarizes the whole window.
+if command -v nvidia-smi >/dev/null 2>&1; then
+  busy=$(nvidia-smi --query-compute-apps=process_name --format=csv,noheader 2>/dev/null \
+           | grep -v -i 'ollama' | grep -c . || true)
+  if [ "${busy:-0}" -gt 0 ]; then
+    echo "notif-digest: GPU held by $busy non-ollama compute process(es); skipping this hour" >&2
+    exit 0
+  fi
+fi
+
 # Ollama down? Leave `last` untouched so the next run retries the same window.
 curl -sf --max-time 2 http://localhost:11434/api/version >/dev/null || exit 0
 
