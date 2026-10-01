@@ -6,10 +6,16 @@ hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
 hl.env("HYPRCURSOR_SIZE", "24")
 hl.env("PATH", home .. "/.local/bin:" .. (os.getenv("PATH") or ""))
 
--- NVIDIA Wayland — required for proper GPU rendering
-hl.env("LIBVA_DRIVER_NAME", "nvidia")
-hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
-hl.env("NVD_BACKEND", "direct")
+-- NVIDIA Wayland — required for proper GPU rendering. Only when the driver is
+-- actually loaded: this config is shared with the laptop (AMD iGPU), where
+-- forcing these breaks VA-API and GLX.
+local nvidia = io.open("/proc/driver/nvidia/version", "r")
+if nvidia then
+    nvidia:close()
+    hl.env("LIBVA_DRIVER_NAME", "nvidia")
+    hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+    hl.env("NVD_BACKEND", "direct")
+end
 
 -- Keep SDL apps (Godot 4.5+ joypad input is SDL) from exclusively claiming
 -- the GC adapter (057e:0337) via HIDAPI/libusb — it blocks Slippi Dolphin's

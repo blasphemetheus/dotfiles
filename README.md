@@ -1,28 +1,50 @@
 # Dotfiles
 
-Hyprland desktop config with a Gold-to-Rose theme, for NixOS (`nixos_slanka`).
+Hyprland desktop config with a Gold-to-Rose theme, for NixOS. One repo, one host per machine:
+`nixos_slanka` (desktop, RTX 5090) and `aspire` (laptop, Acer Aspire Go 15, AMD iGPU).
 Managed declaratively with **Nix flakes + Home Manager** — GNU Stow is no longer used.
 
 ## Quick Setup
 
 ```fish
 git clone <repo-url> ~/dotfiles
-sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka
+sudo nixos-rebuild switch --flake ~/dotfiles   # picks the host matching `hostname`
 ```
 
 That single command builds the system *and* all user dotfiles. Afterwards the `nrs` abbreviation
-is available as a shorthand for the same thing.
+is available as a shorthand for the same thing. The first switch on a fresh machine has to name
+the host (`--flake ~/dotfiles#aspire`), because the hostname isn't set yet.
 
 See [NIXOS-SETUP.md](NIXOS-SETUP.md) for a full machine setup (NVIDIA GPU, disks, first boot).
 
+## Hosts
+
+`hosts/<name>/default.nix` holds what is tied to one machine and imports the shared
+`configuration.nix`; `hosts/<name>/hardware-configuration.nix` is that machine's
+`nixos-generate-config` scan. `home.nix` and every app config are shared.
+
+Live-linked configs (hypr, waybar, niri) can't be per-host files, so hardware-specific scripts
+check for their hardware and no-op when it is absent (`led-ctl.sh` without OpenRGB,
+`hdmi-wake.sh` without the VG27V, `battery-monitor.sh` without a battery, NVIDIA env in
+`lua/env.lua` only when the driver is loaded).
+
+Adding a machine: copy `hosts/aspire/`, replace its `hardware-configuration.nix` with the new
+scan, and add one `mkHost` line to `flake.nix`.
+
+Not in git, so set up by hand on each machine: `~/.config/fish/secrets.fish`, `~/.gitconfig`
+identity, the `claude` / `codex` / `devenv` user-profile installs, and the mail password in the
+keyring (`secret-tool store`, see `home.nix`).
+
 ## Layout
 
-`flake.nix` wires `configuration.nix` (system) and `home.nix` (user, via the Home Manager NixOS
-module). Each top-level directory holds one app's config in a `<app>/.config/<app>/` layout.
+`flake.nix` wires a host module plus `home.nix` (user, via the Home Manager NixOS module). Each
+top-level directory holds one app's config in a `<app>/.config/<app>/` layout.
 
 ```
-flake.nix          - inputs (nixpkgs, home-manager) + nixosConfigurations.nixos_slanka
-configuration.nix  - system: NVIDIA, kernel, networking, packages, services
+flake.nix          - inputs (nixpkgs, home-manager, hyprland…) + one nixosConfiguration per host
+hosts/slanka/      - desktop only: NVIDIA, ollama, OpenRGB, monitor-link heals, /data, gaming
+hosts/aspire/      - laptop only: zram, fwupd
+configuration.nix  - shared system: kernel, networking, compositors, packages, services
 home.nix           - user: programs.* modules + config file wiring
 pkgs/              - local derivations (rwing)
 scripts/           - helper scripts (update-rwing.sh, difr-monitor.sh, difr-stress.sh)
@@ -70,7 +92,7 @@ nrs
 Before switching into a risky change, boot the config in a throwaway VM:
 
 ```fish
-nixos-rebuild build-vm --flake ~/dotfiles#nixos_slanka
+nixos-rebuild build-vm --flake ~/dotfiles#nixos_slanka   # or #aspire
 ./result/bin/run-nixos_slanka-vm
 rm -f nixos.qcow2 result
 ```

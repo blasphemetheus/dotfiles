@@ -488,7 +488,7 @@ in
     };
 
     shellAbbrs = {
-      nrs = "sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka";
+      nrs = "sudo nixos-rebuild switch --flake ~/dotfiles";
       nos = "nh os switch";
     };
 
@@ -545,7 +545,7 @@ in
             "hexyl — 'hexyl <file>' is a colored hex viewer" \
             "ncdu / dua — find what's eating the disk before it bites" \
             "yazi — press 'y' to open the file manager; it cd's where you quit" \
-            "build-vm — 'nixos-rebuild build-vm --flake ~/dotfiles#nixos_slanka' tests risky changes safely"
+            "build-vm — 'nixos-rebuild build-vm --flake ~/dotfiles' tests risky changes safely"
         set -l i (math (date +%j) % (count $tips) + 1)
         set_color yellow; echo "  💡 "$tips[$i]; set_color normal
       '';

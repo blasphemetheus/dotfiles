@@ -1,9 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Battery Monitor for Hyprland
 # Sends notifications when battery drops below thresholds
 
 # Configuration
-BATTERY_PATH="/sys/class/power_supply/BAT0"
+# First battery, whatever the firmware calls it (BAT0 / BAT1 / …). No battery
+# (desktop) → nothing to monitor.
+BATTERY_PATH=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -1)
+[ -n "$BATTERY_PATH" ] || exit 0
 WARNING_THRESHOLD=20    # First warning
 LOW_THRESHOLD=10        # Low battery warning
 CRITICAL_THRESHOLD=5    # Critical warning (urgent)

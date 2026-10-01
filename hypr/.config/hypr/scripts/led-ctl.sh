@@ -18,6 +18,10 @@
 #              thermal beat storm focus timer [min] wallsync-refresh menu
 #              status lock-off resume-apply _effect-loop
 
+# No OpenRGB on this machine (laptop): every subcommand is a silent no-op, and
+# an empty `status` hides the waybar module.
+command -v openrgb >/dev/null 2>&1 || exit 0
+
 STATE_DIR="$HOME/.local/state/leds"
 STATE_FILE="$STATE_DIR/state"
 EFFECT_PID="$STATE_DIR/effect.pid"

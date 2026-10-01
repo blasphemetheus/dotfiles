@@ -1,5 +1,5 @@
 {
-  description = "NixOS + Home Manager config for nixos_slanka";
+  description = "NixOS + Home Manager config (hosts: nixos_slanka desktop, aspire laptop)";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -70,10 +70,10 @@
     # following our nixpkgs (same cachix rationale as hyprland above).
     hyprlock.url = "github:hyprwm/hyprlock/v0.9.6";
 
-    # hyprdisplays: our Rust/iced display manager (~/git/hyprdisplays). Local
-    # path input until it is pushed somewhere; then switch to github:.
+    # hyprdisplays: our Rust/iced display manager (source also in ~/git/hyprdisplays).
+    # After pushing a change there: `nix flake update hyprdisplays`.
     hyprdisplays = {
-      url = "git+file:///home/blewf/git/hyprdisplays";
+      url = "github:blasphemetheus/hyprdisplays";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -104,13 +104,15 @@
 
   outputs = inputs@{ nixpkgs, home-manager, ags, ... }:
     let
-      slanka = nixpkgs.lib.nixosSystem {
+      # One system per machine: hostModule is hosts/<name>/default.nix, which
+      # imports the shared ./configuration.nix plus its own hardware scan.
+      mkHost = hostModule: nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         # Thread the flake inputs into configuration.nix so it can pull the
         # Hyprland compositor + plugin packages straight from the flakes above.
         specialArgs = { inherit inputs; };
         modules = [
-          ./configuration.nix
+          hostModule
 
           # Expose the v3 CLI as `ags-v3` WITHOUT replacing pkgs.ags: nixpkgs
           # consumers (hyprpanel calls `ags.bundle`) still need the v2 package.
@@ -161,11 +163,14 @@
     {
       nixosConfigurations = {
         # Canonical name (matches networking.hostName + the `nrs` alias).
-        nixos_slanka = slanka;
+        nixos_slanka = mkHost ./hosts/slanka;
         # Alias under the *runtime* hostname: the kernel drops the invalid
         # underscore, so `hostname` reports "nixosslanka". Hostname-derived tools
         # (nh os switch, with no explicit config) resolve this. Keep both in sync.
-        nixosslanka = slanka;
+        nixosslanka = mkHost ./hosts/slanka;
+
+        # Laptop (Acer Aspire Go 15). Valid hostname, so one name is enough.
+        aspire = mkHost ./hosts/aspire;
       };
     };
 }

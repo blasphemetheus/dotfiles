@@ -144,15 +144,15 @@
       "locked": {
         "lastModified": 1789921117,
         "narHash": "sha256-6yxanCCNuQWHtKtDrE/Z5KXGYnFS3tsUvxsvWzVjaAM=",
-        "ref": "refs/heads/master",
+        "owner": "blasphemetheus",
+        "repo": "hyprdisplays",
         "rev": "8eb3db2faa3da7c126630e5c6df97b8cb9807492",
-        "revCount": 6,
-        "type": "git",
-        "url": "file:///home/blewf/git/hyprdisplays"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "file:///home/blewf/git/hyprdisplays"
+        "owner": "blasphemetheus",
+        "repo": "hyprdisplays",
+        "type": "github"
       }
     },
     "hyprexpo": {

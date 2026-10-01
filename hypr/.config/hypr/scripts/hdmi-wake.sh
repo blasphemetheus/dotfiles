@@ -7,6 +7,8 @@
 # Lua config: `hyprctl keyword` is gone, so the mode is re-issued with hl.monitor.
 ASUS='desc:ASUSTek COMPUTER INC ASUS VG27V 0x0003ABEC'
 hyprctl dispatch 'hl.dsp.dpms({ action = "on" })'
+# Nothing to bounce if the VG27V isn't attached (laptop, or desktop on the TV).
+hyprctl monitors all | grep -q 'ASUS VG27V' || exit 0
 sleep 1
 hyprctl eval "hl.monitor({ output = '$ASUS', mode = '1920x1080@60', position = '0x0', scale = 1 })"
 sleep 2

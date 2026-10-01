@@ -48,7 +48,7 @@ alias top='btop'
 alias md='glow'
 
 # Rebuild NixOS from the flake (always use --flake so Home Manager is applied)
-abbr -a nrs 'sudo nixos-rebuild switch --flake ~/dotfiles#nixos_slanka'
+abbr -a nrs 'sudo nixos-rebuild switch --flake ~/dotfiles'
 
 # Slippi Dolphin (installed via nix profile: github:lytedev/slippi-nix#slippi-netplay)
 # `slippi` itself is an autoloaded function that opens Slippi Launcher.

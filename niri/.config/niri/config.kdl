@@ -85,10 +85,8 @@ workspace "scratch"
 environment {
     XCURSOR_SIZE "24"
     XCURSOR_THEME "Bibata-Modern-Classic"
-    // NVIDIA Wayland
-    LIBVA_DRIVER_NAME "nvidia"
-    __GLX_VENDOR_LIBRARY_NAME "nvidia"
-    NVD_BACKEND "direct"
+    // (NVIDIA env — LIBVA_DRIVER_NAME etc. — is set per-host in NixOS:
+    // hosts/slanka/default.nix environment.sessionVariables.)
     // Keep SDL from grabbing the GC adapter away from Slippi (see env.lua)
     SDL_JOYSTICK_HIDAPI_GAMECUBE "0"
 }
