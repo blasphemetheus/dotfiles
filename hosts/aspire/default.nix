@@ -84,5 +84,13 @@ in
   };
   systemd.sleep.settings.Sleep = lib.mkIf (config.swapDevices != [ ]) {
     HibernateDelaySec = "2h";
+    # The default "platform" mode checks for wakeup events after the image is
+    # written and, if a key/touchpad/power-button press arrived, rolls back to
+    # the running session instead of powering off. amdgpu can't survive that
+    # rollback on this APU (it MODE2-resets the GPU on freeze; the restore
+    # leaves sdma0 hung, Hyprland dies, no compositor starts until reboot).
+    # Same code in upstream master. "shutdown" powers off once the image is
+    # written — no rollback path; resume from the power button is unchanged.
+    HibernateMode = "shutdown";
   };
 }
