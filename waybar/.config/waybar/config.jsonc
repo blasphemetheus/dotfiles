@@ -44,7 +44,11 @@
             // 21-30: a monitor re-created mid-session (replug/ID churn) gets
             // the next set up; Hyprland never reuses freed IDs until restart.
             "21": "1", "22": "2", "23": "3", "24": "4", "25": "5",
-            "26": "6", "27": "7", "28": "8", "29": "9", "30": "10"
+            "26": "6", "27": "7", "28": "8", "29": "9", "30": "10",
+            // 31-40: any monitor not in hs.monitor_priority (lua/plugins.lua)
+            // lands after the three listed sets — e.g. the laptop's own panel.
+            "31": "1", "32": "2", "33": "3", "34": "4", "35": "5",
+            "36": "6", "37": "7", "38": "8", "39": "9", "40": "10"
         }
     },
     // keyboard-state module REMOVED 2026-07-12: it reads /dev/input via
