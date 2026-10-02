@@ -60,6 +60,17 @@ in
 
   boot.extraModulePackages = [ acp6xMachAspire ];
 
+  # Cole's account. A second normal user also turns off greetd autologin
+  # (configuration.nix), so this machine boots to the tuigreet user picker.
+  # Password is set out of band: `sudo passwd calbert`.
+  users.users.calbert = {
+    isNormalUser = true;
+    description = "Cole";
+    shell = pkgs.fish;
+    extraGroups = [ "networkmanager" "wheel" "input" ]; # input: dictation evdev listener
+  };
+  home-manager.users.calbert = import ./cole.nix;
+
   # amdgpu loads on its own and hardware.graphics (shared) brings Mesa/RADV,
   # so there is no GPU driver block here.
 

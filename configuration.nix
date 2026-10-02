@@ -14,7 +14,7 @@ let
   # "GNOME" used to beat "Hyprland". The GNOME entries are copied with a
   # lowercase name so they sort last. The list is also exposed at the stable
   # path /etc/greeter-sessions (see environment.etc + --sessions below):
-  # --remember-session stores the absolute .desktop path, and a /nix/store
+  # --remember-user-session stores the absolute .desktop path, and a /nix/store
   # path went stale on every rebuild, which is what kept resetting the default.
   greeterSessions = pkgs.runCommand "greeter-sessions" { } ''
     mkdir -p $out/share/wayland-sessions
@@ -28,6 +28,9 @@ let
       esac
     done
   '';
+
+  # Regular (login) accounts; greetd autologin only applies when there's one.
+  humanUsers = lib.filter (u: u.isNormalUser) (lib.attrValues config.users.users);
 
   # dwl autostart + dwlb bar; run as dwl's `-s` child so it inherits
   # WAYLAND_DISPLAY and drains the status stream (see dwl/startup.sh).
@@ -46,7 +49,7 @@ let
       | ${pkgs.coreutils}/bin/fold -s -w 72)"
     exec ${pkgs.tuigreet}/bin/tuigreet \
       --time --time-format '%I:%M %p  |  %A, %B %d' \
-      --remember --remember-session --user-menu \
+      --remember --remember-user-session --user-menu \
       --width 80 --window-padding 1 --container-padding 2 --greet-align left \
       --power-shutdown 'systemctl poweroff' \
       --power-reboot 'systemctl reboot' \
@@ -323,7 +326,9 @@ in
       # (hyprland.conf exec-once on HYPR_AUTOLOGIN_LOCK; hyprlock is the
       # login screen). No password is taken here, so the keyring is unlocked
       # by hyprlock's PAM stack instead — see security.pam.services.hyprlock.
-      initial_session = {
+      # Only on single-user machines: with a second person on the box the
+      # greeter must come first, or they'd boot into blewf's lock screen.
+      initial_session = lib.mkIf (lib.length humanUsers == 1) {
         command = "${pkgs.writeShellScript "hyprland-autologin" ''
           export HYPR_AUTOLOGIN_LOCK=1
           exec ${config.programs.hyprland.package}/bin/start-hyprland
