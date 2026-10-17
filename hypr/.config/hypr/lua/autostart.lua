@@ -30,6 +30,10 @@ hl.on("hyprland.start", function()
     -- ASUS won't train 165Hz from a cold link at session start (same wedge as
     -- S3 resume, seen after logout→login) — bounce once the session is up.
     hl.exec_cmd("sleep 2 && " .. S .. "/hdmi-wake.sh")
+    -- Initial focus belongs on the VG27V. Hyprland focuses whichever output it
+    -- enumerated first (the TV on HDMI-A-1 sorts before the DP ports), which
+    -- is where the cursor and new windows landed on 2026-10-17.
+    hl.exec_cmd([[sleep 1 && hyprctl dispatch 'hl.dsp.focus({ monitor = "desc:ASUSTek COMPUTER INC ASUS VG27V 0x0003ABEC" })']])
     hl.exec_cmd("hyprshade auto")                    -- blue light filter schedule
     hl.exec_cmd("pyprland")                          -- scratchpads
     hl.exec_cmd(S .. "/wallpaper-workspace.sh")      -- per-workspace wallpapers

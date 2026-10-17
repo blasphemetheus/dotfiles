@@ -32,17 +32,25 @@ input {
 
 // ── Outputs ─────────────────────────────────────────────────────────────
 // Same layout as lua/monitors.lua (VG27V main at 0x0, VY279HGR to its right).
-// Matched by connector because that is what every script assumes; niri also
-// accepts "Make Model Serial" strings — see `niri msg outputs` — if the
-// connectors ever move. VG27V stays at 120Hz: 165 is link-marginal (hdmi-wake).
-output "HDMI-A-1" {
+// Matched by "Make Model Serial" (see `niri msg outputs`), NOT by connector:
+// the VG27V moved HDMI-A-1 → DP-3 on 2026-09-20 and the TV took HDMI-A-1, so
+// the old connector rules put the TV at 0x0 and left the VG27V unconfigured.
+// VG27V stays at 120Hz: 165 is link-marginal (hdmi-wake).
+output "ASUSTek COMPUTER INC ASUS VG27V 0x0003ABEC" {
     mode "1920x1080@120"
     position x=0 y=0
     scale 1
 }
-output "DP-2" {
+output "ASUSTek COMPUTER INC VY279HGR TCLMTR040596" {
     mode "1920x1080@100"
     position x=1920 y=0
+    scale 1
+}
+// Toshiba TV: no position on purpose. niri auto-places unpositioned outputs to
+// the right of the positioned ones, so it is always last even when the VY279HGR
+// is missing (no dead gap, no TV-at-0x0).
+output "Toshiba America Info Systems Inc TOSHIBA-TV 0x00000001" {
+    mode "1920x1080@60"
     scale 1
 }
 
@@ -111,7 +119,9 @@ cursor {
 spawn-at-startup "systemctl" "--user" "start" "polkit-gnome-agent.service"
 spawn-at-startup "systemctl" "--user" "start" "hyprwhspr-rs.service"
 spawn-at-startup "nm-applet"
-spawn-at-startup "waybar" "-c" "~/.config/waybar/config-niri.jsonc"
+// spawn-sh (not spawn): spawn-at-startup execs directly with no shell, so the
+// "~" was passed to waybar literally and no bar came up (2026-10-17).
+spawn-sh-at-startup "waybar -c ~/.config/waybar/config-niri.jsonc"
 spawn-at-startup "mako"
 spawn-at-startup "swww-daemon"
 spawn-at-startup "sh" "-c" "~/.config/hypr/scripts/start-idle.sh"

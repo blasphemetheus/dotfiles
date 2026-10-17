@@ -22,7 +22,7 @@ hl.monitor({
     vrr      = 0,
 })
 
--- HDMI-A-1 (ASUSTek COMPUTER INC ASUS VG27V 0x0003ABEC)
+-- DP-3 via DP→HDMI adapter (ASUSTek COMPUTER INC ASUS VG27V 0x0003ABEC); was HDMI-A-1 until 2026-09-20
 hl.monitor({
     output   = "desc:ASUSTek COMPUTER INC ASUS VG27V 0x0003ABEC",
     mode     = "1920x1080@120",
@@ -31,12 +31,15 @@ hl.monitor({
     vrr      = 0,
 })
 
--- Not connected right now; carried over from the previous write.
--- Toshiba TV (Fire TV's screen) on the HDMI port when the ASUS is unplugged.
+-- Toshiba TV (Fire TV's screen) on HDMI-A-1 since 2026-09-20, often alongside
+-- both ASUS panels. auto-right, NOT a fixed 3840x0: when the VY279HGR is
+-- absent (DP deep-sleep, 2026-10-17) a fixed x left a 1920px dead gap the
+-- cursor could not cross and the TV ended up holding focus. Always last/rightmost;
+-- autostart.lua also hands initial focus to the VG27V.
 hl.monitor({
     output   = "desc:Toshiba America Info Systems Inc TOSHIBA-TV 0x00000001",
     mode     = "1920x1080@60",
-    position = "3840x0",
+    position = "auto-right",
     scale    = 1,
 })
 
