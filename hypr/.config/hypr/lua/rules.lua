@@ -47,6 +47,7 @@ hl.window_rule({ name = "wlogout-float", match = { class = "^(wlogout)$" }, floa
 
 -- hyprdisplays (Rust/iced display manager, Super+Shift+M): floating, centred
 hl.window_rule({ name = "hyprdisplays-float", match = { class = "^(hyprdisplays)$" }, float = true, center = true, size = "1200 720" })
+hl.window_rule({ name = "hyprbinds-float", match = { class = "^(hyprbinds)$" }, float = true, center = true, size = "1180 760" })
 hl.window_rule({ name = "hyprvolume-float", match = { class = "^(hyprvolume)$" }, float = true, center = true, size = "760 680" })
 
 -- Layer rules: blur behind rofi/notifications/wofi; waybar stays crisp

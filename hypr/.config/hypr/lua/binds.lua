@@ -201,5 +201,16 @@ bind(B .. "Z", function() hl.plugin.hyprexpo.expo("toggle") end)
 bind(B .. "CTRL + S", exec(S .. "/session-picker.sh save"))
 bind(B .. "CTRL + R", exec(S .. "/session-picker.sh restore"))
 
--- Keybinds cheatsheet (Super+Shift+?)
-bind(B .. "SHIFT + slash", exec(S .. "/show-keybinds.sh"))
+-- Keybinds: Super+Shift+? opens hyprbinds (GUI editor for this file, see
+-- ~/git/hyprdisplays); Super+/ keeps the rofi cheatsheet from keybinds.md.
+bind(B .. "SHIFT + slash", exec("hyprbinds"))            -- keybind editor GUI
+bind(B .. "slash", exec(S .. "/show-keybinds.sh"))        -- rofi cheatsheet
+
+-- hyprbinds key capture: an EMPTY submap. While it is active none of the binds
+-- above fire, so the combo being recorded reaches the hyprbinds window instead
+-- of launching something. The app enters it (hl.dsp.submap) when you press
+-- Capture and resets it after the keypress; Ctrl+Alt+Escape is the manual
+-- way out if the app dies mid-capture.
+hl.define_submap("hyprbinds-capture", function()
+    bind("CTRL + ALT + escape", hl.dsp.submap("reset"))
+end)
