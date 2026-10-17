@@ -62,14 +62,9 @@
       inputs.aquamarine.follows = "aquamarine";
     };
 
-    # hyprlock straight from upstream too: the previous nixpkgs pin shipped 0.9.2, which
-    # SEGVs on teardown (CShader dtor racing the async asset thread — the
-    # 6-coredumps-in-2-days saga of 2026-07/08, see lock-wrapper.sh) and can
-    # wedge in a busy-loop leaving the "oopsie" screen. v0.9.3 fixed the
-    # use-after-free in async resource callbacks + NVIDIA teardown order;
-    # v0.9.6 guards dtors against a destroyed EGL context. Deliberately NOT
-    # following our nixpkgs (same cachix rationale as hyprland above).
-    hyprlock.url = "github:hyprwm/hyprlock/v0.9.6";
+    # Hyprlock comes from the system nixpkgs (now 0.9.6). It must share the
+    # system PAM/glibc ABI: the old standalone pin could not load PAM modules
+    # after the system glibc update, causing authentication failures and crashes.
 
     # hyprdisplays: our Rust/iced display manager (source also in ~/git/hyprdisplays).
     # After pushing a change there: `nix flake update hyprdisplays`.
@@ -123,11 +118,6 @@
             nixpkgs.overlays = [
               (_final: prev: {
                 ags-v3 = ags.packages.${prev.stdenv.hostPlatform.system}.default;
-
-                # Replace nixpkgs' hyprlock 0.9.2 with the crash-fixed upstream
-                # tag (see the hyprlock input comment). systemPackages picks
-                # this up via `hyprlock` in configuration.nix.
-                hyprlock = inputs.hyprlock.packages.${prev.stdenv.hostPlatform.system}.hyprlock;
 
                 # (hyprexpo overlay removed 2026-09-17: the sandwichfarm fork's
                 # flake ships a 0.56-compatible package, consumed directly in

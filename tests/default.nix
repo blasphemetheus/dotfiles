@@ -54,6 +54,25 @@ in
   desktop = hostCheck "nixos_slanka" "desktop" "suspend" "poweroff";
   laptop = hostCheck "aspire" "laptop" "suspend-then-hibernate" "hibernate";
 
+  hyprlock-pam =
+    let
+      hostPkgs = nixosConfigurations.nixos_slanka.pkgs;
+    in
+    assert hostPkgs.hyprlock.outPath == nixosConfigurations.aspire.pkgs.hyprlock.outPath;
+    hostPkgs.runCommand "validate-hyprlock-pam"
+      { nativeBuildInputs = [ hostPkgs.glibc.bin hostPkgs.python3 ]; }
+      ''
+        # PAM loads system modules at authentication time. A standalone locker
+        # built with an older libc can start normally yet fail every unlock.
+        ldd ${hostPkgs.hyprlock}/bin/hyprlock | grep -F '${hostPkgs.glibc}/lib/libc.so.6'
+        python3 - <<'PY'
+        import ctypes
+        for module in ("pam_unix", "pam_env"):
+            ctypes.CDLL("${hostPkgs.pam}/lib/security/" + module + ".so")
+        PY
+        touch "$out"
+      '';
+
   input-age =
     pkgs.runCommand "validate-input-age"
       {

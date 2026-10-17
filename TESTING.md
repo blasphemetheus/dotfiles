@@ -18,6 +18,9 @@ including NixOS assertions, then runs flake checks for:
 - Revision ages with renamed nodes, nested follows, unknown timestamps, future
   timestamps, fresh file mtimes, and invalid/cyclic references.
 - ShellCheck on the changed shell scripts and generated health/advisor commands.
+- Hyprlock uses the system libc on both hosts, and the system PAM authentication
+  modules load successfully. This checks library compatibility without locking
+  the session or attempting password authentication.
 
 `--build` additionally builds both complete system closures without switching.
 The fast checks don't need rwing's private binary; a full desktop build does.
