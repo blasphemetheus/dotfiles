@@ -25,7 +25,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("bash -c 'sleep 5 && while true; do " .. S .. "/wallpaper.sh random; sleep 300; done'")  -- random wallpaper every 5 min
     hl.exec_cmd("cd ~/.config/ags && ags run")       -- AGS dashboard
     hl.exec_cmd(S .. "/battery-monitor.sh")
-    hl.exec_cmd("hypridle")                          -- auto lock + suspend on idle
+    hl.exec_cmd(S .. "/start-idle.sh")                          -- auto lock + suspend on idle
     hl.exec_cmd("sleep 3 && " .. S .. "/led-ctl.sh apply")   -- restore RGB (waits for openrgb server)
     -- ASUS won't train 165Hz from a cold link at session start (same wedge as
     -- S3 resume, seen after logout→login) — bounce once the session is up.

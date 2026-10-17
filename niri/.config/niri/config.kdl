@@ -114,7 +114,7 @@ spawn-at-startup "nm-applet"
 spawn-at-startup "waybar" "-c" "~/.config/waybar/config-niri.jsonc"
 spawn-at-startup "mako"
 spawn-at-startup "swww-daemon"
-spawn-at-startup "hypridle"
+spawn-at-startup "sh" "-c" "~/.config/hypr/scripts/start-idle.sh"
 spawn-sh-at-startup "wl-paste --watch cliphist store"
 spawn-sh-at-startup "sleep 5 && while true; do ~/.config/hypr/scripts/wallpaper.sh random; sleep 300; done"
 spawn-sh-at-startup "sleep 3 && ~/.config/hypr/scripts/led-ctl.sh apply"
@@ -275,7 +275,7 @@ binds {
 
     Mod+Shift+V hotkey-overlay-title="Screen record toggle" { spawn "~/.config/ags/scripts/screen-record-toggle.sh"; }
     Mod+Shift+R hotkey-overlay-title="Validate config" { spawn-sh "niri validate && notify-send niri 'Config OK (auto-reloaded)' || notify-send -u critical niri \"$(niri validate 2>&1 | tail -20)\""; }
-    Mod+F5 hotkey-overlay-title="Toggle idle/sleep" { spawn-sh "pkill hypridle && notify-send Hypridle 'Sleep disabled - staying awake' || { hypridle & notify-send Hypridle 'Sleep re-enabled'; }"; }
+    Mod+F5 hotkey-overlay-title="Toggle idle/sleep" { spawn-sh "pkill -x hypridle && notify-send Hypridle 'Sleep disabled - staying awake' || { ~/.config/hypr/scripts/start-idle.sh & notify-send Hypridle 'Sleep re-enabled'; }"; }
     Mod+L hotkey-overlay-title="Lock" { spawn "~/.config/hypr/scripts/lock-wrapper.sh"; }
 
     // Hardware / misc scripts that don't depend on hyprctl

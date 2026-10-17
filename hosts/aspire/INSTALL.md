@@ -98,6 +98,9 @@ If that goes wrong: Ctrl+Alt+F2 for a TTY.
 - [ ] Close the lid → suspends, wakes to the lock screen
 - [ ] `systemctl hibernate` → powers off, resumes to the lock screen
 - [ ] Dictation (F12) — tuned for the desktop's GPU, likely slow here
-- [ ] Idle: screen off 15 min, lock 25, suspend 40 — same on battery as on AC
+- [ ] Idle (laptop profile): lock 5 min, screen off 10, suspend-then-hibernate 20;
+      hibernate after 2 h asleep. Same idle timings on battery and AC.
+- [ ] `session-sleep --dry-run critical` reports `hibernate` (do not drain the
+      battery to test this). Ordinary sleep and lid close use suspend-then-hibernate.
 
 From then on: `git pull && nrs` on either machine.

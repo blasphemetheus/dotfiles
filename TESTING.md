@@ -2,6 +2,45 @@
 
 Track what's been implemented and whether it works after `nixos-rebuild switch`.
 
+## Automated validation for both hosts
+
+```sh
+./scripts/validate.sh
+./scripts/validate.sh --build
+```
+
+The first command evaluates the complete `nixos_slanka` and `aspire` toplevels,
+including NixOS assertions, then runs flake checks for:
+
+- Each host's profile, idle timeouts, and normal/critical sleep commands.
+- Aspire lid/AC-lid policy, hibernation delay, AMD shutdown-mode workaround, and
+  UPower's system-level critical-battery backstop.
+- Revision ages with renamed nodes, nested follows, unknown timestamps, future
+  timestamps, fresh file mtimes, and invalid/cyclic references.
+- ShellCheck on the changed shell scripts and generated health/advisor commands.
+
+`--build` additionally builds both complete system closures without switching.
+The fast checks don't need rwing's private binary; a full desktop build does.
+New files must be visible to Git (`git add -N` suffices). Neither command updates
+the lockfile, contacts an LLM, or triggers sleep. The fast checks do not prove a
+complete closure builds; even a complete build cannot test real suspend/resume.
+
+After applying this change on each host, log out/in or restart hypridle via its
+toggle (Super+F5 twice), so it reads `/etc/dotfiles/hypridle.conf`. Then verify:
+
+- `flake-input-age ~/dotfiles/flake.lock` lists the main nixpkgs revision date as
+  2026-03-17 until that input is updated.
+- `session-sleep --dry-run` reports `suspend-then-hibernate` on Aspire and
+  `suspend` on the desktop. `--dry-run critical` reports `hibernate` on Aspire.
+- Aspire locks after 5 idle minutes, powers the screen off at 10, and enters
+  suspend-then-hibernate at 20; desktop retains 25/15/40 respectively.
+- On Aspire, test lid close on battery and AC, ordinary sleep from wlogout,
+  and direct hibernation with work saved. Confirm resume returns to a locked
+  session. Docked lid close deliberately leaves the external session running.
+- Check an actual delayed hibernation/resume cycle with adequate battery. Do not
+  deliberately drain the battery to 3% as a test; inspect the critical command
+  with `--dry-run` instead.
+
 ## How to apply
 
 ```fish

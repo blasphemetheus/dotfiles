@@ -8,6 +8,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../configuration.nix
+    ../../profiles/desktop.nix
   ];
 
   # The kernel drops the invalid underscore, so `hostname` reports

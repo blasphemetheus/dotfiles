@@ -102,7 +102,7 @@
     };
   };
 
-  outputs = inputs@{ nixpkgs, home-manager, ags, ... }:
+  outputs = inputs@{ self, nixpkgs, home-manager, ags, ... }:
     let
       # One system per machine: hostModule is hosts/<name>/default.nix, which
       # imports the shared ./configuration.nix plus its own hardware scan.
@@ -161,13 +161,18 @@
       };
     in
     {
+      checks.x86_64-linux = import ./tests {
+        pkgs = import nixpkgs { system = "x86_64-linux"; };
+        inherit (self) nixosConfigurations;
+      };
+
       nixosConfigurations = {
         # Canonical name (matches networking.hostName + the `nrs` alias).
         nixos_slanka = mkHost ./hosts/slanka;
         # Alias under the *runtime* hostname: the kernel drops the invalid
         # underscore, so `hostname` reports "nixosslanka". Hostname-derived tools
         # (nh os switch, with no explicit config) resolve this. Keep both in sync.
-        nixosslanka = mkHost ./hosts/slanka;
+        nixosslanka = self.nixosConfigurations.nixos_slanka;
 
         # Laptop (Acer Aspire Go 15). Valid hostname, so one name is enough.
         aspire = mkHost ./hosts/aspire;

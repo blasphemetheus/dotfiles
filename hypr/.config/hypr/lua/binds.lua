@@ -76,7 +76,7 @@ bind(B .. "SHIFT + V", exec("~/.config/ags/scripts/screen-record-toggle.sh"))
 bind(B .. "SHIFT + R", exec([[hyprctl reload && notify-send "Hyprland" "Config reloaded"]]))
 
 -- Toggle idle/sleep (hypridle)
-bind(B .. "F5", exec([[pkill hypridle && notify-send "Hypridle" "Sleep disabled - staying awake" || { hypridle & notify-send "Hypridle" "Sleep re-enabled"; }]]))
+bind(B .. "F5", exec([[pkill -x hypridle && notify-send "Hypridle" "Sleep disabled - staying awake" || { ~/.config/hypr/scripts/start-idle.sh & notify-send "Hypridle" "Sleep re-enabled"; }]]))
 
 -- Lock (via the wrapper: crash-respawn + LED handling, see lock-wrapper.sh)
 bind(B .. "L", exec(S .. "/lock-wrapper.sh"))

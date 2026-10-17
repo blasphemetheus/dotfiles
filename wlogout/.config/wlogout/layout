@@ -12,7 +12,7 @@
 }
 {
     "label": "suspend",
-    "action": "systemctl suspend",
+    "action": "session-sleep",
     "text": "Suspend (u)",
     "keybind": "u"
 }
