@@ -8,7 +8,8 @@ set -u
 TV_DESC='Toshiba America Info Systems Inc TOSHIBA-TV 0x00000001'
 TV_MODE='1920x1080@60'
 TV_POS='3840x0'
-HDMI_SINK='alsa_output.pci-0000_01_00.1.hdmi-stereo'   # NVIDIA HDMI audio (pw-cli ls Node)
+# The TV's HDMI sink/profile depend on which GPU port it is on; hyprdisplays
+# resolves that from the kernel ELD (monitor name) — see `hyprdisplays --outputs`.
 HDMI_CARD='alsa_card.pci-0000_01_00.1'                  # WirePlumber keeps its profile "off" (configuration.nix)
 SINK_STATE="$HOME/.local/state/hypr/mirror-prev-sink"
 
@@ -19,18 +20,12 @@ set_sink() {   # $1 = node.name
     id=$(pw-dump 2>/dev/null | jq -r --arg n "$1" '.[] | select(.info.props["node.name"] == $n) | .id' | head -1)
     [[ -n $id ]] && wpctl set-default "$id"
 }
-hdmi_profile() {   # $1 = profile name (off / output:hdmi-stereo); waits for the sink on enable
+hdmi_profile() {   # $1 = profile name (off / output:hdmi-stereo…)
     local id idx
     id=$(pw-dump 2>/dev/null | jq -r --arg n "$HDMI_CARD" '.[] | select(.info.props["device.name"] == $n) | .id' | head -1)
     [[ -n $id ]] || return 1
     idx=$(pw-dump "$id" | jq -r --arg p "$1" '.[0].info.params.EnumProfile[] | select(.name == $p) | .index')
     wpctl set-profile "$id" "$idx"
-    if [[ $1 != off ]]; then
-        for _ in $(seq 20); do
-            pw-dump 2>/dev/null | jq -e --arg n "$HDMI_SINK" '.[] | select(.info.props["node.name"] == $n)' >/dev/null && return 0
-            sleep 0.1
-        done
-    fi
 }
 
 mons=$(hyprctl monitors all -j)
@@ -68,7 +63,6 @@ else
     # audio to the TV, remembering the current default sink for the way back
     mkdir -p "$(dirname "$SINK_STATE")"
     default_sink > "$SINK_STATE"
-    hdmi_profile output:hdmi-stereo
-    set_sink "$HDMI_SINK"
+    hyprdisplays --audio-to "$tv" >/dev/null || notify-send "Mirror" "could not route audio to $tv" -t 3000
     notify-send "Mirror" "TV mirroring $src, audio via HDMI" -t 3000
 fi
