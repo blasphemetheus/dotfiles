@@ -1,0 +1,96 @@
+diff -ruN a/src/app.rs b/src/app.rs
+--- a/src/app.rs	2026-10-17 15:07:54.834594448 -0500
++++ b/src/app.rs	2026-10-17 15:07:54.858483076 -0500
+@@ -697,7 +697,7 @@
+             if let Some(mut benchmark) = self.benchmark.take() {
+                 benchmark.mark_injection_skipped(Instant::now());
+                 if let Some(summary) = benchmark.finalize() {
+-                    info!(message = %format_args!("\n{}", summary));
++                    debug!(message = %format_args!("\n{}", summary));
+                 }
+             }
+             return Ok(());
+@@ -708,7 +708,7 @@
+             if let Some(mut benchmark) = self.benchmark.take() {
+                 benchmark.mark_injection_skipped(Instant::now());
+                 if let Some(summary) = benchmark.finalize() {
+-                    info!(message = %format_args!("\n{}", summary));
++                    debug!(message = %format_args!("\n{}", summary));
+                 }
+             }
+             return Ok(());
+@@ -756,7 +756,7 @@
+             if let Some(mut benchmark) = self.benchmark.take() {
+                 benchmark.mark_injection_skipped(Instant::now());
+                 if let Some(summary) = benchmark.finalize() {
+-                    info!(message = %format_args!("\n{}", summary));
++                    debug!(message = %format_args!("\n{}", summary));
+                 }
+             }
+             return Ok(());
+@@ -770,7 +770,7 @@
+             if let Some(mut benchmark) = self.benchmark.take() {
+                 benchmark.mark_injection_skipped(Instant::now());
+                 if let Some(summary) = benchmark.finalize() {
+-                    info!(message = %format_args!("\n{}", summary));
++                    debug!(message = %format_args!("\n{}", summary));
+                 }
+             }
+             return Ok(());
+@@ -801,7 +801,7 @@
+ 
+         if let Some(benchmark) = self.benchmark.take() {
+             if let Some(summary) = benchmark.finalize() {
+-                info!(message = %format_args!("\n{}", summary));
++                debug!(message = %format_args!("\n{}", summary));
+             }
+         }
+ 
+diff -ruN a/src/input/hyprland.rs b/src/input/hyprland.rs
+--- a/src/input/hyprland.rs	2026-10-17 15:07:54.834793370 -0500
++++ b/src/input/hyprland.rs	2026-10-17 15:07:54.853427039 -0500
+@@ -51,6 +51,25 @@
+         } else {
+             modifiers.join(" ")
+         };
++
++        // Hyprland >= 0.55 with a Lua config evaluates `dispatch <args>` as
++        // `hl.dispatch(<args>)`, so the hyprlang form below is a Lua syntax
++        // error there. Try the Lua dispatcher first; a hyprlang-configured
++        // Hyprland answers "Invalid dispatcher" and we fall through.
++        let window_field = target
++            .map(|t| format!(", window = \"{t}\""))
++            .unwrap_or_default();
++        let lua_command = format!(
++            "dispatch hl.dsp.send_shortcut({{ mods = \"{mods_segment}\", key = \"{key}\"{window_field} }})"
++        );
++        let response = self.send_command(&lua_command).await?;
++        if Self::is_ok_response(&response) {
++            return Ok(());
++        }
++        if !response.starts_with("Invalid dispatcher") {
++            return Err(anyhow!("Hyprland send_shortcut error: {response}"));
++        }
++
+         let target_segment = target.map(|t| format!(", {t}")).unwrap_or_default();
+         let command = if mods_segment.is_empty() {
+             format!("dispatch sendshortcut {key}{target_segment}")
+@@ -58,13 +77,17 @@
+             format!("dispatch sendshortcut {mods_segment}, {key}{target_segment}")
+         };
+         let response = self.send_command(&command).await?;
+-        if response.is_empty() || response.eq_ignore_ascii_case("ok") {
++        if Self::is_ok_response(&response) {
+             Ok(())
+         } else {
+             Err(anyhow!("Hyprland sendshortcut error: {response}"))
+         }
+     }
+ 
++    fn is_ok_response(response: &str) -> bool {
++        response.is_empty() || response.trim().eq_ignore_ascii_case("ok")
++    }
++
+     pub(super) async fn active_window_class(&self) -> Result<Option<String>> {
+         // Try JSON-formatted activewindow first for newer Hyprland releases.
+         let json_response = self.send_command("j/activewindow").await?;

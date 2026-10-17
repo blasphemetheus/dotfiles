@@ -34,6 +34,7 @@ for p in $(pgrep -x hyprlock); do
         "/proc/$p/environ" 2>/dev/null && exit 0
 done
 
+logger -t lock-wrapper "locking (strict=$STRICT)"
 LEDCTL=~/.config/hypr/scripts/led-ctl.sh
 "$LEDCTL" lock-off              # LEDs dark while locked; saved state untouched
 
@@ -48,9 +49,11 @@ wp=$(cat ~/.cache/current_wallpaper 2>/dev/null)
 [[ -s ~/.cache/lock-wallpaper ]] || cp -f ~/.cache/lock-art-blank.png ~/.cache/lock-wallpaper   # no wallpaper yet: plain dark
 
 for _ in 1 2 3 4 5; do
-    hyprlock && { "$LEDCTL" apply; exit 0; }    # clean unlock — restore LEDs
+    hyprlock && { logger -t lock-wrapper "unlocked"; "$LEDCTL" apply; exit 0; }    # clean unlock — restore LEDs
+    logger -t lock-wrapper "hyprlock exited $? — respawning"
     sleep 0.5                   # crashed — let the compositor settle, respawn
 done
+logger -t lock-wrapper "giving up after 5 hyprlock crashes (strict=$STRICT)"
 "$LEDCTL" apply
 if (( STRICT )); then
     hyprctl dispatch 'hl.dsp.exit()'   # autologin session with no lock: hand back to tuigreet

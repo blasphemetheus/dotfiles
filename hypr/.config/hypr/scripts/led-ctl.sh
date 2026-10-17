@@ -258,6 +258,7 @@ case "${1:-toggle}" in
             sleep 0.5
         done
         sleep 2
+        logger -t led-ctl "resume-apply: SDK back, reasserting LED state"
         apply
         ;;
     lock-off)

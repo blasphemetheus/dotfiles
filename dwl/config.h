@@ -7,6 +7,7 @@
 static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
 static const unsigned int borderpx         = 1;  /* border pixel of windows */
+static const unsigned int snap             = 32; /* floating-window edge snapping (dwl 0.9) */
 static const float rootcolor[]             = COLOR(0x222222ff);
 static const float bordercolor[]           = COLOR(0x6b8caebb); /* hyprland col.inactive_border */
 static const float focuscolor[]            = COLOR(0xf5a623ff); /* hyprland col.active_border (first stop) */
@@ -189,4 +190,9 @@ static const Button buttons[] = {
 	{ MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
 	{ MODKEY, BTN_MIDDLE, togglefloating, {0} },
 	{ MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
+};
+
+/* No compositor scroll bindings: preserve scrolling in applications. */
+static const Axis axes[] = {
+	{ 0, 0, NULL, {0} },
 };

@@ -19,4 +19,8 @@ for _ in $(seq 1 50); do [[ -f $SRC ]] && break; sleep 0.2; done
 OUT="$OUT_DIR/hyprland-$(date +%F_%H%M%S).log"
 ln -sfn "$OUT" "$OUT_DIR/latest.log"
 # -n +1 replays what was already written (startup, monitor/connector setup).
-exec tail -n +1 -F "$SRC" >> "$OUT"
+# Also stream into the journal (tag "hyprland", priority debug): journald
+# timestamps every line (Hyprland's own log has none) and syncs to disk every
+# 10 s (modules/system/logging.nix), so a hard hang keeps the last seconds.
+# Read it with `journalctl -b -t hyprland`; `journalctl -b -p info` hides it.
+exec tail -n +1 -F "$SRC" | tee -a "$OUT" | systemd-cat -t hyprland -p debug

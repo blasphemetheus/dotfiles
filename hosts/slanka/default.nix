@@ -2,7 +2,7 @@
 # Everything here is specific to this box's hardware or to workloads only it
 # runs (GPU compute, Slippi/GameCube adapter, video editing). Shared system
 # config lives in ../../configuration.nix.
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 {
   imports = [
@@ -36,7 +36,9 @@
   services.xserver.videoDrivers = [ "nvidia" ];
 
    hardware.nvidia = {
-    package = config.boot.kernelPackages.nvidiaPackages.beta;
+    # Production 595.104.02 supersedes the old 595.45.04 beta while keeping
+    # this machine on the same driver series.
+    package = config.boot.kernelPackages.nvidiaPackages.production;
     modesetting.enable = true;
     open = true;  # open kernel modules (required for RTX 5090 / Blackwell)
     powerManagement.enable = true;  # clean GPU state on suspend/session switch
@@ -104,7 +106,7 @@
     # works with the default DynamicUser. One-time move (before the rebuild):
     #   sudo systemctl stop ollama ollama-model-loader
     #   sudo mkdir -p /data/ollama && sudo cp -a /var/lib/private/ollama/models /data/ollama/
-    models = "/data/ollama/models";
+    modelsDir = "/data/ollama/models";
     # Static user instead of DynamicUser: the transient uid couldn't write the
     # root-owned /data path (2026-09-19 startup failure: "mkdir
     # /data/ollama/models/blobs: permission denied"). A stable account lets us
@@ -209,21 +211,8 @@
   services.hardware.openrgb = {
     enable = true;
     motherboard = "amd";
-    # 1.0rc2 (nixpkgs) rejects this board ("No matching driver found for
-    # MS-7E59"); support landed in master's MSIMysticLight761 driver
-    # (gitlab issue #4910). Pin master until the next release ships it.
-    # The systemd-service patch is upstream in master, so drop it.
-    package = pkgs.openrgb.overrideAttrs (old: {
-      version = "1.0rc2-unstable-2026-07-21";
-      src = pkgs.fetchFromGitLab {
-        owner = "CalcProgrammer1";
-        repo = "OpenRGB";
-        rev = "bd41ba3b5cb619485899b40c8ff073dcad3aa4ed";
-        hash = "sha256-jITHNPieOPuhRqMghnW8NoOoL6GJmwzUWQRCW7KWzNM=";
-      };
-      patches = builtins.filter
-        (p: !(lib.hasInfix "systemd-service" (baseNameOf p))) old.patches;
-    });
+    # OpenRGB 1.0 includes MS-7E59 support in MSIMotherboard761Controller;
+    # the old July master-source override is no longer necessary.
   };
 
   # Nintendo / Mayflash GameCube controller adapter (WUP-028, 057e:0337, Wii-U

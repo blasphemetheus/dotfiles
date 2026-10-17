@@ -50,8 +50,9 @@
     # one hyprutils ends up in the process). Drop this input + both follows at
     # the next Hyprland tag bump (>=0.57), which will lock aquamarine 0.15+
     # itself.
+    # 2026-10-17: v0.15.1 adds frameIdle UAF, disconnect, and resume fixes.
     aquamarine = {
-      url = "github:hyprwm/aquamarine/v0.15.0";
+      url = "github:hyprwm/aquamarine/v0.15.1";
       inputs.nixpkgs.follows = "nixpkgs-hypr";
       inputs.hyprutils.follows = "hyprland/hyprutils";
     };
@@ -61,7 +62,7 @@
       inputs.aquamarine.follows = "aquamarine";
     };
 
-    # hyprlock straight from upstream too: our nixpkgs pin ships 0.9.2, which
+    # hyprlock straight from upstream too: the previous nixpkgs pin shipped 0.9.2, which
     # SEGVs on teardown (CShader dtor racing the async asset thread — the
     # 6-coredumps-in-2-days saga of 2026-07/08, see lock-wrapper.sh) and can
     # wedge in a busy-loop leaving the "oopsie" screen. v0.9.3 fixed the
@@ -92,12 +93,12 @@
     # on every `nix flake update`. Re-add the input when upstream catches up.)
     # expo-style overview. hyprwm abandoned the original (removed from
     # hyprland-plugins in #663); this community fork is the maintained successor.
-    # Pinned to release v0.56.1+3 (2026-08-07, first 0.56-compatible release;
+    # Pinned to release v0.56.2+3 (updated 2026-10-17; matches Hyprland 0.56.2;
     # sha pin because "+" in the tag name breaks flake ref parsing). Since the
     # fork now ships a working flake for 0.56, we consume its package directly —
     # pkgs/hyprexpo.nix (the hand-built 0.55.4 tag) is no longer referenced.
     hyprexpo = {
-      url = "github:sandwichfarm/hyprexpo/40352e2663deded7c6536b2fda1ed18a97234a80";
+      url = "github:sandwichfarm/hyprexpo/852774edd577afad0c2e01d8b685772c80634524";
       inputs.hyprland.follows = "hyprland";
     };
   };
@@ -115,7 +116,7 @@
           hostModule
 
           # Expose the v3 CLI as `ags-v3` WITHOUT replacing pkgs.ags: nixpkgs
-          # consumers (hyprpanel calls `ags.bundle`) still need the v2 package.
+          # consumers may still use the packaged AGS API independently.
           # (hyprsplit no longer overridden here — it now comes from the
           # cryeprecision/hyprsplit flake input, built against our pinned Hyprland.)
           {
@@ -132,20 +133,9 @@
                 # flake ships a 0.56-compatible package, consumed directly in
                 # configuration.nix. pkgs/hyprexpo.nix was the 0.55-era hand-build.)
 
-                # hyprshade 4.0.1 applies shaders with `hyprctl keyword`, which
-                # the Lua config rejects ("keyword can't work with non-legacy
-                # parsers. Use eval.") — with exit 0, so hyprshade thinks it
-                # worked and nothing happens. Route it through `hyprctl eval`.
-                # The [[EMPTY]] sentinel round-trips through eval unchanged, so
-                # `hyprshade off/toggle/current` keep working.
-                hyprshade = prev.hyprshade.overridePythonAttrs (old: {
-                  postPatch = (old.postPatch or "") + ''
-                    substituteInPlace src/hyprshade/shader/hyprctl.py \
-                      --replace-fail \
-                        '["hyprctl", "keyword", "decoration:screen_shader", shader_path],' \
-                        '["hyprctl", "eval", "hl.config({ decoration = { screen_shader = " + repr(shader_path) + " } })"],'
-                  '';
-                });
+                # hyprshade 5 supports Lua configuration natively; the old
+                # 4.0.1 keyword-to-eval patch is no longer needed.
+
               })
             ];
           }

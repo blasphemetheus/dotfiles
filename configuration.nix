@@ -11,6 +11,8 @@
     ./modules/system/packages.nix
     ./modules/system/compositors.nix
     ./modules/system/login.nix
+    ./modules/system/logging.nix
+    ./modules/system/virtualisation.nix
   ];
 
   # Bootloader.
@@ -28,7 +30,7 @@
     "udev.log_priority=3"
   ];
 
-  # nixpkgs default kernel (6.18.x as of the 2026-03 lock). Was pinned to 6.12
+  # nixpkgs default kernel (6.18.x as of the 2026-10 lock). Was pinned to 6.12
   # LTS until 2026-09-09; 6.12.77 prints "RDSEED32 is broken. Disabling the
   # corresponding CPUID bit." at boot on the 9950X3D because its Zen 5 fixup
   # table only knew two models and treated everything else as unfixed. 6.18
@@ -196,6 +198,20 @@
   # in Hyprland. Whisper runs on the GPU via Vulkan (vendor-neutral: the 5090
   # on the desktop, RADV on the laptop) — the Vulkan build is on
   # the Hydra binary cache, unlike the unfree CUDA build, and is ~as fast here.
+  # Paste path fix (2026-10-17): the daemon pastes with the hyprlang-era
+  # `dispatch sendshortcut ctrl shift, v, active`, which a Lua-configured
+  # Hyprland evaluates as Lua and rejects — EVERY dictation then fell back to
+  # a fresh virtual keyboard whose first Ctrl+Shift+V lost its modifiers and
+  # typed a bare "v". The patch sends hl.dsp.send_shortcut({...}) first and
+  # keeps the old form for hyprlang Hyprlands. It also drops the per-utterance
+  # benchmark table to debug level (20 journal lines per dictation).
+  nixpkgs.overlays = [
+    (_final: prev: {
+      hyprwhspr-rs = prev.hyprwhspr-rs.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ./pkgs/hyprwhspr-rs-lua-dispatch.patch ];
+      });
+    })
+  ];
   services.hyprwhspr-rs = {
     enable = true;
     package = pkgs.hyprwhspr-rs.override {
@@ -212,7 +228,7 @@
     isNormalUser = true;
     description = "Bradley Lewis Fargo";
     shell = pkgs.fish;
-    extraGroups = [ "networkmanager" "wheel" "input" ]; # input: hyprwhspr-rs evdev listener
+    extraGroups = [ "networkmanager" "wheel" "input" "libvirtd" ]; # input: hyprwhspr-rs evdev listener; libvirtd: VMs without sudo
     packages = with pkgs; [
       thunderbird
     ];

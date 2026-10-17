@@ -1,3 +1,4 @@
+logger -t hdmi-wake "VG27V present: 60Hz→120Hz bounce"
 #!/usr/bin/env bash
 # Revive the ASUS VG27V after S3 resume. Post-suspend the HDMI link won't
 # train at 165Hz from a cold state (panel says "HDMI no signal" while the GPU

@@ -19,13 +19,15 @@ healthy() {
 
 # Give dpms-on / resume a moment to bring the link up on its own.
 for _ in 1 2 3 4 5 6; do
-    healthy && exit 0
+    healthy && { logger -t dp-wake "DP-2 healthy"; exit 0; }
     sleep 1
 done
+logger -t dp-wake "DP-2 unhealthy after 6s: $(hyprctl monitors all 2>/dev/null | sed -n "/^Monitor $NAME/,/^Monitor /p" | sed -n 2p | xargs)"
 
 # Kernel has no EDID either: the panel is off or its AUX is still asleep;
 # a bounce won't help (detect re-probes and still finds nothing).
 if [ "$(wc -c < "$SYS/edid")" -eq 0 ]; then
+    logger -t dp-wake "DP-2: kernel has no EDID, not bouncing"
     notify-send "DP-2" "VY279HGR gone and no EDID; power-cycle the monitor" -t 5000
     exit 1
 fi
@@ -33,7 +35,8 @@ fi
 systemctl restart dp-link-bounce.service
 for _ in 1 2 3 4 5 6 7 8; do
     sleep 1
-    healthy && { notify-send "DP-2" "VY279HGR re-synced (connector bounce)" -t 3000; exit 0; }
+    healthy && { logger -t dp-wake "DP-2 re-synced after connector bounce"; notify-send "DP-2" "VY279HGR re-synced (connector bounce)" -t 3000; exit 0; }
 done
+logger -t dp-wake "DP-2 still wedged after connector bounce"
 notify-send "DP-2" "VY279HGR still wedged after bounce" -t 5000
 exit 1

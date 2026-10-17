@@ -23,7 +23,12 @@ in
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    # NixOS grants CAP_SYS_NICE through an ELF-only security wrapper. The
+    # pinned upstream package uses a shell launcher; use a native launcher
+    # while preserving its runtime PATH and the compositor/plugin ABI.
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland.override {
+      makeWrapper = pkgs.makeBinaryWrapper;
+    };
     portalPackage =
       inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };

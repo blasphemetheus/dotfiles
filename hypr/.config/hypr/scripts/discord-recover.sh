@@ -1,3 +1,4 @@
+    logger -t discord-recover "resume-check: Discord up ${age}s > ${MAX_AGE}s, restarting"
 #!/usr/bin/env bash
 # Restart Discord when its renderer wedges on the splash spinner.
 #

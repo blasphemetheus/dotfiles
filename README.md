@@ -142,6 +142,32 @@ To bump to a new release, download the bare `rwing-linux-<ver>` file and run:
 nrs
 ```
 
+## Updating dependencies
+
+Update the rolling inputs together, then validate both hosts:
+
+```sh
+nix flake update nixpkgs home-manager ags astal hyprdisplays
+./scripts/validate.sh --build
+```
+
+The Hyprland stack is deliberately pinned separately. Review its release tags
+and plugin compatibility before changing `hyprland`, `aquamarine`, `hyprexpo`,
+`hyprsplit`, or `nixpkgs-hypr`; the latter currently supplies the glaze version
+required by Hyprland 0.56.2. Updating the main package set does not require
+moving those pins. Keep `system.stateVersion` and `home.stateVersion` unchanged.
+
+For kernel or NVIDIA driver updates, prepare a boot generation after successful
+validation, then reboot when ready rather than replacing the running graphical
+session's userspace libraries mid-session:
+
+```sh
+sudo nixos-rebuild boot --flake .#nixos_slanka  # use .#aspire on the laptop
+```
+
+After reboot, check login, lock/unlock, suspend/resume, external displays, and
+audio on each host. Builds cannot validate these hardware behaviors.
+
 ## Testing changes
 
 Run the checks for **both** machines before switching:

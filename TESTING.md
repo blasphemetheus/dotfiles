@@ -29,7 +29,7 @@ After applying this change on each host, log out/in or restart hypridle via its
 toggle (Super+F5 twice), so it reads `/etc/dotfiles/hypridle.conf`. Then verify:
 
 - `flake-input-age ~/dotfiles/flake.lock` lists the main nixpkgs revision date as
-  2026-03-17 until that input is updated.
+  2026-10-14 until that input is updated.
 - `session-sleep --dry-run` reports `suspend-then-hibernate` on Aspire and
   `suspend` on the desktop. `--dry-run critical` reports `hibernate` on Aspire.
 - Aspire locks after 5 idle minutes, powers the screen off at 10, and enters

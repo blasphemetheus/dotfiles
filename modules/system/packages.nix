@@ -16,8 +16,8 @@
     # the system PATH via programs.fish.enable (needed as the login shell);
     # for root-side git: `nix shell nixpkgs#git`.
     btop
-    elixir
-    erlang
+    beamPackages.elixir
+    beamPackages.erlang
     inotify-tools
     nodejs
     devenv
@@ -42,7 +42,7 @@
     # (stow removed — Home Manager owns all dotfiles as of the Phase 6 migration.
     #  If you ever need it: nix shell nixpkgs#stow)
 
-    # dwl: suckless — config is compiled in. dwl/config.h = v0.7 config.def.h
+    # dwl: suckless — config is compiled in. Custom config supports dwl 0.9.
     # with Super as MODKEY, kitty/rofi, hyprland border colors + a few
     # muscle-memory binds. Session entry is in modules/system/compositors.nix.
     (dwl.override { configH = ../../dwl/config.h; })
@@ -51,7 +51,16 @@
     # Hyprland ecosystem
     waybar
     ironbar # Rust Wayland bar (alongside waybar)
-    swww
+    # swww was renamed upstream to awww. Preserve the old CLI names used by
+    # the live-linked wallpaper scripts and compositor startup config.
+    (symlinkJoin {
+      name = "awww-with-swww-aliases";
+      paths = [ awww ];
+      postBuild = ''
+        ln -s "$out/bin/awww" "$out/bin/swww"
+        ln -s "$out/bin/awww-daemon" "$out/bin/swww-daemon"
+      '';
+    })
     hyprlock
     hypridle
     hyprpicker
@@ -86,8 +95,7 @@
     timg # in-terminal video/gif playback via kitty graphics: `timg file.mp4`
 
     # AGS v3 (aylur/ags flake, overlaid as ags-v3) — dashboard + dictation
-    # pill. nixpkgs' `ags` (v2.3, astal-API) stays untouched because hyprpanel
-    # builds against it. The `ags` on PATH is v3.
+    # pill. Keep the separately pinned v3 CLI; the `ags` on PATH is v3.
     ags-v3
 
     # Dictation (see services.hyprwhspr-rs): whisper-cli for testing,
@@ -230,7 +238,7 @@
     wtype # Wayland keyboard input (for rofimoji typing)
     wl-kbptr # Keyboard-driven mouse control
     walker # Wayland app launcher
-    hyprpanel # All-in-one panel (alongside waybar)
+    # HyprPanel was archived and removed from nixpkgs; Waybar is the active bar.
 
     # Theme / icons / cursor
     papirus-icon-theme
