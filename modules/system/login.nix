@@ -1,6 +1,19 @@
 # Login, greeter assets, lock-screen authentication, and the polkit agent.
 { config, pkgs, ... }:
 let
+  # Hyprland session command used by both greetd paths (autologin and the
+  # tuigreet menu). Hyprland writes its first ~20 log lines to stdout before
+  # the config turns stdout logging off (one of them is "Creating the Error
+  # Overlay!"), and every exec-once child inherits the same fds, so the TTY
+  # collected a screenful of noise that flashed up on the next login.
+  # systemd-cat execs the compositor with stdout/stderr on the journal instead:
+  # `journalctl -b -t hyprland-session`.
+  hyprlandSession = pkgs.writeShellScript "hyprland-session" ''
+    printf '\033[H\033[2J\033[3J'
+    exec ${pkgs.systemd}/bin/systemd-cat -t hyprland-session \
+      ${config.programs.hyprland.package}/bin/start-hyprland
+  '';
+
   # Session list for the greeter: everything the display manager knows about
   # except hyprland-uwsm.desktop — the hyprland package ships that entry
   # unconditionally, and we always launch plain Hyprland.
@@ -17,6 +30,8 @@ let
     for f in ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions/*.desktop; do
       case "$(basename "$f")" in
         hyprland-uwsm.desktop) ;;
+        hyprland.desktop)
+          sed -e 's|^Exec=.*|Exec=${hyprlandSession}|' "$f" > "$out/share/wayland-sessions/$(basename "$f")" ;;
         gnome*.desktop)
           sed -e 's/^Name=GNOME on Wayland$/Name=gnome on Wayland (fallback)/' \
               -e 's/^Name=GNOME$/Name=gnome (fallback)/' "$f" > "$out/share/wayland-sessions/$(basename "$f")" ;;
@@ -32,6 +47,12 @@ let
   # Banner/quotes are read from /etc/greeter (environment.etc below) so the
   # hyprlock lock screen shows the same files (scripts/greeter-{banner,quote}.sh).
   greeterLaunch = pkgs.writeShellScript "tuigreet-launch" ''
+        # Wipe tty1 (screen + scrollback). greetd never clears the VT between
+        # sessions, and tuigreet draws on the alternate screen, so whatever the
+        # previous compositor left on the main screen (its startup lines, stray
+        # stderr from autostarted apps, a kernel segfault line) reappeared for a
+        # second when tuigreet exited and the next session started.
+        printf '\033[H\033[2J\033[3J'
         banner="$(${pkgs.coreutils}/bin/cat /etc/greeter/banner.txt)"
         quote="$(${pkgs.gnugrep}/bin/grep -Ev '^[[:space:]]*(#|$)' /etc/greeter/quotes.txt \
           | ${pkgs.coreutils}/bin/shuf -n 1 \
@@ -61,7 +82,7 @@ in
       initial_session = {
         command = "${pkgs.writeShellScript "hyprland-autologin" ''
           export HYPR_AUTOLOGIN_LOCK=1
-          exec ${config.programs.hyprland.package}/bin/start-hyprland
+          exec ${hyprlandSession}
         ''}";
         user = "blewf";
       };
