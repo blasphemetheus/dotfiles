@@ -131,12 +131,13 @@
           }
 
           home-manager.nixosModules.home-manager
-          {
+          ({ config, ... }: {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.backupFileExtension = "hm-backup";
-            home-manager.users.blewf = import ./home.nix;
-          }
+            # The account comes from the host's dotfiles.user block.
+            home-manager.users.${config.dotfiles.user.name} = import ./home.nix;
+          })
         ];
       };
     in

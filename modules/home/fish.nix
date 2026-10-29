@@ -1,4 +1,9 @@
-{ config, ... }:
+{ config, lib, osConfig, ... }:
+let
+  # Helpers tied to one person's accounts and hardware (API-key Claude
+  # wrappers, Slippi/Steam GameCube): see dotfiles.user.personalTools.
+  personal = osConfig.dotfiles.user.personalTools;
+in
 {
   programs.fish = {
     enable = true;
@@ -15,6 +20,7 @@
       diff = "delta";
       top = "btop";
       md = "glow";
+    } // lib.optionalAttrs personal {
       # slippi is an autoloaded function (fish/functions/slippi.fish): opens
       # Slippi Launcher under the performance power profile. An alias here
       # would shadow it with the bare game Dolphin, which can't log in.
@@ -96,6 +102,7 @@
         command rm -f -- "$tmp"
       '';
 
+    } // lib.optionalAttrs personal {
       # Steam with GameCube adapter support (Wii U mode, 057e:0337). Steam's
       # native GC support (Nov 2025) is off by default because libusb access
       # to the adapter is EXCLUSIVE — the same handle Slippi Dolphin needs,
@@ -212,6 +219,7 @@
         printf '\033]0;%s\007' (hostname)": "(prompt_pwd)
       '';
 
+    } // {
       # (sandbox / sandbox-join removed 2026-09-17: they ran Claude Code in a
       # `claude-sandbox` Docker container, but the Docker daemon was dropped
       # 2026-09-08 and the image is gone — the functions only errored. Claude

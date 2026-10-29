@@ -23,8 +23,8 @@ enough — the installed system comes from this flake's lock, not from the ISO. 
 
 ## 3. Partition (ERASES THE DISK)
 
-The labels matter: the placeholder `hardware-configuration.nix` mounts by these labels.
-The 20 GB swap is what makes hibernate possible (lid close → suspend → hibernate after 2 h).
+The committed `hardware-configuration.nix` is the real scan from the first install and mounts
+by UUID, so a fresh partition table needs step 4's regenerated scan. The 20 GB swap is what makes hibernate possible (lid close → suspend → hibernate after 2 h).
 
 ```bash
 sudo -i
@@ -44,8 +44,10 @@ swapon /dev/nvme0n1p2     # also gives the big source builds below room to spill
 
 ## 4. Get the config and the real hardware scan
 
-The repo must live at `/home/blewf/dotfiles` — Home Manager symlinks `~/.config/hypr` etc.
-straight into it.
+The login name comes from `dotfiles.user.name` in `hosts/aspire/default.nix` (`blewf` below; set
+it to the new owner's name first when installing for someone else, and drop the
+`fullName`/`email` lines so their git identity comes from `~/.gitconfig`). The repo must live
+at `/home/<user>/dotfiles` — Home Manager symlinks `~/.config/hypr` etc. straight into it.
 
 ```bash
 mkdir -p /mnt/home/blewf

@@ -6,6 +6,7 @@
 
 {
   imports = [
+    ./modules/system/user.nix
     ./modules/system/power.nix
     ./modules/system/nix-maintenance.nix
     ./modules/system/packages.nix
@@ -223,16 +224,8 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-  # Define a user account. Don't forget to set a password with 'passwd'.
-  users.users.blewf = {
-    isNormalUser = true;
-    description = "Bradley Lewis Fargo";
-    shell = pkgs.fish;
-    extraGroups = [ "networkmanager" "wheel" "input" "libvirtd" ]; # input: hyprwhspr-rs evdev listener; libvirtd: VMs without sudo
-    packages = with pkgs; [
-      thunderbird
-    ];
-  };
+  # The user account is declared in modules/system/user.nix from the
+  # per-host `dotfiles.user` block. Set its password with `passwd`.
   programs.fish.enable = true;
 
   # Install firefox.

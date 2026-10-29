@@ -2,7 +2,7 @@
 { config, ... }:
 let
   # Absolute path required by mkOutOfStoreSymlink.
-  dotfiles = "/home/blewf/dotfiles";
+  dotfiles = "${config.home.homeDirectory}/dotfiles";
 in
 {
   # ── Phase 2: Simple configs (stable, rarely edited) ──────────────────

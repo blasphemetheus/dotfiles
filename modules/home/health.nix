@@ -1,6 +1,6 @@
 { config, pkgs, ... }:
 let
-  dotfiles = "/home/blewf/dotfiles";
+  dotfiles = "${config.home.homeDirectory}/dotfiles";
   inputAge = pkgs.callPackage ../../pkgs/flake-input-age.nix { };
   # Weekly "is my setup healthy?" check — desktop notification via mako.
   # Deterministic, no LLM: flake staleness, disk pressure, uncommitted dotfiles.

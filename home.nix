@@ -1,5 +1,9 @@
-{ config, pkgs, ... }:
-
+{ config, lib, pkgs, osConfig, ... }:
+let
+  # Who this home belongs to: hosts/<name>/default.nix sets dotfiles.user.
+  user = osConfig.dotfiles.user;
+  identity = user.fullName != null && user.email != null;
+in
 {
   imports = [
     ./modules/home/health.nix
@@ -8,8 +12,8 @@
     ./modules/home/dotfiles.nix
   ];
 
-  home.username = "blewf";
-  home.homeDirectory = "/home/blewf";
+  home.username = user.name;
+  home.homeDirectory = user.home;
 
   # Match your NixOS system.stateVersion
   home.stateVersion = "25.11";
@@ -131,24 +135,24 @@
     enableFishIntegration = false;
   };
 
-  # ── Email: spikenard@ramblings.cc on Migadu ──────────────────────────
+  # ── Email: the host's dotfiles.user.mailbox ──────────────────────────
   # aerc (TUI client) is configured from this account block; Thunderbird is
-  # installed system-side (configuration.nix) and self-configures via the
-  # autoconfig DNS record on ramblings.cc. Password lives in the GNOME
+  # installed system-side (modules/system/user.nix) and self-configures via
+  # the mail domain's autoconfig DNS record. Password lives in the GNOME
   # keyring — store it once with:
-  #   secret-tool store --label="Migadu spikenard" email spikenard@ramblings.cc
-  accounts.email.accounts.ramblings = {
+  #   secret-tool store --label="<mailbox.label>" email <mailbox.address>
+  # No mailbox on the host → no account, and aerc stays unconfigured.
+  accounts.email.accounts.primary = lib.mkIf (user.mailbox != null) {
     primary = true;
-    address = "spikenard@ramblings.cc";
-    realName = "Bradley Fargo";
-    userName = "spikenard@ramblings.cc";
-    passwordCommand = "secret-tool lookup email spikenard@ramblings.cc";
+    inherit (user.mailbox) address realName;
+    userName = user.mailbox.address;
+    passwordCommand = "secret-tool lookup email ${user.mailbox.address}";
     imap = {
-      host = "imap.migadu.com";
+      host = user.mailbox.imapHost;
       port = 993;
     };
     smtp = {
-      host = "smtp.migadu.com";
+      host = user.mailbox.smtpHost;
       port = 465;
       tls.enable = true;
     };
@@ -162,7 +166,7 @@
     };
   };
 
-  programs.aerc = {
+  programs.aerc = lib.mkIf (user.mailbox != null) {
     enable = true;
     extraConfig = {
       # accounts.conf lands in the world-readable Nix store; that's fine here
@@ -173,11 +177,15 @@
   };
 
   # Git-compatible VCS. Works inside existing git repos (`jj git init --colocate`).
+  # Identity comes from dotfiles.user.{fullName,email}; with either unset jj
+  # falls back to its own config, the way git falls back to ~/.gitconfig.
   programs.jujutsu = {
     enable = true;
-    settings.user = {
-      name = "Bradley Lewis Fargo";
-      email = "blewfargs@gmail.com";
+    settings = lib.optionalAttrs identity {
+      user = {
+        name = user.fullName;
+        email = user.email;
+      };
     };
   };
 

@@ -90,7 +90,8 @@ in
 
   health-scripts =
     let
-      services = nixosConfigurations.aspire.config.home-manager.users.blewf.systemd.user.services;
+      aspire = nixosConfigurations.aspire.config;
+      services = aspire.home-manager.users.${aspire.dotfiles.user.name}.systemd.user.services;
       hints = builtins.head services.nixos-health-hints.Service.ExecStart;
       advisor = pkgs.lib.last (
         pkgs.lib.splitString " " (builtins.head services.nixos-setup-advisor.Service.ExecStart)

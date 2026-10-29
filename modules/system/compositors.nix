@@ -119,8 +119,8 @@ in
     ];
     serviceConfig = {
       Type = "oneshot";
-      User = "blewf";
-      Environment = [ "XDG_RUNTIME_DIR=/run/user/1000" ];
+      User = config.dotfiles.user.name;
+      Environment = [ "XDG_RUNTIME_DIR=/run/user/${toString config.dotfiles.user.uid}" ];
       # Do NOT pick the instance by mtime (`ls -t`): Hyprland leaves the runtime
       # dir behind when an instance dies, and those stale dirs get touched later
       # than the live one, so `ls -t | head -1` reliably picks a DEAD instance.

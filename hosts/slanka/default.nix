@@ -15,6 +15,23 @@
   # "nixosslanka" — flake.nix exports the config under both names.
   networking.hostName = "nixos_slanka";
 
+  # Whose machine this is (modules/system/user.nix). Everything personal —
+  # commit identity, mailbox, the API-key shell helpers — hangs off this.
+  dotfiles.user = {
+    name = "blewf";
+    description = "Bradley Lewis Fargo";
+    fullName = "Bradley Lewis Fargo";
+    email = "blewfargs@gmail.com";
+    mailbox = {
+      address = "spikenard@ramblings.cc";
+      realName = "Bradley Fargo";
+      imapHost = "imap.migadu.com";
+      smtpHost = "smtp.migadu.com";
+      label = "Migadu spikenard";
+    };
+    personalTools = true;
+  };
+
   # Resume device for hibernate
   boot.resumeDevice = "/dev/nvme0n1p6";
 
@@ -179,14 +196,14 @@
     '';
   };
 
-  # Allow blewf to fire the connector retrains on demand without sudo
+  # Allow the user to fire the connector retrains on demand without sudo
   # (manual escalation: systemctl restart hdmi-link-retrain / dp-link-bounce).
   security.polkit.extraConfig = ''
     polkit.addRule(function(action, subject) {
       if (action.id == "org.freedesktop.systemd1.manage-units" &&
           (action.lookup("unit") == "hdmi-link-retrain.service" ||
            action.lookup("unit") == "dp-link-bounce.service") &&
-          subject.user == "blewf") {
+          subject.user == "${config.dotfiles.user.name}") {
         return polkit.Result.YES;
       }
     });

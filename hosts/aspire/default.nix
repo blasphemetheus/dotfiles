@@ -59,6 +59,17 @@ in
 
   networking.hostName = "aspire";
 
+  # Whose machine this is (modules/system/user.nix). To hand the laptop to
+  # someone else: change name/description here, leave fullName/email/mailbox
+  # unset (git identity then comes from their ~/.gitconfig), keep
+  # personalTools off, and reinstall or `nrs` + create the account's password.
+  dotfiles.user = {
+    name = "blewf";
+    description = "Bradley Lewis Fargo";
+    fullName = "Bradley Lewis Fargo";
+    email = "blewfargs@gmail.com";
+  };
+
   boot.extraModulePackages = [ acp6xMachAspire ];
 
   # amdgpu loads on its own and hardware.graphics (shared) brings Mesa/RADV,

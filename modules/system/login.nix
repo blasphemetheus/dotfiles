@@ -84,7 +84,7 @@ in
           export HYPR_AUTOLOGIN_LOCK=1
           exec ${hyprlandSession}
         ''}";
-        user = "blewf";
+        user = config.dotfiles.user.name;
       };
       # After logout (or if the session dies) greetd falls back to tuigreet.
       default_session = {

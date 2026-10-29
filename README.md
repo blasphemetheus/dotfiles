@@ -24,6 +24,12 @@ See [NIXOS-SETUP.md](NIXOS-SETUP.md) for a full machine setup (NVIDIA GPU, disks
 `hosts/<name>/hardware-configuration.nix` is that machine's `nixos-generate-config`
 scan. Home Manager modules and app styling are shared; power policy is per profile.
 
+The host also says whose machine it is: its `dotfiles.user` block (`modules/system/user.nix`)
+names the login, and optionally the git/jj identity, the aerc mailbox, and whether the
+personal shell helpers (API-key Claude wrappers, Slippi/Steam) are installed. Nothing
+else in the repo names a user. To hand a machine to someone else, change that one block,
+leave the identity and mailbox unset, and rebuild; the rest of the repo is theirs as-is.
+
 Live-linked configs (hypr, waybar, niri) can't be per-host files, so hardware-specific scripts
 check for their hardware and no-op when it is absent (`led-ctl.sh` without OpenRGB,
 `hdmi-wake.sh` without the VG27V, `battery-monitor.sh` without a battery, NVIDIA env in
@@ -34,9 +40,10 @@ and the appropriate profile; add one `mkHost` line to `flake.nix` and a host che
 `tests/default.nix`. Keep Aspire's audio patch and hibernation-mode workaround on
 the Aspire. A hibernating profile also needs disk swap and `boot.resumeDevice`.
 
-Not in git, so set up by hand on each machine: `~/.config/fish/secrets.fish`, `~/.gitconfig`
-identity, the `claude` / `codex` / `devenv` user-profile installs, and the mail password in the
-keyring (`secret-tool store`, see `home.nix`).
+Not in git, so set up by hand on each machine: the account password, `~/.config/fish/secrets.fish`,
+`~/.gitconfig` identity (only when the host leaves `dotfiles.user.email` unset), the
+`claude` / `codex` / `devenv` user-profile installs, and the mail password in the keyring
+(`secret-tool store`, see `home.nix`).
 
 ## Layout
 

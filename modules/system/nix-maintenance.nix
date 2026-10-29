@@ -1,4 +1,7 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
+let
+  user = config.dotfiles.user;
+in
 {
   # Enable flakes and the new nix command
   nix.settings.experimental-features = [
@@ -13,10 +16,10 @@
     "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
   ];
 
-  # trust devenv's binary cache and allow blewf to manage caches
+  # trust devenv's binary cache and allow the user to manage caches
   nix.settings.trusted-users = [
     "root"
-    "blewf"
+    user.name
   ];
 
   # ── Store hygiene ────────────────────────────────────────────────────
@@ -35,7 +38,7 @@
   # created" or silently serves a stale evaluation. Drop the caches so the next
   # devenv command re-evaluates; they are pure cache and cost ~1s to rebuild.
   systemd.services.nix-gc.postStop = ''
-    ${pkgs.findutils}/bin/find /home/blewf -maxdepth 5 \
+    ${pkgs.findutils}/bin/find ${user.home} -maxdepth 5 \
       \( -name node_modules -o -name .git -o -name .direnv -o -name result \) -prune -o \
       -type d -name .devenv -exec ${pkgs.coreutils}/bin/rm -f \
         {}/nix-eval-cache.db {}/nix-eval-cache.db-shm {}/nix-eval-cache.db-wal \;
@@ -50,7 +53,7 @@
   # Its own `clean` is left off; nix.gc above already handles collection.
   programs.nh = {
     enable = true;
-    flake = "/home/blewf/dotfiles";
+    flake = "${user.home}/dotfiles";
   };
 
 }
