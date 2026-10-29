@@ -142,11 +142,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791333741,
-        "narHash": "sha256-rTQHg4ZnCIVusbw/f5k15VKBFUzjc7LwxivsycxeNY0=",
+        "lastModified": 1792257412,
+        "narHash": "sha256-5f4LSlJFR8zE9LOyqKHjgD59QKBJeXkwAMVtknfsOpE=",
         "owner": "blasphemetheus",
         "repo": "hyprdisplays",
-        "rev": "f806d5650833c86c6b2be6e05f56b33e18147d84",
+        "rev": "5c06d1215cc0aeecdb89d0e7afb016871af7c263",
         "type": "github"
       },
       "original": {

@@ -47,7 +47,7 @@ bind(B .. "SHIFT + C", exec("hyprpicker -a"))   -- color picker
 
 -- Clipboard history / emoji
 bind("F10", exec("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))
-bind(B .. "period", exec("rofimoji --action type --typer wtype"))
+bind(B .. "SHIFT + E", exec("rofimoji --action type --typer wtype"))
 
 -- Fullscreen
 bind("F11",    hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
