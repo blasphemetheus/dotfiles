@@ -171,9 +171,9 @@ bind(B .. "mouse:272", hl.dsp.window.drag(),   { drag = true })
 bind(B .. "mouse:273", hl.dsp.window.resize(), { drag = true })
 
 -- Volume (wob pipe)
-local vol_up   = [[wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+ && wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d\n", $2*100}' > /tmp/wobpipe]]
-local vol_down = [[wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- && wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d\n", $2*100}' > /tmp/wobpipe]]
-local vol_mute = [[wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d\n", $2*100}' > /tmp/wobpipe]]
+local vol_up   = [[wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+ && wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d\n", $2*100}' > ${XDG_RUNTIME_DIR}/wobpipe]]
+local vol_down = [[wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- && wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d\n", $2*100}' > ${XDG_RUNTIME_DIR}/wobpipe]]
+local vol_mute = [[wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d\n", $2*100}' > ${XDG_RUNTIME_DIR}/wobpipe]]
 bind(B .. "Up",   exec(vol_up),   { repeating = true, locked = true })
 bind(B .. "Down", exec(vol_down), { repeating = true, locked = true })
 bind(B .. "M", exec(vol_mute))
@@ -184,8 +184,8 @@ bind("XF86AudioRaiseVolume", exec(vol_up),   { repeating = true, locked = true }
 bind("XF86AudioLowerVolume", exec(vol_down), { repeating = true, locked = true })
 bind("XF86AudioMute",        exec(vol_mute), { repeating = true, locked = true })
 bind("XF86AudioMicMute",     exec("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), { repeating = true, locked = true })
-bind("XF86MonBrightnessUp",   exec([[brightnessctl -e4 -n2 set 5%+ && brightnessctl -m | awk -F, '{print substr($4, 0, length($4)-1)}' > /tmp/wobpipe]]), { repeating = true, locked = true })
-bind("XF86MonBrightnessDown", exec([[brightnessctl -e4 -n2 set 5%- && brightnessctl -m | awk -F, '{print substr($4, 0, length($4)-1)}' > /tmp/wobpipe]]), { repeating = true, locked = true })
+bind("XF86MonBrightnessUp",   exec([[brightnessctl -e4 -n2 set 5%+ && brightnessctl -m | awk -F, '{print substr($4, 0, length($4)-1)}' > ${XDG_RUNTIME_DIR}/wobpipe]]), { repeating = true, locked = true })
+bind("XF86MonBrightnessDown", exec([[brightnessctl -e4 -n2 set 5%- && brightnessctl -m | awk -F, '{print substr($4, 0, length($4)-1)}' > ${XDG_RUNTIME_DIR}/wobpipe]]), { repeating = true, locked = true })
 bind("XF86AudioNext",  exec("playerctl next"),       { locked = true })
 bind("XF86AudioPause", exec("playerctl play-pause"), { locked = true })
 bind("XF86AudioPlay",  exec("playerctl play-pause"), { locked = true })

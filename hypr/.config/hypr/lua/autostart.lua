@@ -38,7 +38,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("pyprland")                          -- scratchpads
     hl.exec_cmd(S .. "/wallpaper-workspace.sh")      -- per-workspace wallpapers
     hl.exec_cmd(S .. "/eval-window-router.sh")       -- route exphil eval Dolphin windows
-    hl.exec_cmd("rm -f /tmp/wobpipe && mkfifo /tmp/wobpipe && tail -f /tmp/wobpipe | wob")
+    hl.exec_cmd("rm -f ${XDG_RUNTIME_DIR}/wobpipe && mkfifo ${XDG_RUNTIME_DIR}/wobpipe && tail -f ${XDG_RUNTIME_DIR}/wobpipe | wob")
     -- Mirror the tmpfs Hyprland log to ~/.local/state/hyprland (post-mortems)
     hl.exec_cmd(S .. "/hyprland-log-persist.sh")
 end)
