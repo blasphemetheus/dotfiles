@@ -47,7 +47,7 @@ bind(B .. "SHIFT + C", exec("hyprpicker -a"))   -- color picker
 
 -- Clipboard history / emoji
 bind("F10", exec("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))
-bind(B .. "period", exec("rofimoji --action type --typer wtype"))
+bind(B .. "SHIFT + E", exec("rofimoji --action type --typer wtype"))
 
 -- Fullscreen
 bind("F11",    hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
@@ -76,7 +76,7 @@ bind(B .. "SHIFT + V", exec("~/.config/ags/scripts/screen-record-toggle.sh"))
 bind(B .. "SHIFT + R", exec([[hyprctl reload && notify-send "Hyprland" "Config reloaded"]]))
 
 -- Toggle idle/sleep (hypridle)
-bind(B .. "F5", exec([[pkill hypridle && notify-send "Hypridle" "Sleep disabled - staying awake" || { hypridle & notify-send "Hypridle" "Sleep re-enabled"; }]]))
+bind(B .. "F5", exec([[pkill -x hypridle && notify-send "Hypridle" "Sleep disabled - staying awake" || { ~/.config/hypr/scripts/start-idle.sh & notify-send "Hypridle" "Sleep re-enabled"; }]]))
 
 -- Lock (via the wrapper: crash-respawn + LED handling, see lock-wrapper.sh)
 bind(B .. "L", exec(S .. "/lock-wrapper.sh"))
@@ -86,6 +86,7 @@ bind(B .. "SHIFT + H", exec(S .. "/hdmi-retrain.sh"))     -- retrain wedged HDMI
 bind(B .. "SHIFT + F", exec(S .. "/refresh-toggle.sh"))   -- ASUS 120Hz <-> 165Hz
 bind(B .. "SHIFT + T", exec(S .. "/mirror-toggle.sh"))    -- mirror focused monitor onto the TV / back to extended
 bind(B .. "SHIFT + M", exec("hyprdisplays"))               -- display manager GUI (arrange/modes/mirror/audio/profiles)
+bind(B .. "CTRL + V",  exec("hyprvolume"))                 -- mixer GUI (outputs incl. HDMI ports by monitor, streams, inputs)
 bind(B .. "CTRL + D",  exec(S .. "/display-profile.sh"))   -- rofi: apply a saved hyprdisplays profile
 bind(B .. "SHIFT + L", exec(S .. "/led-ctl.sh toggle"))   -- RGB LEDs
 bind(B .. "CTRL + L",  exec(S .. "/led-ctl.sh menu"))
@@ -200,5 +201,16 @@ bind(B .. "Z", function() hl.plugin.hyprexpo.expo("toggle") end)
 bind(B .. "CTRL + S", exec(S .. "/session-picker.sh save"))
 bind(B .. "CTRL + R", exec(S .. "/session-picker.sh restore"))
 
--- Keybinds cheatsheet (Super+Shift+?)
-bind(B .. "SHIFT + slash", exec(S .. "/show-keybinds.sh"))
+-- Keybinds: Super+Shift+? opens hyprbinds (GUI editor for this file, see
+-- ~/git/hyprdisplays); Super+/ keeps the rofi cheatsheet from keybinds.md.
+bind(B .. "SHIFT + slash", exec("hyprbinds"))            -- keybind editor GUI
+bind(B .. "slash", exec(S .. "/show-keybinds.sh"))        -- rofi cheatsheet
+
+-- hyprbinds key capture: an EMPTY submap. While it is active none of the binds
+-- above fire, so the combo being recorded reaches the hyprbinds window instead
+-- of launching something. The app enters it (hl.dsp.submap) when you press
+-- Capture and resets it after the keypress; Ctrl+Alt+Escape is the manual
+-- way out if the app dies mid-capture.
+hl.define_submap("hyprbinds-capture", function()
+    bind("CTRL + ALT + escape", hl.dsp.submap("reset"))
+end)

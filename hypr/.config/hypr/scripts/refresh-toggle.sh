@@ -5,7 +5,9 @@
 # Direction comes from the live rate, not a state file, so it can't drift
 # when hyprctl reload resets the mode back to the 120Hz config default.
 ASUS='desc:ASUSTek COMPUTER INC ASUS VG27V 0x0003ABEC'
-rate=$(hyprctl -j monitors | jq -r '.[] | select(.name=="HDMI-A-1") | .refreshRate')
+# Match by description, not port: the VG27V moved HDMI-A-1 → DP-3 on 2026-09-20
+# and the TV now owns HDMI-A-1.
+rate=$(hyprctl -j monitors | jq -r '.[] | select(.description | test("ASUS VG27V")) | .refreshRate')
 if (( $(printf '%.0f' "$rate") > 150 )); then
     hyprctl eval "hl.monitor({ output = '$ASUS', mode = '1920x1080@120', position = '0x0', scale = 1, vrr = 1 })"
     notify-send "Refresh rate" "120Hz (stable)" -t 5000

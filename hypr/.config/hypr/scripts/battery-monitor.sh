@@ -5,12 +5,17 @@
 # Configuration
 # First battery, whatever the firmware calls it (BAT0 / BAT1 / …). No battery
 # (desktop) → nothing to monitor.
-BATTERY_PATH=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -1)
-[ -n "$BATTERY_PATH" ] || exit 0
+BATTERY_PATH=""
+for battery in /sys/class/power_supply/BAT*; do
+    [[ -r "$battery/capacity" ]] || continue
+    BATTERY_PATH=$battery
+    break
+done
+[[ -n "$BATTERY_PATH" ]] || exit 0
 WARNING_THRESHOLD=20    # First warning
 LOW_THRESHOLD=10        # Low battery warning
 CRITICAL_THRESHOLD=5    # Critical warning (urgent)
-SUSPEND_THRESHOLD=3     # Auto-suspend to prevent shutdown
+HIBERNATE_THRESHOLD=3   # Preserve the session before the battery is exhausted
 CHECK_INTERVAL=60       # Check every 60 seconds
 
 # Sounds for each level
@@ -36,14 +41,16 @@ play_sound() {
 
 send_notification() {
     local level=$1
-    local urgency=$2
+    local severity=$2
+    local urgency=normal
     local icon="battery-low"
     local title="Battery Low"
     local body="Battery at ${level}%"
     local sound=""
 
-    case $urgency in
+    case $severity in
         critical)
+            urgency=critical
             icon="battery-empty"
             title="CRITICAL: Battery Very Low!"
             body="Battery at ${level}%! Plug in NOW or your system will shut down!"
@@ -73,13 +80,14 @@ main() {
         status=$(get_charging_status)
 
         # Only warn if not charging
-        if [[ "$status" != "Charging" && "$status" != "Full" ]]; then
-            if [[ $level -le $SUSPEND_THRESHOLD ]]; then
-                notify-send -u critical -i "battery-empty" "SUSPENDING" "Battery at ${level}%! Suspending in 10 seconds..."
+        if [[ "$status" == "Discharging" ]]; then
+            if [[ $level -le $HIBERNATE_THRESHOLD ]]; then
+                notify-send -u critical -i "battery-empty" "CRITICAL BATTERY" "Battery at ${level}%! Saving the session in 10 seconds..."
                 sleep 10
                 # Re-check in case charger was plugged in
-                if [[ "$(get_charging_status)" != "Charging" ]]; then
-                    systemctl suspend
+                if [[ "$(get_charging_status)" == "Discharging" ]] &&
+                   (( $(get_battery_level) <= HIBERNATE_THRESHOLD )); then
+                    session-sleep critical
                 fi
             elif [[ $level -le $CRITICAL_THRESHOLD && "$last_notified" != "critical" ]]; then
                 send_notification "$level" "critical"
@@ -88,7 +96,7 @@ main() {
                 send_notification "$level" "low"
                 last_notified="low"
             elif [[ $level -le $WARNING_THRESHOLD && $level -gt $LOW_THRESHOLD && "$last_notified" != "warning" ]]; then
-                send_notification "$level" "normal"
+                send_notification "$level" "warning"
                 last_notified="warning"
             fi
         else

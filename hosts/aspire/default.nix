@@ -3,7 +3,7 @@
 # file only adds what a battery-powered, integrated-graphics machine needs.
 # No NVIDIA, no local LLM (ollama), no OpenRGB, no monitor-link heal units —
 # the scripts that drive those all no-op when the hardware is absent.
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 let
   kernel = config.boot.kernelPackages.kernel;
@@ -54,14 +54,26 @@ in
   imports = [
     ./hardware-configuration.nix
     ../../configuration.nix
+    ../../profiles/laptop.nix
   ];
 
   networking.hostName = "aspire";
 
+  # Whose machine this is (modules/system/user.nix). To hand the laptop to
+  # someone else: change name/description here, leave fullName/email/mailbox
+  # unset (git identity then comes from their ~/.gitconfig), keep
+  # personalTools off, and reinstall or `nrs` + create the account's password.
+  dotfiles.user = {
+    name = "blewf";
+    description = "Bradley Lewis Fargo";
+    fullName = "Bradley Lewis Fargo";
+    email = "blewfargs@gmail.com";
+  };
+
   boot.extraModulePackages = [ acp6xMachAspire ];
 
   # Cole's account. A second normal user also turns off greetd autologin
-  # (configuration.nix), so this machine boots to the tuigreet user picker.
+  # (modules/system/login.nix), so this machine boots to the tuigreet user picker.
   # Password is set out of band: `sudo passwd calbert`.
   users.users.calbert = {
     isNormalUser = true;
@@ -74,34 +86,11 @@ in
   # amdgpu loads on its own and hardware.graphics (shared) brings Mesa/RADV,
   # so there is no GPU driver block here.
 
-  # 16 GB with a browser + Hyprland + dev tools: compressed RAM swap is far
-  # cheaper than hitting the SSD, and earlyoom (shared) stays as the backstop.
-  zramSwap.enable = true;
+  # Resume uses this machine's disk swap, never its zram device.
+  boot.resumeDevice = if config.swapDevices == [ ] then ""
+    else (builtins.head config.swapDevices).device;
 
-  # Firmware updates (BIOS/EC/SSD) via `fwupdmgr update`.
-  services.fwupd.enable = true;
-
-  # hypridle's before_sleep_cmd locks before any suspend. power-profiles-daemon
-  # (shared) covers battery/performance switching.
-
-  # This machine only has s2idle (no S3 "deep"), which keeps draining the
-  # battery while asleep. With a disk swap partition present, closing the lid
-  # suspends and then hibernates after 2 h asleep; without one (swapDevices
-  # empty) all of this stays off and the lid just suspends.
-  boot.resumeDevice = lib.mkIf (config.swapDevices != [ ])
-    (builtins.head config.swapDevices).device;
-  services.logind.settings.Login = lib.mkIf (config.swapDevices != [ ]) {
-    HandleLidSwitch = "suspend-then-hibernate";
-  };
-  systemd.sleep.settings.Sleep = lib.mkIf (config.swapDevices != [ ]) {
-    HibernateDelaySec = "2h";
-    # The default "platform" mode checks for wakeup events after the image is
-    # written and, if a key/touchpad/power-button press arrived, rolls back to
-    # the running session instead of powering off. amdgpu can't survive that
-    # rollback on this APU (it MODE2-resets the GPU on freeze; the restore
-    # leaves sdma0 hung, Hyprland dies, no compositor starts until reboot).
-    # Same code in upstream master. "shutdown" powers off once the image is
-    # written — no rollback path; resume from the power button is unchanged.
-    HibernateMode = "shutdown";
-  };
+  # This APU cannot reliably roll back a hibernation freeze when a wake event
+  # arrives. Power off after writing the image instead of using platform mode.
+  systemd.sleep.settings.Sleep.HibernateMode = "shutdown";
 }

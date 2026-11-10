@@ -50,8 +50,9 @@
     # one hyprutils ends up in the process). Drop this input + both follows at
     # the next Hyprland tag bump (>=0.57), which will lock aquamarine 0.15+
     # itself.
+    # 2026-10-17: v0.15.1 adds frameIdle UAF, disconnect, and resume fixes.
     aquamarine = {
-      url = "github:hyprwm/aquamarine/v0.15.0";
+      url = "github:hyprwm/aquamarine/v0.15.1";
       inputs.nixpkgs.follows = "nixpkgs-hypr";
       inputs.hyprutils.follows = "hyprland/hyprutils";
     };
@@ -61,14 +62,9 @@
       inputs.aquamarine.follows = "aquamarine";
     };
 
-    # hyprlock straight from upstream too: our nixpkgs pin ships 0.9.2, which
-    # SEGVs on teardown (CShader dtor racing the async asset thread — the
-    # 6-coredumps-in-2-days saga of 2026-07/08, see lock-wrapper.sh) and can
-    # wedge in a busy-loop leaving the "oopsie" screen. v0.9.3 fixed the
-    # use-after-free in async resource callbacks + NVIDIA teardown order;
-    # v0.9.6 guards dtors against a destroyed EGL context. Deliberately NOT
-    # following our nixpkgs (same cachix rationale as hyprland above).
-    hyprlock.url = "github:hyprwm/hyprlock/v0.9.6";
+    # Hyprlock comes from the system nixpkgs (now 0.9.6). It must share the
+    # system PAM/glibc ABI: the old standalone pin could not load PAM modules
+    # after the system glibc update, causing authentication failures and crashes.
 
     # hyprdisplays: our Rust/iced display manager (source also in ~/git/hyprdisplays).
     # After pushing a change there: `nix flake update hyprdisplays`.
@@ -92,17 +88,17 @@
     # on every `nix flake update`. Re-add the input when upstream catches up.)
     # expo-style overview. hyprwm abandoned the original (removed from
     # hyprland-plugins in #663); this community fork is the maintained successor.
-    # Pinned to release v0.56.1+3 (2026-08-07, first 0.56-compatible release;
+    # Pinned to release v0.56.2+3 (updated 2026-10-17; matches Hyprland 0.56.2;
     # sha pin because "+" in the tag name breaks flake ref parsing). Since the
     # fork now ships a working flake for 0.56, we consume its package directly —
     # pkgs/hyprexpo.nix (the hand-built 0.55.4 tag) is no longer referenced.
     hyprexpo = {
-      url = "github:sandwichfarm/hyprexpo/40352e2663deded7c6536b2fda1ed18a97234a80";
+      url = "github:sandwichfarm/hyprexpo/852774edd577afad0c2e01d8b685772c80634524";
       inputs.hyprland.follows = "hyprland";
     };
   };
 
-  outputs = inputs@{ nixpkgs, home-manager, ags, ... }:
+  outputs = inputs@{ self, nixpkgs, home-manager, ags, ... }:
     let
       # One system per machine: hostModule is hosts/<name>/default.nix, which
       # imports the shared ./configuration.nix plus its own hardware scan.
@@ -115,7 +111,7 @@
           hostModule
 
           # Expose the v3 CLI as `ags-v3` WITHOUT replacing pkgs.ags: nixpkgs
-          # consumers (hyprpanel calls `ags.bundle`) still need the v2 package.
+          # consumers may still use the packaged AGS API independently.
           # (hyprsplit no longer overridden here — it now comes from the
           # cryeprecision/hyprsplit flake input, built against our pinned Hyprland.)
           {
@@ -123,51 +119,41 @@
               (_final: prev: {
                 ags-v3 = ags.packages.${prev.stdenv.hostPlatform.system}.default;
 
-                # Replace nixpkgs' hyprlock 0.9.2 with the crash-fixed upstream
-                # tag (see the hyprlock input comment). systemPackages picks
-                # this up via `hyprlock` in configuration.nix.
-                hyprlock = inputs.hyprlock.packages.${prev.stdenv.hostPlatform.system}.hyprlock;
-
                 # (hyprexpo overlay removed 2026-09-17: the sandwichfarm fork's
                 # flake ships a 0.56-compatible package, consumed directly in
                 # configuration.nix. pkgs/hyprexpo.nix was the 0.55-era hand-build.)
 
-                # hyprshade 4.0.1 applies shaders with `hyprctl keyword`, which
-                # the Lua config rejects ("keyword can't work with non-legacy
-                # parsers. Use eval.") — with exit 0, so hyprshade thinks it
-                # worked and nothing happens. Route it through `hyprctl eval`.
-                # The [[EMPTY]] sentinel round-trips through eval unchanged, so
-                # `hyprshade off/toggle/current` keep working.
-                hyprshade = prev.hyprshade.overridePythonAttrs (old: {
-                  postPatch = (old.postPatch or "") + ''
-                    substituteInPlace src/hyprshade/shader/hyprctl.py \
-                      --replace-fail \
-                        '["hyprctl", "keyword", "decoration:screen_shader", shader_path],' \
-                        '["hyprctl", "eval", "hl.config({ decoration = { screen_shader = " + repr(shader_path) + " } })"],'
-                  '';
-                });
+                # hyprshade 5 supports Lua configuration natively; the old
+                # 4.0.1 keyword-to-eval patch is no longer needed.
+
               })
             ];
           }
 
           home-manager.nixosModules.home-manager
-          {
+          ({ config, ... }: {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.backupFileExtension = "hm-backup";
-            home-manager.users.blewf = import ./home.nix;
-          }
+            # The account comes from the host's dotfiles.user block.
+            home-manager.users.${config.dotfiles.user.name} = import ./home.nix;
+          })
         ];
       };
     in
     {
+      checks.x86_64-linux = import ./tests {
+        pkgs = import nixpkgs { system = "x86_64-linux"; };
+        inherit (self) nixosConfigurations;
+      };
+
       nixosConfigurations = {
         # Canonical name (matches networking.hostName + the `nrs` alias).
         nixos_slanka = mkHost ./hosts/slanka;
         # Alias under the *runtime* hostname: the kernel drops the invalid
         # underscore, so `hostname` reports "nixosslanka". Hostname-derived tools
         # (nh os switch, with no explicit config) resolve this. Keep both in sync.
-        nixosslanka = mkHost ./hosts/slanka;
+        nixosslanka = self.nixosConfigurations.nixos_slanka;
 
         # Laptop (Acer Aspire Go 15). Valid hostname, so one name is enough.
         aspire = mkHost ./hosts/aspire;

@@ -74,7 +74,8 @@ Screenshots saved to: `~/Pictures/Screenshots/`
 | Super+Shift+T | Mirror the focused monitor onto the TV (toggle; off = TV is an extended screen) |
 | Super+Shift+M | hyprdisplays — display manager GUI (arrange, modes, mirror, audio, profiles) |
 | Super+Ctrl+D | Apply a saved display profile (rofi) |
-| Super+Shift+? | **Show this keybinds cheatsheet!** |
+| Super+Shift+? | **hyprbinds: show + edit keybinds (GUI)** |
+| Super+/ | Show this keybinds cheatsheet (rofi) |
 
 ## Media Keys (Fn row)
 
