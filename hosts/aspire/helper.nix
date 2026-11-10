@@ -1,21 +1,20 @@
-# Home Manager config for calbert (Cole) on the laptop.
+# Home Manager config for blewf's helper account on the laptop (Cole's
+# machine; he is dotfiles.user and gets the full home.nix).
 #
-# Cole works from his own clone at ~/dotfiles (/home/calbert/dotfiles) and
-# pushes to main like blewf does, so the shared configs (Hyprland, waybar,
-# kitty, niri, ags) are linked live into that clone exactly as home.nix does
-# for blewf: edits apply on reload, and `nrs` rebuilds from his checkout.
-# The clone has to exist before the first switch, or those links dangle.
-# None of blewf's personal stuff (email, LLM timers, git identity, API-key
-# shell wrappers) is here.
+# Enough to fix things in person: the shared configs (Hyprland, waybar,
+# kitty, niri, ags) are linked live into blewf's own clone at
+# /home/blewf/dotfiles, the same way home.nix links them, and `nrs` rebuilds
+# from that checkout. None of the personal stuff (email, LLM timers, API-key
+# shell wrappers) is here; git identity stays in ~/.gitconfig.
 { config, ... }:
 
 let
-  dotfiles = "/home/calbert/dotfiles";
+  dotfiles = "/home/blewf/dotfiles";
   live = path: config.lib.file.mkOutOfStoreSymlink "${dotfiles}/${path}";
 in
 {
-  home.username = "calbert";
-  home.homeDirectory = "/home/calbert";
+  home.username = "blewf";
+  home.homeDirectory = "/home/blewf";
   home.stateVersion = "25.11";
 
   programs.home-manager.enable = true;
@@ -35,9 +34,8 @@ in
     "wlogout/style.css".source = ../../wlogout/.config/wlogout/style.css;
   };
 
-  home.sessionPath = [ "/home/calbert/.local/bin" ];
+  home.sessionPath = [ "/home/blewf/.local/bin" ];
 
-  # Identity (user.name/email) is his to set with `git config --global`.
   programs.git.enable = true;
 
   programs.starship = {

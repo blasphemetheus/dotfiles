@@ -59,29 +59,29 @@ in
 
   networking.hostName = "aspire";
 
-  # Whose machine this is (modules/system/user.nix). To hand the laptop to
-  # someone else: change name/description here, leave fullName/email/mailbox
-  # unset (git identity then comes from their ~/.gitconfig), keep
-  # personalTools off, and reinstall or `nrs` + create the account's password.
+  # Whose machine this is (modules/system/user.nix): Cole's. He gets the full
+  # home.nix from his clone at /home/calbert/dotfiles. fullName/email/mailbox
+  # stay unset (git identity comes from his ~/.gitconfig) and personalTools
+  # stays off. uid pinned to the one the account was created with.
   dotfiles.user = {
-    name = "blewf";
-    description = "Bradley Lewis Fargo";
-    fullName = "Bradley Lewis Fargo";
-    email = "blewfargs@gmail.com";
+    name = "calbert";
+    uid = 1001;
+    description = "Cole";
   };
 
   boot.extraModulePackages = [ acp6xMachAspire ];
 
-  # Cole's account. A second normal user also turns off greetd autologin
-  # (modules/system/login.nix), so this machine boots to the tuigreet user picker.
-  # Password is set out of band: `sudo passwd calbert`.
-  users.users.calbert = {
+  # blewf's helper account, for fixing things in person. A second normal user
+  # also turns off greetd autologin (modules/system/login.nix), so this
+  # machine boots to the tuigreet user picker.
+  users.users.blewf = {
     isNormalUser = true;
-    description = "Cole";
+    uid = 1000;
+    description = "Bradley Lewis Fargo";
     shell = pkgs.fish;
-    extraGroups = [ "networkmanager" "wheel" "input" ]; # input: dictation evdev listener
+    extraGroups = [ "networkmanager" "wheel" ];
   };
-  home-manager.users.calbert = import ./cole.nix;
+  home-manager.users.blewf = import ./helper.nix;
 
   # amdgpu loads on its own and hardware.graphics (shared) brings Mesa/RADV,
   # so there is no GPU driver block here.
