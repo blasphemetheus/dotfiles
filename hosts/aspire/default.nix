@@ -3,7 +3,7 @@
 # file only adds what a battery-powered, integrated-graphics machine needs.
 # No NVIDIA, no local LLM (ollama), no OpenRGB, no monitor-link heal units —
 # the scripts that drive those all no-op when the hardware is absent.
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 let
   kernel = config.boot.kernelPackages.kernel;
@@ -83,8 +83,15 @@ in
   };
   home-manager.users.blewf = import ./helper.nix;
 
-  # amdgpu loads on its own and hardware.graphics (shared) brings Mesa/RADV,
-  # so there is no GPU driver block here.
+  # amdgpu loads on its own and hardware.graphics (shared) brings Mesa/RADV.
+  # Mesa has to come from Hyprland's nixpkgs (the nixpkgs-hypr pin in
+  # flake.nix): Hyprland runs on that pin's glibc, and loading the system
+  # nixpkgs' newer Mesa killed it at startup ("GLIBC_2.43 not found",
+  # CBackend::create() failed). Apps on the newer glibc load the older Mesa
+  # fine. The desktop's NVIDIA GBM path doesn't hit this. Drop this once the
+  # pin is gone.
+  hardware.graphics.package =
+    inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.mesa;
 
   # Resume uses this machine's disk swap, never its zram device.
   boot.resumeDevice = if config.swapDevices == [ ] then ""
