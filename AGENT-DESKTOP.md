@@ -35,6 +35,10 @@ Aspire (Ryzen 5 7520U, 16 GB, no discrete GPU), it isn't done.
 | Away from home | Probably, but not at first |
 | Desktop GPU | Usually on; **Brad's backend only**. Cole doesn't get it |
 | Latency | A tuning question, measured together |
+| Prompt UI | **Both** a terminal UI and a graphical UI, switchable on command in the same session (both are clients of the same daemon, so history and state carry over) |
+| Cole's first use case | Video editing: building timelines for regular videos and delegating repetitive work in that workflow (he uses Adobe Premiere). Also "starhound", automating repetitive work for his shine project (details TBD) |
+| Cloud, when it comes | Opt-in per user: Cole likely Codex, Brad Claude Code |
+| Repo | Private at first, public once it works. Name TBD (`deskd` is a placeholder) |
 
 ## Ground rules
 
@@ -514,12 +518,14 @@ What only the compositor can do, once Phase 0–1 show what's worth it:
   Is a 4B model necessary, or does ~1.5B suffice for routing?
 - Is on-device step-by-step coding help good enough for Cole on the laptop? Needs a
   coding eval set: ~20 small, real steps a beginner would ask for, scored on both
-  machines. If not, does Cole get an opt-in cloud backend for the coding lane, or just
-  his Claude Code?
-- Prompt window: terminal UI (ratatui) or native GUI (iced)?
-- Which kinds of project templates first (Rust, Python, web)? What does Cole want to
-  build?
+  machines. If not, Cole's opt-in cloud backend for the coding lane (likely Codex)
+  is the fallback.
+- Video workflow: Premiere has no Linux version. Does Cole edit on another machine
+  (timelines built here, exported as XML Premiere imports), or move to a Linux editor
+  (Kdenlive, DaVinci Resolve)? What is starhound / the shine project?
+- Which project templates first? Probably a video-automation kind (Python + ffmpeg +
+  OpenTimelineIO) for Cole, Rust for Brad.
 - One resident Parakeet in `deskd` that also serves dictation, or two processes?
-- What's the repo name, and does it start public or private?
+- What's the name?
 - How much of the catalog should be generated from existing scripts vs. hand-written?
 - How should multi-step plans undo: all at once, or one step per "undo"?
