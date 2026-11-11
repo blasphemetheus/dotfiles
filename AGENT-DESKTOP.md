@@ -1,4 +1,4 @@
-# Agent Desktop — future direction
+# Pooter — an agent desktop (future direction)
 
 A theorized direction, not a plan of record. First written 2026-11-11.
 
@@ -38,7 +38,7 @@ Aspire (Ryzen 5 7520U, 16 GB, no discrete GPU), it isn't done.
 | Prompt UI | **Both** a terminal UI and a graphical UI, switchable on command in the same session (both are clients of the same daemon, so history and state carry over) |
 | Cole's first use case | Video editing: building timelines for regular videos and delegating repetitive work in that workflow (he uses Adobe Premiere). Also "starhound", automating repetitive work for his shine project (details TBD) |
 | Cloud, when it comes | Opt-in per user: Cole likely Codex, Brad Claude Code |
-| Repo | Private at first, public once it works. Name TBD (`deskd` is a placeholder) |
+| Repo | Private at first, public once it works. Named **pooter** (2026-11-11; free on crates.io) |
 
 ## Ground rules
 
@@ -61,7 +61,7 @@ Aspire (Ryzen 5 7520U, 16 GB, no discrete GPU), it isn't done.
 6. **Show, don't just do.** The UI shows the action before and while it happens. The
    animations are how the human follows what the model is doing.
 7. **Its own repo, consumed by the dotfiles.** The code lives in a separate repo
-   (working name `deskd`) with a Nix flake that exports a package and a Home Manager
+   (`pooter`) with a Nix flake that exports a package and a Home Manager
    module. This dotfiles repo adds it as a flake input and turns it on per user, so
    Cole gets it with his normal `nos`. Phase 0's first bash experiments can start here
    and move out once there's Rust.
@@ -83,14 +83,14 @@ Bounds that hold for every backend:
 
 - **Routing and speech never leave the machine.** The always-on, every-request path is
   on-device, so it's fast, private, and works offline.
-- **A backend is a setting, not a code path.** `deskd` talks to an OpenAI-compatible
+- **A backend is a setting, not a code path.** `pooter` talks to an OpenAI-compatible
   chat endpoint (which ollama and llama.cpp both serve). Switching backend is a URL and a
   model name in config, so adding cloud later doesn't change the architecture.
 - **Using a non-local backend is visible.** The pill shows where a request is going
   ("→ desktop GPU", "→ cloud"). If cloud is ever enabled, it's per request or per task,
   never silently, and context sent is the same small, reviewable bundle described below.
 - **Cloud coding agents stay apps.** The way you use Claude Code today (a terminal you
-  drive) keeps working and is a fine thing to hand off to. What `deskd` doesn't do is
+  drive) keeps working and is a fine thing to hand off to. What `pooter` doesn't do is
   run a cloud agent unattended on your behalf.
 
 **Who gets which backend:**
@@ -156,7 +156,7 @@ the latency targets, and every executed action can be undone and appears in the 
 
 ```
   prompt window ────┐
-                    ├─► deskd ─► context ─► router (local LLM) ─► resolver ─► executor
+                    ├─► pooter ─► context ─► router (local LLM) ─► resolver ─► executor
   push-to-talk ─────┘    │                   (JSON schema-       (fuzzy     (tier check,
   (pw-record → STT)      │                    constrained)        match)     run, undo,
                          │                                                    log)
@@ -164,22 +164,25 @@ the latency targets, and every executed action can be undone and appears in the 
                                                  preview / confirm / done / error)
 ```
 
-#### 1. `deskd`, the daemon (Rust)
+#### 1. `pooter`, the daemon (Rust)
+
+One binary: `pooter daemon` runs the service; every other subcommand (`pooter "…"`,
+`pooter new`, `pooter eval`, `pooter tui`, `pooter gui`) is a client of it.
 
 One long-running user service replaces the per-press bash pipeline. It's in Rust because
 that's where Phase 2 lives too (Smithay), so the code carries over.
 
-- **Socket:** `$XDG_RUNTIME_DIR/deskd.sock`, newline-delimited JSON.
+- **Socket:** `$XDG_RUNTIME_DIR/pooter.sock`, newline-delimited JSON.
 - **Requests:** `{"type":"text","text":"put firefox on the left"}`,
   `{"type":"voice_start"}` / `{"type":"voice_stop"}`, `{"type":"confirm","id":…}`,
   `{"type":"cancel"}`, `{"type":"undo"}`.
 - **Events out:** `{"state":"thinking","text":"…"}`, `{"state":"preview","id":…,
   "summary":"Move Firefox to the left half","tier":"confirm"}`, `{"state":"done",…}`,
   `{"state":"error",…}`. AGS subscribes instead of polling a state file.
-- **CLI:** `desk "open a terminal in ~/git/hyprdisplays"` talks to the same socket.
+- **CLI:** `pooter "open a terminal in ~/git/hyprdisplays"` talks to the same socket.
   Handy for testing and for scripting.
-- **Packaging:** the `deskd` repo's flake exports `packages.deskd` (`rustPlatform.buildRustPackage`)
-  and `homeManagerModules.deskd` (the user service, socket, policy and startup mode as
+- **Packaging:** the `pooter` repo's flake exports `packages.pooter` (`rustPlatform.buildRustPackage`)
+  and `homeManagerModules.pooter` (the user service, socket, policy and startup mode as
   options). This repo adds it as a flake input and enables it per user.
   `voice-command.sh` shrinks to a thin client, then goes away.
 
@@ -191,12 +194,12 @@ cheaply, then port.
 
 - **Push-to-talk only.** No wake word, no always-on mic.
 - **Model:** Parakeet TDT (already used by dictation; the laptop gets the int8 build).
-  `deskd` loads it in-process through the `parakeet-rs` crate, the same library
+  `pooter` loads it in-process through the `parakeet-rs` crate, the same library
   `hyprwhspr-rs` uses, so it stays resident and there's no per-utterance reload.
   Today's whisper-cli path reloads `large-v3-turbo` on every press and the laptop has
   neither the model nor the GPU for it.
 - **Cost:** a second resident copy of the model (dictation keeps its own). Fine on the
-  desktop; on the laptop, measure RAM. A later option is a dictation mode inside `deskd`
+  desktop; on the laptop, measure RAM. A later option is a dictation mode inside `pooter`
   so one process owns the model.
 - **Vocabulary fixes:** reuse the `word_overrides` table from the hyprwhspr config, so
   "hyper land" still becomes Hyprland.
@@ -217,7 +220,7 @@ of the prompt so the static part can stay cached (see Router).
 
 #### 4. Action catalog
 
-One file in the `deskd` repo, `actions.toml`, is the single source of truth. The router
+One file in the `pooter` repo, `actions.toml`, is the single source of truth. The router
 prompt, the JSON schema, the resolver and the executor are all generated from it.
 
 ```toml
@@ -313,7 +316,7 @@ Fuzzy matching (e.g. `nucleo` or `fuzzy-matcher` crates) with a confidence thres
 | `typed_only` | Only typed in the prompt window, never from voice; still confirmed | lock, logout, power off |
 | (absent) | Not in the catalog at all | deleting files, git push, sudo, anything with money or credentials |
 
-**Per-user policy** (`~/.config/deskd/policy.toml`, set from Nix per user): the table
+**Per-user policy** (`~/.config/pooter/policy.toml`, set from Nix per user): the table
 above is the *careful* preset. Each tier maps to `auto`, `confirm` or `off`:
 
 ```toml
@@ -334,7 +337,7 @@ can't be confirmed by voice, and every run is logged.
 - **Undo stack:** each executed step records the state its `undo` template needs (the
   window's previous workspace, the spawned window's address). `undo` pops one step.
   Actions without an undo say so in the preview.
-- **Log:** one JSON line per request in `~/.local/state/desk/log.jsonl` (time, input
+- **Log:** one JSON line per request in `~/.local/state/pooter/log.jsonl` (time, input
   source, transcript, model, raw model output, resolved plan, tier, outcome, latency
   per stage) plus a journal line. That log is also the source of new eval cases.
 
@@ -363,29 +366,29 @@ The `run_in_terminal` action, done carefully, since it's the one with free text:
     open other things from", works under any compositor, cheap to build;
   - a native GUI (Rust + `iced`, the toolkit hyprdisplays already uses): richer
     previews and animation.
-  Either way it's a thin client of `deskd`'s socket. Enter submits, Esc hides, Up
+  Either way it's a thin client of `pooter`'s socket. Enter submits, Esc hides, Up
   recalls history; the scrollback is the request history (what was asked, what ran,
   undo per entry).
 - **Opening it:** one hotkey toggles it (pick one free on both keymaps; Super+U is
-  voice today, Super+A launches Claude Code on the laptop), plus a `desk` command.
+  voice today, Super+A launches Claude Code on the laptop), plus the `pooter` command.
 - **Pill (AGS):** stays as the always-visible status for voice and actions, with states
   listening (timer) → transcribing → thinking
   (shows transcript) → preview/confirm (shows the plan) → done/error. Driven by
-  `deskd` events, not a polled state file.
+  `pooter` events, not a polled state file.
 - **Target highlight:** while a plan is previewed, mark the target window (e.g. a
   temporary border color or tag through Hyprland's window rules) so it's obvious which
   window "this" meant. Exact mechanism to be found in the Hyprland Lua API.
 
 #### 10. Evals
 
-`evals/utterances.jsonl` in the `deskd` repo, one case per line:
+`evals/utterances.jsonl` in the `pooter` repo, one case per line:
 
 ```json
 {"say": "put firefox on the left", "context": "fixtures/two-windows.json",
  "expect": [{"action": "snap_window", "args": {"window": "firefox", "side": "left"}}]}
 ```
 
-- `desk eval` runs every case through router + resolver (not the executor) against a
+- `pooter eval` runs every case through router + resolver (not the executor) against a
   frozen context fixture, and reports accuracy, which cases broke, and latency per
   stage.
 - Run on both machines before changing the prompt, the catalog, or the model. A model
@@ -399,10 +402,10 @@ The `run_in_terminal` action, done carefully, since it's the one with free text:
 |---|---|---|
 | M0 | `voice-command.sh` reads a catalog file and uses schema-constrained output; eval set + runner in bash | Desktop eval ≥ 90%, no parse failures |
 | M1 | Laptop gets an on-device runtime + router model (profile-gated Nix) | Same eval runs on the laptop; latency measured, model chosen. **The laptop numbers decide everything after this** |
-| M2 | `deskd` in Rust: socket, router, resolver, executor with tiers, log | Both machines; voice-command.sh is a thin client |
+| M2 | `pooter` in Rust: socket, router, resolver, executor with tiers, log | Both machines; voice-command.sh is a thin client |
 | M3 | Prompt window (TUI or GUI, tiling or fullscreen) + pill states + per-user policy + undo | Every catalog action reachable by typing; undo works for each `free` action; both presets work |
 | M4 | Shell lane: English → command + explanation, static checks, explain mode | Shell eval cases pass on the laptop; every destructive command in the eval is flagged |
-| M5 | In-process Parakeet STT in `deskd` | Voice works on the laptop; no whisper-cli reload |
+| M5 | In-process Parakeet STT in `pooter` | Voice works on the laptop; no whisper-cli reload |
 | M6 | Context (kitty cwd, last action) + clarify loop + target highlight | "run the tests here", "no, the other one" work |
 
 ---
@@ -414,7 +417,7 @@ and a standard shape for projects.
 
 ### Login: prompt-first or desktop-first
 
-A per-user setting (`deskd.startup = "prompt" | "desktop"` in the Home Manager module):
+A per-user setting (`pooter.startup = "prompt" | "desktop"` in the Home Manager module):
 
 - **prompt:** Hyprland starts with the prompt window fullscreen on its own workspace,
   nothing else open. The hotkey (or saying "show me the desktop") drops to the normal
@@ -448,7 +451,7 @@ The coding lane helps the user build the thing; it doesn't build it for them.
 
 ### Projects: a standard default shape
 
-`desk new <name> [--kind rust|python|web|…]` (or "start a new Rust project called
+`pooter new <name> [--kind rust|python|web|…]` (or "start a new Rust project called
 workout-tracker") makes every new project look the same, so known problems are solved
 before they happen:
 
@@ -462,10 +465,10 @@ before they happen:
 - `README.md` (what it is, how to run it) and an `AGENTS.md` (conventions for any
   assistant working in it, including this one).
 - `.gitignore` per kind.
-- Templates live in the `deskd` repo as a Nix flake (`nix flake init -t`-style), one
+- Templates live in the `pooter` repo as a Nix flake (`nix flake init -t`-style), one
   per kind, so they're versioned and testable.
 
-**Known problems and fixes**, as a small knowledge base in the `deskd` repo
+**Known problems and fixes**, as a small knowledge base in the `pooter` repo
 (`knowledge/*.md`, one problem per file: symptom, cause, fix, e.g. "dynamically linked
 binary won't run on NixOS → nix-ld / packaged version"). Retrieved by keyword into the
 coding prompt when an error matches. Cheaper and more reliable than hoping a small model
@@ -474,7 +477,7 @@ knows NixOS quirks, and it grows from real failures in the log.
 ### Home GPU backend (Brad only)
 
 The desktop's ollama listens on the LAN with the firewall opened for the laptop only.
-Only Brad's `deskd` config lists it, as a second backend with on-device as the
+Only Brad's `pooter` config lists it, as a second backend with on-device as the
 fallback, and the pill shows which one answered. Tailscale for away-from-home comes
 later.
 
@@ -494,7 +497,7 @@ What only the compositor can do, once Phase 0–1 show what's worth it:
 
 - **An agent layer** above windows that the compositor draws itself: the plan, the
   target outline, an animated path showing where a window is about to move.
-- **A private Wayland protocol** (e.g. `desk_agent_v1`) between `deskd` and the
+- **A private Wayland protocol** (e.g. `pooter_agent_v1`) between `pooter` and the
   compositor: structured window tree with stable IDs, highlight/animate requests,
   "freeze input while confirming". Replaces scraping `hyprctl` output.
 - **Better context** from the compositor's own knowledge of every surface (app ID,
@@ -508,7 +511,7 @@ What only the compositor can do, once Phase 0–1 show what's worth it:
 - Cloud backends in Phases 0–1 (designed for, not built; see "Later").
 - Cloud models for routing or speech, ever.
 - Always-listening microphone or wake words.
-- Autonomous loops: `deskd` acts once per request, never on its own initiative.
+- Autonomous loops: `pooter` acts once per request, never on its own initiative.
 - Reading screen contents (screenshots / OCR / vision models). Maybe later, local only.
 - Any action that touches credentials, payments, `sudo`, or pushes to a remote.
 
@@ -525,7 +528,6 @@ What only the compositor can do, once Phase 0–1 show what's worth it:
   (Kdenlive, DaVinci Resolve)? What is starhound / the shine project?
 - Which project templates first? Probably a video-automation kind (Python + ffmpeg +
   OpenTimelineIO) for Cole, Rust for Brad.
-- One resident Parakeet in `deskd` that also serves dictation, or two processes?
-- What's the name?
+- One resident Parakeet in `pooter` that also serves dictation, or two processes?
 - How much of the catalog should be generated from existing scripts vs. hand-written?
 - How should multi-step plans undo: all at once, or one step per "undo"?
