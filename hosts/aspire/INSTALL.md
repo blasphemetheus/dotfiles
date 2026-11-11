@@ -1,5 +1,10 @@
 # Installing NixOS on the Aspire (replacing Fedora)
 
+> Written for the first install, when `blewf` was the only user. The machine is now
+> Cole's (`calbert`, `dotfiles.user` in `default.nix`), with `blewf` as a helper
+> account, so it boots to the tuigreet user picker instead of autologin. Substitute
+> the owner's login for `blewf` in the commands below.
+
 Hardware as scanned from Fedora (2026-10-01): Ryzen 5 7520U, Radeon 610M (`amdgpu`),
 MediaTek MT7921 WiFi (`mt7921e`), 1 TB NVMe, 1080p panel, touchscreen, battery `BAT1`,
 s2idle-only suspend, Secure Boot already off. All of it works with the stock kernel.
@@ -85,9 +90,11 @@ If that goes wrong: Ctrl+Alt+F2 for a TTY.
       commit the new `hosts/aspire/hardware-configuration.nix`, push.
 - [ ] `~/.gitconfig` identity (name + email).
 - [ ] `~/.config/fish/secrets.fish` — copy from the desktop (API keys).
-- [ ] Coding agents (user profile, not in the flake):
-      `nix profile install github:sadjow/claude-code-nix` and
-      `nix profile install github:NixOS/nixpkgs/nixos-unstable#codex`
+- [ ] Coding agents (user profile, not in the flake; each user installs their own,
+      and the daily `claude-code-upgrade` timer keeps them current). Use the full
+      flake URL, a bare `claude-code-nix` isn't in the registry:
+      `nix profile add github:sadjow/claude-code-nix` and
+      `nix profile add github:NixOS/nixpkgs/nixos-unstable#codex`
 - [ ] Mail password: `secret-tool store --label="Migadu spikenard" email spikenard@ramblings.cc`
 - [ ] `nix-index` once (powers `comma`), ~5–10 min.
 

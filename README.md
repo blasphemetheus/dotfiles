@@ -17,6 +17,9 @@ the host (`--flake ~/dotfiles#aspire`), because the hostname isn't set yet.
 
 See [NIXOS-SETUP.md](NIXOS-SETUP.md) for a full machine setup (NVIDIA GPU, disks, first boot).
 
+**Making changes and pushing them:** [CONTRIBUTING.md](CONTRIBUTING.md). Coding agents read
+[AGENTS.md](AGENTS.md).
+
 ## Hosts
 
 `hosts/<name>/default.nix` holds what is tied to one machine and imports the shared
