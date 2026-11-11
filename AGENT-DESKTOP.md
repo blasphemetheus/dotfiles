@@ -15,12 +15,18 @@ direction is to make them the thing the session is organized around. Others are
 exploring the same space; this is the personal, hackable, NixOS version, built to
 experiment with.
 
+**Scope:** a usable laptop and desktop environment that incorporates language models so
+that someone can use the computer **as if they were an experienced coder, by
+communicating in English**: arranging the desktop, running and understanding shell
+commands, and working on code. The **laptop is the target**: if it doesn't work on the
+Aspire (Ryzen 5 7520U, 16 GB, no discrete GPU), it isn't done.
+
 ## Ground rules
 
-1. **Local models only.** Speech-to-text and the language model run on the machine. No
-   cloud model is part of the system, nothing typed or said leaves the computer, and it
-   works offline. (Cloud agents like `claude` stay ordinary apps you can choose to open;
-   the system never routes anything to them.)
+1. **Own hardware first; cloud supported later, never required.** Speech-to-text and
+   the router always run on the machine. Bigger jobs may use the desktop's GPU over the
+   home network. A cloud backend is a later, opt-in addition, not something the
+   design depends on. See "Where models run" below.
 2. **The model proposes, deterministic code disposes.** The model's output is data: an
    action ID plus arguments, validated against a catalog. It is never piped to a shell.
    (`voice-command.sh` already works this way.)
@@ -37,6 +43,36 @@ experiment with.
 7. **Declarative, both machines.** Everything lives in this repo and builds on the
    desktop (RTX 5090) and the laptop (Ryzen 5 7520U, no discrete GPU), gated by profile
    where they differ.
+
+## Where models run
+
+Three places a model can run, and which jobs may use which:
+
+| Backend | What it is | Used for | When |
+|---|---|---|---|
+| **On-device** | The machine's own CPU/GPU (laptop: CPU or Radeon 610M; desktop: RTX 5090) via ollama / llama.cpp | Speech-to-text, routing desktop actions, English → one shell command, explaining a command | Always. Must work with no network |
+| **Home GPU** | The desktop's ollama, reached from the laptop over the LAN (or a private VPN such as Tailscale away from home) | Coding-agent work and anything too big or slow for the laptop: larger models (qwen3-coder:30b) | Phase 1. Optional: the laptop falls back to on-device when the desktop is off or unreachable |
+| **Cloud** | A hosted model or a cloud coding agent (Claude Code, Codex) | Hard coding tasks beyond what local models handle | Later, opt-in. Not built in Phases 0–1 |
+
+Bounds that hold for every backend:
+
+- **Routing and speech never leave the machine.** The always-on, every-request path is
+  on-device, so it's fast, private, and works offline.
+- **A backend is a setting, not a code path.** `deskd` talks to an OpenAI-compatible
+  chat endpoint (which ollama and llama.cpp both serve). Switching backend is a URL and a
+  model name in config, so adding cloud later doesn't change the architecture.
+- **Using a non-local backend is visible.** The pill shows where a request is going
+  ("→ desktop GPU", "→ cloud"). If cloud is ever enabled, it's per request or per task,
+  never silently, and context sent is the same small, reviewable bundle described below.
+- **Cloud coding agents stay apps.** The way you use Claude Code today (a terminal you
+  drive) keeps working and is a fine thing to hand off to. What `deskd` doesn't do is
+  run a cloud agent unattended on your behalf.
+
+What this means for the laptop, honestly: a small on-device model can route desktop
+actions and turn plain English into a single shell command reliably enough to test.
+Multi-step coding work (reading a repo, editing files, running tests) on a 4-core
+laptop CPU will be slow and weak with local models. The Home GPU backend is how the
+laptop gets real coding help without the cloud; the eval set measures where the line is.
 
 ## What exists today
 
@@ -57,10 +93,18 @@ confirmation step, no undo, no log, and nothing runs on the laptop.
 
 ## Phase 0 in detail — a local command layer inside Hyprland
 
-**Goal:** press a key (or hold one and talk), say or type an instruction about the
-desktop, and have it carried out by a local model within a couple of seconds, on both
-machines, with preview, confirmation, undo and a log. No compositor changes; everything
-is a daemon, a catalog, and AGS widgets.
+**Goal:** press a key (or hold one and talk), say or type an instruction, and have it
+carried out by an on-device model within a couple of seconds, on both machines, with
+preview, confirmation, undo and a log. Two kinds of instruction:
+
+- **Desktop:** "put firefox on the left", "open a terminal in hyprdisplays".
+- **Shell:** "how much space is left", "find the big files in Downloads", "what's
+  using port 8080". English becomes one shell command, shown with a plain-English
+  explanation, run only after you confirm. This is the first step toward "use the
+  computer like an experienced coder": you see the real command every time, so you
+  learn it.
+
+No compositor changes; everything is a daemon, a catalog, and AGS widgets.
 
 **Done when:** on both machines, ~40 everyday desktop instructions (the eval set below)
 route correctly ≥95% of the time, the median time from key release to action is under
@@ -233,7 +277,24 @@ Fuzzy matching (e.g. `nucleo` or `fuzzy-matcher` crates) with a confidence thres
   source, transcript, model, raw model output, resolved plan, tier, outcome, latency
   per stage) plus a journal line. That log is also the source of new eval cases.
 
-#### 8. UI (AGS)
+#### 8. Shell lane (English → command)
+
+The `run_in_terminal` action, done carefully, since it's the one with free text:
+
+- The model returns `{"command": "...", "explain": "..."}`, where `explain` is one or two
+  sentences in plain English, including what each flag does.
+- **Static checks before the preview**, in code, not by the model: parse with a shell
+  parser (e.g. the `tree-sitter-bash` or `conch-parser` crates) and flag anything that
+  writes or deletes (`rm`, `mv`, `>`, `dd`, `chmod`, `git push`, `sudo`, package
+  installs). Flagged commands get a red preview and can't be confirmed by voice.
+  `sudo` is refused outright in Phase 0.
+- **Runs visibly** in a new kitty window in the resolved cwd (`--hold`, so output
+  stays), never in the background. The human sees exactly what happened.
+- **Explain mode:** "what does this do?" with a command selected or on the clipboard
+  returns only the explanation, no execution. Cheap, safe, and a big part of learning.
+- **Logged** like every other action, including the exact command line.
+
+#### 9. UI (AGS)
 
 - **Typed bar:** a new AGS window, centered and slim like a launcher, opened by a key
   (pick one free on both keymaps; Super+U is voice today, Super+A launches Claude Code
@@ -245,7 +306,7 @@ Fuzzy matching (e.g. `nucleo` or `fuzzy-matcher` crates) with a confidence thres
   temporary border color or tag through Hyprland's window rules) so it's obvious which
   window "this" meant. Exact mechanism to be found in the Hyprland Lua API.
 
-#### 9. Evals
+#### 10. Evals
 
 `desk/evals/utterances.jsonl`, one case per line:
 
@@ -267,11 +328,12 @@ Fuzzy matching (e.g. `nucleo` or `fuzzy-matcher` crates) with a confidence thres
 | # | Deliverable | Done when |
 |---|---|---|
 | M0 | `voice-command.sh` reads a catalog file and uses schema-constrained output; eval set + runner in bash | Desktop eval ≥ 90%, no parse failures |
-| M1 | Laptop gets a local runtime + router model (profile-gated Nix) | Same eval runs on the laptop; latency measured, model chosen |
+| M1 | Laptop gets an on-device runtime + router model (profile-gated Nix) | Same eval runs on the laptop; latency measured, model chosen. **The laptop numbers decide everything after this** |
 | M2 | `deskd` in Rust: socket, router, resolver, executor with tiers, log | Both machines; voice-command.sh is a thin client |
 | M3 | Typed bar + pill states + confirm flow + undo | Every catalog action reachable by typing; undo works for each `free` action |
-| M4 | In-process Parakeet STT in `deskd` | Voice works on the laptop; no whisper-cli reload |
-| M5 | Context (kitty cwd, last action) + clarify loop + target highlight | "run the tests here", "no, the other one" work |
+| M4 | Shell lane: English → command + explanation, static checks, explain mode | Shell eval cases pass on the laptop; every destructive command in the eval is flagged |
+| M5 | In-process Parakeet STT in `deskd` | Voice works on the laptop; no whisper-cli reload |
+| M6 | Context (kitty cwd, last action) + clarify loop + target highlight | "run the tests here", "no, the other one" work |
 
 ---
 
@@ -285,10 +347,25 @@ behind it. Additions:
 - **Workspace intents:** "set up for coding hyprdisplays" opens the terminal in the
   repo, the editor, and docs on the second monitor. Stored as named, reviewable
   sequences of catalog actions, not as model output to replay.
-- **Local coding agent handoff:** for requests that are really programming tasks, open a
-  terminal running a local-model coding agent (`opencode` pointed at the local ollama
-  is one option) in the right directory. A handoff to an app the human then drives,
-  not something `deskd` runs on its own.
+- **Coding agent handoff:** for requests that are really programming tasks ("add a
+  dark mode toggle to this app"), open a terminal running a coding agent in the right
+  directory, with the request pre-filled. Default is `opencode` on the **Home GPU**
+  backend (the desktop's qwen3-coder:30b over the LAN); on-device when the desktop is
+  unreachable, with a warning that it'll be slow. A handoff to an app the human then
+  drives and watches, not something `deskd` runs on its own.
+- **Home GPU backend:** the desktop's ollama listens on the LAN (firewall opened for the
+  laptop only, or Tailscale), the laptop's `deskd` config lists it as a second backend
+  with on-device as fallback, and the pill shows which one answered.
+
+## Later — cloud backend (opt-in)
+
+Not built in Phases 0–1; the design keeps the door open:
+
+- Same OpenAI-compatible backend slot, so a hosted model is a config entry.
+- Only for the coding-agent lane, chosen per task ("use the cloud for this one"), never
+  for routing or speech.
+- Handing off to a cloud coding agent like Claude Code is just the coding handoff with
+  a different app; it's how this repo is already being worked on.
 
 ## Phase 2 — a Smithay compositor fork
 
@@ -307,7 +384,8 @@ What only the compositor can do, once Phase 0–1 show what's worth it:
 
 ## Deliberately out of scope
 
-- Cloud models and remote agents.
+- Cloud backends in Phases 0–1 (designed for, not built; see "Later").
+- Cloud models for routing or speech, ever.
 - Always-listening microphone or wake words.
 - Autonomous loops: `deskd` acts once per request, never on its own initiative.
 - Reading screen contents (screenshots / OCR / vision models). Maybe later, local only.
@@ -317,6 +395,10 @@ What only the compositor can do, once Phase 0–1 show what's worth it:
 
 - Which laptop model clears ≥95% on the eval set within 3 s, on CPU or the 610M iGPU?
   Is a 4B model necessary, or does ~1.5B suffice for routing?
+- How good is a coding agent on the Home GPU backend (qwen3-coder:30b) at the tasks a
+  non-coder would ask for? Needs its own eval set of small, real tasks.
+- What does the laptop do away from home without Tailscale: on-device coding only,
+  or queue the task until the desktop is reachable?
 - One resident Parakeet in `deskd` that also serves dictation, or two processes?
 - Is a 10 s confirm timeout right, and should "yes" by voice be allowed for every
   `confirm` action or only some?
