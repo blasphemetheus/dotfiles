@@ -1,5 +1,5 @@
 # App configuration sources: immutable store copies and live checkout links.
-{ config, ... }:
+{ config, pkgs, osConfig, ... }:
 let
   # Absolute path required by mkOutOfStoreSymlink.
   dotfiles = "${config.home.homeDirectory}/dotfiles";
@@ -67,5 +67,17 @@ in
     "nvim".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/nvim/.config/nvim";
     "ags".source = config.lib.file.mkOutOfStoreSymlink "${dotfiles}/ags/.config/ags";
   };
+
+  # Dictation model, where hyprwhspr-rs looks for it by default. Was a manual
+  # scripts/download-parakeet-tdt.sh run, so a fresh machine (the laptop)
+  # had no model and the daemon crash-looped ("TDT model path must be a
+  # directory"). A hand-downloaded copy already there is moved aside to
+  # *.hm-backup on the first switch; delete that once dictation works.
+  # Laptops get the int8 quantization: a quarter of the download, and faster
+  # on a 4-core mobile CPU. The desktop keeps fp32.
+  xdg.dataFile."hyprwhspr-rs/models/parakeet/parakeet-tdt-0.6b-v3-onnx".source =
+    pkgs.callPackage ../../pkgs/parakeet-tdt.nix {
+      int8 = osConfig.dotfiles.profile == "laptop";
+    };
 
 }
