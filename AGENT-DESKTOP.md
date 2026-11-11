@@ -21,6 +21,21 @@ communicating in English**: arranging the desktop, running and understanding she
 commands, and working on code. The **laptop is the target**: if it doesn't work on the
 Aspire (Ryzen 5 7520U, 16 GB, no discrete GPU), it isn't done.
 
+## Decisions so far (2026-11-11)
+
+| Question | Decision |
+|---|---|
+| Whose project | Brad's. Cole is a user of it, on the laptop |
+| Public? | Personal for now; if it works, it goes public, so build with that in mind |
+| Time | Weeks at least |
+| Coding help | **Step by step**: helps the user build it, not builds it for them |
+| New projects | A standard default shape (devenv, etc.) so common problems are solved up front |
+| Login | Can go straight to a full-screen prompt; the prompt can also be a normal tiled window. Prompt-first or desktop-first is a per-user setting, and either is a hotkey away |
+| Confirmations | Tunable per user; normal use trends toward run-and-gun |
+| Away from home | Probably, but not at first |
+| Desktop GPU | Usually on; **Brad's backend only**. Cole doesn't get it |
+| Latency | A tuning question, measured together |
+
 ## Ground rules
 
 1. **Own hardware first; cloud supported later, never required.** Speech-to-text and
@@ -34,15 +49,21 @@ Aspire (Ryzen 5 7520U, 16 GB, no discrete GPU), it isn't done.
    `open_app("firefox")`; code fuzzy-matches that against the real list of installed
    apps. Same for windows, workspaces, files. The model never invents a path or a
    window address.
-4. **A ladder of trust.** Every action has a tier (see "Executor" below): some run
-   immediately, some show a preview and wait for a yes, some are never reachable by voice.
+4. **A ladder of trust, tuned per user.** Every action has a tier (see "Executor"
+   below). Each user's policy decides which tiers run immediately; the default leans
+   toward just doing it. A short list of hard limits applies to every policy.
 5. **Undo is a feature.** Every action records how to reverse it. "Undo that" is a
    command.
 6. **Show, don't just do.** The UI shows the action before and while it happens. The
    animations are how the human follows what the model is doing.
-7. **Declarative, both machines.** Everything lives in this repo and builds on the
-   desktop (RTX 5090) and the laptop (Ryzen 5 7520U, no discrete GPU), gated by profile
-   where they differ.
+7. **Its own repo, consumed by the dotfiles.** The code lives in a separate repo
+   (working name `deskd`) with a Nix flake that exports a package and a Home Manager
+   module. This dotfiles repo adds it as a flake input and turns it on per user, so
+   Cole gets it with his normal `nos`. Phase 0's first bash experiments can start here
+   and move out once there's Rust.
+8. **Built to go public.** Nothing personal is hardcoded (paths, usernames, models,
+   keybinds are config). The compositor is behind an adapter (Hyprland first, a Smithay
+   compositor later, others possible), so it isn't welded to one window manager.
 
 ## Where models run
 
@@ -68,11 +89,28 @@ Bounds that hold for every backend:
   drive) keeps working and is a fine thing to hand off to. What `deskd` doesn't do is
   run a cloud agent unattended on your behalf.
 
-What this means for the laptop, honestly: a small on-device model can route desktop
-actions and turn plain English into a single shell command reliably enough to test.
-Multi-step coding work (reading a repo, editing files, running tests) on a 4-core
-laptop CPU will be slow and weak with local models. The Home GPU backend is how the
-laptop gets real coding help without the cloud; the eval set measures where the line is.
+**Who gets which backend:**
+
+| User | On-device | Home GPU | Cloud (later) |
+|---|---|---|---|
+| Brad (desktop, and the laptop at home) | yes | yes | opt-in |
+| Cole (laptop) | yes | **no** | opt-in, his choice |
+
+What this means for Cole, honestly: everything he gets in Phases 0–1 runs on the
+laptop's 4-core CPU. A small on-device model can route desktop actions and turn plain
+English into a single shell command reliably enough to test. Coding help is harder.
+Two things work in its favor:
+
+- **Step-by-step help is a smaller job than autonomous coding.** One next step, one
+  explanation, one command or one small edit at a time is far less model work than
+  "read the repo and implement the feature". Small local coding models may be good
+  enough for that, and the eval set will say.
+- **The project template carries knowledge** (see "Projects"), so the model doesn't have
+  to figure out the dev environment from scratch every time.
+
+If on-device coding help turns out too weak for Cole, the options are a cloud backend
+for his coding lane only (his opt-in) or his existing Claude Code, which he can already
+open. That's a decision to make with eval results in hand, not now.
 
 ## What exists today
 
@@ -113,7 +151,7 @@ the latency targets, and every executed action can be undone and appears in the 
 ### Components
 
 ```
-  typed bar (AGS) ──┐
+  prompt window ────┐
                     ├─► deskd ─► context ─► router (local LLM) ─► resolver ─► executor
   push-to-talk ─────┘    │                   (JSON schema-       (fuzzy     (tier check,
   (pw-record → STT)      │                    constrained)        match)     run, undo,
@@ -136,8 +174,9 @@ that's where Phase 2 lives too (Smithay), so the code carries over.
   `{"state":"error",…}`. AGS subscribes instead of polling a state file.
 - **CLI:** `desk "open a terminal in ~/git/hyprdisplays"` talks to the same socket.
   Handy for testing and for scripting.
-- **Packaging:** `pkgs/deskd.nix` (`rustPlatform.buildRustPackage`), a Home Manager
-  `systemd.user.services.deskd` in a new `modules/home/desk.nix`, enabled on both hosts.
+- **Packaging:** the `deskd` repo's flake exports `packages.deskd` (`rustPlatform.buildRustPackage`)
+  and `homeManagerModules.deskd` (the user service, socket, policy and startup mode as
+  options). This repo adds it as a flake input and enables it per user.
   `voice-command.sh` shrinks to a thin client, then goes away.
 
 Migration path: before writing Rust, grow `voice-command.sh` into the catalog-driven
@@ -174,7 +213,7 @@ of the prompt so the static part can stay cached (see Router).
 
 #### 4. Action catalog
 
-One file in the repo, `desk/actions.toml`, is the single source of truth. The router
+One file in the `deskd` repo, `actions.toml`, is the single source of truth. The router
 prompt, the JSON schema, the resolver and the executor are all generated from it.
 
 ```toml
@@ -267,8 +306,26 @@ Fuzzy matching (e.g. `nucleo` or `fuzzy-matcher` crates) with a confidence thres
 |---|---|---|
 | `free` | Immediately; pill flashes what happened | open, focus, move, switch workspace, volume, toggles |
 | `confirm` | Pill shows the exact effect (and exact command line); Enter / say "yes" runs, Esc / "no" cancels, times out to cancel after 10 s | run_in_terminal, close a window with unsaved work, anything with a free-text `string` arg |
-| `typed_only` | Only from the typed bar, never from voice; still confirmed | lock, logout, power off |
+| `typed_only` | Only typed in the prompt window, never from voice; still confirmed | lock, logout, power off |
 | (absent) | Not in the catalog at all | deleting files, git push, sudo, anything with money or credentials |
+
+**Per-user policy** (`~/.config/deskd/policy.toml`, set from Nix per user): the table
+above is the *careful* preset. Each tier maps to `auto`, `confirm` or `off`:
+
+```toml
+preset = "run-and-gun"        # careful | run-and-gun | custom
+[tiers]
+free = "auto"
+confirm = "auto"              # run-and-gun: run it, show what ran, offer undo
+typed_only = "confirm"
+[shell]
+flagged = "confirm"           # writes/deletes found by the static check
+```
+
+`run-and-gun` (the default) auto-runs everything except flagged shell commands and
+`typed_only`. It leans on undo and the log instead of up-front questions. **Hard limits**
+no policy can loosen: `sudo` and the absent list stay out, flagged shell commands
+can't be confirmed by voice, and every run is logged.
 
 - **Undo stack:** each executed step records the state its `undo` template needs (the
   window's previous workspace, the spawned window's address). `undo` pops one step.
@@ -294,12 +351,21 @@ The `run_in_terminal` action, done carefully, since it's the one with free text:
   returns only the explanation, no execution. Cheap, safe, and a big part of learning.
 - **Logged** like every other action, including the exact command line.
 
-#### 9. UI (AGS)
+#### 9. UI
 
-- **Typed bar:** a new AGS window, centered and slim like a launcher, opened by a key
-  (pick one free on both keymaps; Super+U is voice today, Super+A launches Claude Code
-  on the laptop). Enter submits, Esc closes, Up recalls history.
-- **Pill:** CommandPill grows states: listening (timer) → transcribing → thinking
+- **The prompt is a real application window**, not an overlay, so it can tile like any
+  other window or go fullscreen at login. Two candidate forms, decided in M3:
+  - a terminal UI (Rust + `ratatui`) running in kitty: fits "a coding terminal you can
+    open other things from", works under any compositor, cheap to build;
+  - a native GUI (Rust + `iced`, the toolkit hyprdisplays already uses): richer
+    previews and animation.
+  Either way it's a thin client of `deskd`'s socket. Enter submits, Esc hides, Up
+  recalls history; the scrollback is the request history (what was asked, what ran,
+  undo per entry).
+- **Opening it:** one hotkey toggles it (pick one free on both keymaps; Super+U is
+  voice today, Super+A launches Claude Code on the laptop), plus a `desk` command.
+- **Pill (AGS):** stays as the always-visible status for voice and actions, with states
+  listening (timer) → transcribing → thinking
   (shows transcript) → preview/confirm (shows the plan) → done/error. Driven by
   `deskd` events, not a polled state file.
 - **Target highlight:** while a plan is previewed, mark the target window (e.g. a
@@ -308,7 +374,7 @@ The `run_in_terminal` action, done carefully, since it's the one with free text:
 
 #### 10. Evals
 
-`desk/evals/utterances.jsonl`, one case per line:
+`evals/utterances.jsonl` in the `deskd` repo, one case per line:
 
 ```json
 {"say": "put firefox on the left", "context": "fixtures/two-windows.json",
@@ -330,32 +396,83 @@ The `run_in_terminal` action, done carefully, since it's the one with free text:
 | M0 | `voice-command.sh` reads a catalog file and uses schema-constrained output; eval set + runner in bash | Desktop eval ≥ 90%, no parse failures |
 | M1 | Laptop gets an on-device runtime + router model (profile-gated Nix) | Same eval runs on the laptop; latency measured, model chosen. **The laptop numbers decide everything after this** |
 | M2 | `deskd` in Rust: socket, router, resolver, executor with tiers, log | Both machines; voice-command.sh is a thin client |
-| M3 | Typed bar + pill states + confirm flow + undo | Every catalog action reachable by typing; undo works for each `free` action |
+| M3 | Prompt window (TUI or GUI, tiling or fullscreen) + pill states + per-user policy + undo | Every catalog action reachable by typing; undo works for each `free` action; both presets work |
 | M4 | Shell lane: English → command + explanation, static checks, explain mode | Shell eval cases pass on the laptop; every destructive command in the eval is flagged |
 | M5 | In-process Parakeet STT in `deskd` | Voice works on the laptop; no whisper-cli reload |
 | M6 | Context (kitty cwd, last action) + clarify loop + target highlight | "run the tests here", "no, the other one" work |
 
 ---
 
-## Phase 1 — the session is the surface
+## Phase 1 — prompt-first sessions, coding help, projects
 
-Same pieces, different default. At login the typed bar is already open on an empty
-workspace instead of a blank desktop, with recent requests listed. Apps open beside or
-behind it. Additions:
+Phase 0's pieces, plus three things: a prompt-first login, step-by-step coding help,
+and a standard shape for projects.
 
-- A **request history** view: what was asked, what ran, undo per entry (from the log).
-- **Workspace intents:** "set up for coding hyprdisplays" opens the terminal in the
-  repo, the editor, and docs on the second monitor. Stored as named, reviewable
-  sequences of catalog actions, not as model output to replay.
-- **Coding agent handoff:** for requests that are really programming tasks ("add a
-  dark mode toggle to this app"), open a terminal running a coding agent in the right
-  directory, with the request pre-filled. Default is `opencode` on the **Home GPU**
-  backend (the desktop's qwen3-coder:30b over the LAN); on-device when the desktop is
-  unreachable, with a warning that it'll be slow. A handoff to an app the human then
-  drives and watches, not something `deskd` runs on its own.
-- **Home GPU backend:** the desktop's ollama listens on the LAN (firewall opened for the
-  laptop only, or Tailscale), the laptop's `deskd` config lists it as a second backend
-  with on-device as fallback, and the pill shows which one answered.
+### Login: prompt-first or desktop-first
+
+A per-user setting (`deskd.startup = "prompt" | "desktop"` in the Home Manager module):
+
+- **prompt:** Hyprland starts with the prompt window fullscreen on its own workspace,
+  nothing else open. The hotkey (or saying "show me the desktop") drops to the normal
+  tiled desktop, where the prompt is just another window.
+- **desktop:** today's behavior; the prompt is a hotkey away.
+
+Same compositor and session either way, so there's no second login entry to maintain
+and switching modes is instant. (A separate greetd session that runs only the prompt
+is possible later, if a stripped-down "appliance" mode turns out to be wanted.)
+
+### Coding help, step by step
+
+The coding lane helps the user build the thing; it doesn't build it for them.
+
+- **The loop:** the user says what they want ("a page that tracks my workouts"). The
+  assistant proposes **one next step** (create the project, add a file, write one
+  function, run it), says why in plain English, and shows the exact command or diff.
+  The user runs it (or says "do it"), sees the result, and asks for the next step or
+  something different. Errors come back into the loop: "that failed, here's what it
+  means, here's the fix".
+- **Small units by design.** One command or one small edit per step is what makes this
+  work with small on-device models, and it's what makes the user learn.
+- **Edits are diffs, applied visibly**, in the project's git repo, so every step is a
+  commit-sized change the user can see, undo (`git`), or ask about.
+- **Where it runs:** a mode of the prompt window (`/code` or "help me build…") with the
+  project directory as context, so it sees the files, `git status`, and the last
+  command's output. Not a separate agent app.
+- **Backends:** on-device for everyone; Brad's sessions may use the Home GPU
+  (qwen3-coder:30b) when the desktop answers. A full coding agent (opencode, or Claude
+  Code) stays available as a handoff for users who want the autonomous kind.
+
+### Projects: a standard default shape
+
+`desk new <name> [--kind rust|python|web|…]` (or "start a new Rust project called
+workout-tracker") makes every new project look the same, so known problems are solved
+before they happen:
+
+- `~/projects/<name>`, `git init`, first commit.
+- **devenv** (`devenv.nix`, `devenv.yaml`) with the language toolchain, formatter,
+  linter and a test runner, plus `.envrc` so **direnv** loads it on `cd`. The NixOS
+  classic ("command not found", "pip install fails", "this binary won't run") is
+  handled by the environment instead of by trial and error.
+- Standard tasks as devenv scripts with the same names in every project: `run`, `test`,
+  `fmt`, `check`. The assistant only ever needs those four to start.
+- `README.md` (what it is, how to run it) and an `AGENTS.md` (conventions for any
+  assistant working in it, including this one).
+- `.gitignore` per kind.
+- Templates live in the `deskd` repo as a Nix flake (`nix flake init -t`-style), one
+  per kind, so they're versioned and testable.
+
+**Known problems and fixes**, as a small knowledge base in the `deskd` repo
+(`knowledge/*.md`, one problem per file: symptom, cause, fix, e.g. "dynamically linked
+binary won't run on NixOS → nix-ld / packaged version"). Retrieved by keyword into the
+coding prompt when an error matches. Cheaper and more reliable than hoping a small model
+knows NixOS quirks, and it grows from real failures in the log.
+
+### Home GPU backend (Brad only)
+
+The desktop's ollama listens on the LAN with the firewall opened for the laptop only.
+Only Brad's `deskd` config lists it, as a second backend with on-device as the
+fallback, and the pill shows which one answered. Tailscale for away-from-home comes
+later.
 
 ## Later — cloud backend (opt-in)
 
@@ -395,12 +512,14 @@ What only the compositor can do, once Phase 0–1 show what's worth it:
 
 - Which laptop model clears ≥95% on the eval set within 3 s, on CPU or the 610M iGPU?
   Is a 4B model necessary, or does ~1.5B suffice for routing?
-- How good is a coding agent on the Home GPU backend (qwen3-coder:30b) at the tasks a
-  non-coder would ask for? Needs its own eval set of small, real tasks.
-- What does the laptop do away from home without Tailscale: on-device coding only,
-  or queue the task until the desktop is reachable?
+- Is on-device step-by-step coding help good enough for Cole on the laptop? Needs a
+  coding eval set: ~20 small, real steps a beginner would ask for, scored on both
+  machines. If not, does Cole get an opt-in cloud backend for the coding lane, or just
+  his Claude Code?
+- Prompt window: terminal UI (ratatui) or native GUI (iced)?
+- Which kinds of project templates first (Rust, Python, web)? What does Cole want to
+  build?
 - One resident Parakeet in `deskd` that also serves dictation, or two processes?
-- Is a 10 s confirm timeout right, and should "yes" by voice be allowed for every
-  `confirm` action or only some?
+- What's the repo name, and does it start public or private?
 - How much of the catalog should be generated from existing scripts vs. hand-written?
 - How should multi-step plans undo: all at once, or one step per "undo"?
