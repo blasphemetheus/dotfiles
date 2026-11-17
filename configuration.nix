@@ -14,6 +14,7 @@
     ./modules/system/login.nix
     ./modules/system/logging.nix
     ./modules/system/virtualisation.nix
+    ./modules/system/stomped-tunnel.nix
   ];
 
   # Bootloader.
