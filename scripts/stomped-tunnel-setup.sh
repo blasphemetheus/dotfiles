@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# One-time setup of the standing Cloudflare tunnel for the stomped bot
+# One-time setup of the Cloudflare tunnel exposure for the stomped bot
+# (the fallback; direct exposure needs no script, see the module header)
 # (modules/system/stomped-tunnel.nix). Desktop only.
 #
 #   scripts/stomped-tunnel-setup.sh bot.example.com [--overwrite-dns]
@@ -60,7 +61,7 @@ else
     sudo install -D -m 600 -o root -g root ~/.cloudflared/"$id".json "$creds"
 fi
 
-printf '{\n  "tunnelId": "%s",\n  "hostname": "%s"\n}\n' "$id" "$host" > modules/system/stomped-tunnel.json
+printf '{\n  "exposure": "tunnel",\n  "hostname": "%s",\n  "tunnelId": "%s"\n}\n' "$host" "$id" > modules/system/stomped-tunnel.json
 git add -N modules/system/stomped-tunnel.json
 
 secret_file=~/.config/stomped/path-secret

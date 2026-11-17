@@ -1,4 +1,5 @@
 {
-  "tunnelId": "5848e47a-9bc8-4b1e-9110-60413feaa08c",
-  "hostname": "bot.stlmelee.win"
+  "exposure": "direct",
+  "hostname": "bot.stlmelee.win",
+  "tunnelId": "5848e47a-9bc8-4b1e-9110-60413feaa08c"
 }
