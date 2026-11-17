@@ -11,7 +11,7 @@
 # alone cannot run the tunnel). The credentials stay outside the repo, root-
 # only, at credentialsFile; the unit reads them through systemd LoadCredential.
 #
-# The tunnel forwards to localhost:port whether or not the bot is running;
+# The tunnel forwards to 127.0.0.1:port whether or not the bot is running;
 # with the bot down Cloudflare answers 502 and the arena sees it offline.
 { config, lib, pkgs, ... }:
 
@@ -63,7 +63,10 @@ in
       # cert.pem, the UUID needs only the credentials file.
       tunnels.${cfg.tunnelId} = {
         credentialsFile = cfg.credentialsFile;
-        ingress.${cfg.hostname} = "http://localhost:${toString cfg.port}";
+        # 127.0.0.1, not localhost: cloudflared resolved localhost to [::1]
+        # first, while stomped_serve.exs binds IPv4 loopback only, so most
+        # requests failed with 502 "dial tcp [::1]:3000" (2026-11-17).
+        ingress.${cfg.hostname} = "http://127.0.0.1:${toString cfg.port}";
         default = "http_status:404";
       };
     };
