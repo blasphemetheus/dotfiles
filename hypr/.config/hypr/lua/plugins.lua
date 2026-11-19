@@ -70,22 +70,24 @@ hl.on("monitor.removed", function()
     hl.timer(rescue_rogue_workspaces, { timeout = 500, type = "oneshot" })
 end)
 
--- hyprexpo: expo-style grid overview (Super+Z). sandwichfarm fork flake input,
--- built against our pinned Hyprland, linked by NixOS into /etc/hypr/plugins.
-hl.plugin.load("/etc/hypr/plugins/libhyprexpo.so")
--- Plugin config keys exist only once the .so is loaded; Hyprland re-runs the
--- config after loading plugins, so the second pass sets them. Guard the first.
-if hl.get_config("plugin.hyprexpo.columns") ~= nil then
-    hl.config({
-        plugin = {
-            hyprexpo = {
-                columns          = 3,
-                gaps_in          = 5,   -- (legacy config said gap_size, which this fork never had)
-                gaps_out         = 0,
-                bg_col           = "rgb(111111)",
-                workspace_method = "center current",
-            },
-        },
-    })
-end
+-- hyprexpo: NOT loaded since 2026-11-19. Pressing Super+Z segfaulted it in
+-- createOverviewSession and took the compositor into safe mode
+-- (HYPRLAND-CRASHES.md #7). The fork is unmaintained by hyprwm; a crashing
+-- plugin in the compositor process isn't worth a grid overview. NixOS still
+-- links the .so into /etc/hypr/plugins (modules/system/compositors.nix), so
+-- re-enabling is just restoring the load + config below and a Super+Z bind.
+-- hl.plugin.load("/etc/hypr/plugins/libhyprexpo.so")
+-- if hl.get_config("plugin.hyprexpo.columns") ~= nil then
+--     hl.config({
+--         plugin = {
+--             hyprexpo = {
+--                 columns          = 3,
+--                 gaps_in          = 5,
+--                 gaps_out         = 0,
+--                 bg_col           = "rgb(111111)",
+--                 workspace_method = "center current",
+--             },
+--         },
+--     })
+-- end
 -- Hyprspace stays disabled: no 0.56-compatible release (see configuration.nix).

@@ -21,11 +21,30 @@ core too. Those secondary dumps are collateral, not separate bugs. Recover
 with `hyprctl dispatch exit`; greetd autologin + hyprlock brings up a normal
 session.
 
+### Getting out of safe mode without rebooting
+
+Safe mode does not load `hyprland.lua`, so none of our keybinds exist there:
+no exit bind, often no way to open a terminal. Leave via a virtual terminal:
+
+1. **Ctrl+Alt+F2** (any free VT) and log in as blewf.
+2. Exit the safe-mode compositor. Outside the session there is no
+   `HYPRLAND_INSTANCE_SIGNATURE`, so name the instance:
+   ```fish
+   hyprctl -i 0 dispatch exit      # clean exit of the (only) running instance
+   pkill -TERM -x Hyprland         # fallback if hyprctl gets no answer
+   ```
+3. greetd autologin starts a fresh, normal Hyprland and shows hyprlock. If
+   the screen stays on the VT, **Ctrl+Alt+F1** gets you back to it.
+
+If safe mode does give you a terminal, plain `hyprctl dispatch exit` there
+does the same thing. (Written up after crash #7, 2026-11-19, when the only
+way out found at the time was a reboot.)
+
 ---
 
 ## The output-teardown race family (crashes #1–#6)
 
-Every compositor crash on this machine so far is the same family: a DRM
+Crashes #1–#6 are all the same family (#7 is a plugin crash, see below): a DRM
 output (almost always DP-2 = VY279HGR, which sits behind a DP→HDMI adapter and
 drops its hotplug line going into deep sleep) disconnects, aquamarine tears the
 output down, and either aquamarine or Hyprland then touches state belonging to
@@ -93,6 +112,48 @@ scheduler, which called `renderMonitor` and segfaulted in
 - `hypridle` SIGABRT
 - Safe-mode Hyprland still shows hyprexpo in `hyprctl plugin list`, so safe
   mode on 0.56 is not plugin-free. Don't rely on it to rule out plugins.
+
+---
+
+## Crash #7: hyprexpo overview (Super+Z), 2026-11-19 15:42
+
+Not part of the output-teardown family: a plugin crash, triggered by hand.
+
+| | |
+|---|---|
+| Version | 0.56.2 + aquamarine 0.15.1, hyprexpo (sandwichfarm fork) v0.56.2+3 |
+| Trigger | Pressing **Super+Z** (`hl.plugin.hyprexpo.expo("toggle")`, `lua/binds-desktop.lua`) |
+| Signal | SIGSEGV; watchdog relaunched into safe mode |
+| Crash report | `~/.cache/hyprland/hyprlandCrashReport829781.txt` |
+| Session log | `hyprland-2026-10-25_234842.log` (session up ~25 days). Nothing useful before the crash: the tail is only libinput debounce lines |
+| Collateral | awww-daemon SIGABRT, hypridle SIGABRT (same pattern as #6) |
+
+Top of the backtrace:
+
+```
+#4    libhyprexpo.so  createOverviewSession(CSharedPointer<CWorkspace> const&, CSharedPointer<CMonitor> const&, bool) +0xec
+#5    libhyprexpo.so  createOverview(CSharedPointer<CMonitor> const&, bool) +0x9c
+#6-8  libhyprexpo.so  (Lua binding glue)
+#9+   liblua.so.5.5   (the Super+Z bind)
+```
+
+Reading: a fault early in `createOverviewSession`, most likely a null
+workspace or monitor handle passed down from `createOverview`. Candidates: a
+hyprsplit workspace id (11-20 on monitor 2) the plugin's grid did not expect,
+or stale monitor/workspace state after weeks of DPMS cycles and hotplugs in one
+session. Not confirmed: the plugin has no debug symbols and the log has no
+hyprexpo lines.
+
+First hyprexpo crash on record; Super+Z had worked before. The fork is not
+maintained by hyprwm and is built against our pinned Hyprland, so expect this
+class of breakage. If it repeats: note which monitor had focus and which
+workspace was active, then consider unbinding Super+Z or guarding the bind.
+
+Status: **Mitigated 2026-11-19.** Super+Z unbound on both hosts and
+`hl.plugin.load` for hyprexpo commented out in `lua/plugins.lua`, so the plugin
+never enters the compositor. The .so is still built and linked by
+`modules/system/compositors.nix`; drop the flake input there too if it stays
+unused.
 
 ---
 
@@ -175,4 +236,6 @@ Checked while investigating #6. None are compositor bugs.
    find the teardown just before the crash; which output, and how many
    disconnects this session.
 5. Add a row to the table above.
-6. `hyprctl dispatch exit` to get a normal session back.
+6. Get a normal session back: `hyprctl dispatch exit`, or from a VT
+   (Ctrl+Alt+F2) `hyprctl -i 0 dispatch exit`. See "Getting out of safe mode
+   without rebooting" at the top.

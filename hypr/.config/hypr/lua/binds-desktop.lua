@@ -194,8 +194,8 @@ bind("XF86AudioPrev",  exec("playerctl previous"),   { locked = true })
 bind(B .. "semicolon", exec("wl-kbptr"))   -- keyboard mouse control
 bind(B .. "O", exec("walker"))             -- launcher ("Open")
 
--- Workspace overview (hyprexpo grid)
-bind(B .. "Z", function() hl.plugin.hyprexpo.expo("toggle") end)
+-- Super+Z (hyprexpo grid overview) removed 2026-11-19: the plugin SEGV'd the
+-- compositor into safe mode (HYPRLAND-CRASHES.md #7). Key left free on purpose.
 
 -- Session save/restore
 bind(B .. "CTRL + S", exec(S .. "/session-picker.sh save"))
