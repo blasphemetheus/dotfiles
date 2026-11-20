@@ -196,4 +196,13 @@ in
     enableFishIntegration = true;
   };
 
+  # pooter (flake input; module shared from flake.nix): `pooter say "…"`, with the
+  # daemon as a user service. dryRun while it's new: it plans, previews and logs
+  # but executes nothing. Flip to false once the live test passes. Needs a model
+  # server on :11434 with the router model (`ollama pull granite4.1:3b`).
+  services.pooter = {
+    enable = true;
+    dryRun = true;
+  };
+
 }

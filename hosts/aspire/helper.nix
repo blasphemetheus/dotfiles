@@ -49,4 +49,10 @@ in
     enable = true;
     shellAliases.nrs = "sudo nixos-rebuild switch --flake ~/dotfiles";
   };
+
+  # pooter, same as home.nix: dry run until the live test passes.
+  services.pooter = {
+    enable = true;
+    dryRun = true;
+  };
 }

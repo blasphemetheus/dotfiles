@@ -96,6 +96,15 @@
       url = "github:sandwichfarm/hyprexpo/852774edd577afad0c2e01d8b685772c80634524";
       inputs.hyprland.follows = "hyprland";
     };
+
+    # pooter: talk to the desktop in English, a local model turns it into actions
+    # (see AGENT-DESKTOP.md). Private repo for now, hence git+ssh: fetching needs
+    # the user's GitHub SSH key. After pushing a change there:
+    # `nix flake update pooter`.
+    pooter = {
+      url = "git+ssh://git@github.com/blasphemetheus/pooter";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ags, ... }:
@@ -135,6 +144,8 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.backupFileExtension = "hm-backup";
+            # Every account gets the pooter options; each enables it itself.
+            home-manager.sharedModules = [ inputs.pooter.homeManagerModules.default ];
             # The account comes from the host's dotfiles.user block.
             home-manager.users.${config.dotfiles.user.name} = import ./home.nix;
           })

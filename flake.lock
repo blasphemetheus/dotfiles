@@ -571,6 +571,26 @@
         "type": "github"
       }
     },
+    "pooter": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795211214,
+        "narHash": "sha256-0COMtAE2pgrC3GMof0kx0i0yjIArjAReV1WzsSrGaNo=",
+        "ref": "refs/heads/main",
+        "rev": "139d0f71a0b885e69c3c5f72d4963ba5703f9c20",
+        "revCount": 10,
+        "type": "git",
+        "url": "ssh://git@github.com/blasphemetheus/pooter"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/blasphemetheus/pooter"
+      }
+    },
     "pre-commit-hooks": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -604,7 +624,8 @@
         "hyprland": "hyprland",
         "hyprsplit": "hyprsplit",
         "nixpkgs": "nixpkgs_2",
-        "nixpkgs-hypr": "nixpkgs-hypr"
+        "nixpkgs-hypr": "nixpkgs-hypr",
+        "pooter": "pooter"
       }
     },
     "systems": {
