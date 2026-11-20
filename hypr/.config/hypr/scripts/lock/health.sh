@@ -8,6 +8,16 @@ case $net in *"no network"*) out+=("$net") ;; esac
 if rfkill list bluetooth 2>/dev/null | grep -q "Soft blocked: yes"; then
     out+=("󰂲  Bluetooth soft-blocked")
 fi
+# Laptop only: unplugged and low. The top-left battery line already shows the
+# number, but a $warn-coloured line here is what catches the eye before login.
+for b in /sys/class/power_supply/BAT*; do
+    [[ -r $b/capacity ]] || continue
+    if [[ $(cat "$b/status" 2>/dev/null) == Discharging ]]; then
+        pct=$(cat "$b/capacity")
+        (( pct <= 20 )) && out+=("󰂃  Battery ${pct}%, unplugged")
+    fi
+    break
+done
 newest=$(ls -t "$HOME"/.cache/hyprland/hyprlandCrashReport*.txt 2>/dev/null | head -1)
 if [[ -n $newest ]]; then
     age=$(( $(date +%s) - $(stat -c %Y "$newest") ))

@@ -114,7 +114,8 @@ in
         shellcheck ${../scripts/validate.sh} \
           ${../tests/input-age.sh} \
           ${../hypr/.config/hypr/scripts/start-idle.sh} \
-          ${../hypr/.config/hypr/scripts/battery-monitor.sh}
+          ${../hypr/.config/hypr/scripts/battery-monitor.sh} \
+          ${../hypr/.config/hypr/scripts/lock/battery.sh}
         touch "$out"
       '';
 }
