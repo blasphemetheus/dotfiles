@@ -578,11 +578,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795211214,
-        "narHash": "sha256-0COMtAE2pgrC3GMof0kx0i0yjIArjAReV1WzsSrGaNo=",
+        "lastModified": 1795217488,
+        "narHash": "sha256-RyM6GoQyhLb3P7Dzct4CF6K3EBMj2pMsjE8K+77w7xg=",
         "ref": "refs/heads/main",
-        "rev": "139d0f71a0b885e69c3c5f72d4963ba5703f9c20",
-        "revCount": 10,
+        "rev": "5b19509cfbcca78b600f262628c91d6f38e51e2e",
+        "revCount": 11,
         "type": "git",
         "url": "ssh://git@github.com/blasphemetheus/pooter"
       },
