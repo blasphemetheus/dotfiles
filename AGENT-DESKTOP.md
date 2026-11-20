@@ -408,6 +408,13 @@ The `run_in_terminal` action, done carefully, since it's the one with free text:
 | M5 | In-process Parakeet STT in `pooter` | Voice works on the laptop; no whisper-cli reload |
 | M6 | Context (kitty cwd, last action) + clarify loop + target highlight | "run the tests here", "no, the other one" work |
 
+**Status (2026-11-20):** M0 and M1 done on the laptop: granite4.1:3b routes 78/81 eval
+cases (96.3%) at ~2.2 s on the CPU (`evals/RESULTS.md` in the pooter repo). M2 built:
+daemon + socket, resolver, executor with tiers and a per-user policy, undo, log, guard,
+Home Manager module; verified end to end in `--dry-run`. Live execution still needs a
+test inside a Hyprland session owned by the same user as the daemon (the helper account
+on the laptop has none). Next: that live test, then M3 (prompt window).
+
 ---
 
 ## Phase 1 — prompt-first sessions, coding help, projects
